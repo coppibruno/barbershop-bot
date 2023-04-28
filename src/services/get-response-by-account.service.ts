@@ -1,10 +1,20 @@
 import ConversationRepository from '../repositories/conversationRepository';
+import {FindConversationsService} from './find-conversation.service';
+
+enum Questions {
+  WELCOME = 'Olá, seja bem vindo a Brodis Barbearia. Como você gostaria de ser identificado?',
+}
 
 export class GetResponseByAccountService {
-  private readonly serviceRepository;
+  private readonly serviceRepository: ConversationRepository;
+  private readonly findConversationService: FindConversationsService;
 
-  constructor(serviceRepository: ConversationRepository) {
+  constructor(
+    serviceRepository: ConversationRepository,
+    findConversationService: FindConversationsService,
+  ) {
     this.serviceRepository = serviceRepository;
+    this.findConversationService = findConversationService;
   }
 
   async getUserName(listConvesation: any) {
@@ -24,9 +34,9 @@ export class GetResponseByAccountService {
     //mostrar o menu
 
     if (conversation.length === 0) {
-      return 'Olá, seja bem vindo a Brodis Barbearia. Como você gostaria de ser identificado?';
+      return Questions.WELCOME;
     } else if (conversation.length === 1) {
-      const name = await this.getUserName();
+      // const name = await this.getUserName();
       return `${name}, qual dia você gostaria de marcar agendamento? Digite dia/mês. Exemplo 01/04`;
     } else {
       return 'valor não implementado';
