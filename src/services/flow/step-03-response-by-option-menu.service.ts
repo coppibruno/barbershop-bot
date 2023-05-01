@@ -1,7 +1,7 @@
 import {FlowContext} from '../../flow.context';
-import {QuestionError} from '../../helpers';
 import {IFlowResult} from '../../interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
+import {InvalidMenuOptionError} from '../../errors/invalid-menu-option.enum';
 
 export class StepResponseByOptionMenuFlow {
   private readonly findConversationService: FindConversationsService;
@@ -36,7 +36,7 @@ export class StepResponseByOptionMenuFlow {
 
   async getOptionMenu(
     accountId: string,
-  ): Promise<number | QuestionError.TRY_AGAIN> {
+  ): Promise<number | InvalidMenuOptionError.INVALID_MENU_OPTION> {
     const result = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
@@ -52,13 +52,16 @@ export class StepResponseByOptionMenuFlow {
     if (options.includes(menu)) {
       return Number(menu);
     }
-    return QuestionError.TRY_AGAIN;
+    return InvalidMenuOptionError.INVALID_MENU_OPTION;
   }
 
   async execute(accountId: string): Promise<IFlowResult> {
     const menuSelected = await this.getOptionMenu(accountId);
-    if (menuSelected === QuestionError.TRY_AGAIN) {
-      return {response: QuestionError.TRY_AGAIN, step: this.incompleteStep};
+    if (menuSelected === InvalidMenuOptionError.INVALID_MENU_OPTION) {
+      return {
+        response: InvalidMenuOptionError.INVALID_MENU_OPTION,
+        step: this.incompleteStep,
+      };
     }
     const menuText = this.showTextByMenu(menuSelected);
     let step: number = 0;

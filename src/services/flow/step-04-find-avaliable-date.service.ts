@@ -1,5 +1,9 @@
-import {FlowContext} from '../../flow.context';
-import {AppointmentIsValidHelper, QuestionError} from '../../helpers';
+import {AppointmentIsValidHelper} from '../../helpers';
+import {
+  DefaultError,
+  InvalidAppointmentError,
+  InvalidDateError,
+} from '../../errors';
 import {IFlowResult} from '../../interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
 
@@ -37,7 +41,7 @@ export class StepFindAvaliableDateFlow {
     const dayMonth = result.body;
 
     if (!AppointmentIsValidHelper(dayMonth)) {
-      return QuestionError.TRY_AGAIN;
+      return InvalidDateError.INVALID_DATE;
     }
     return dayMonth;
   }
@@ -45,8 +49,11 @@ export class StepFindAvaliableDateFlow {
   async execute(accountId: string): Promise<IFlowResult> {
     const appointment = await this.getDateAppointment(accountId);
 
-    if (appointment === QuestionError.TRY_AGAIN) {
-      return {response: QuestionError.TRY_AGAIN, step: this.incompleteStep};
+    if (appointment === InvalidDateError.INVALID_DATE) {
+      return {
+        response: InvalidDateError.INVALID_DATE,
+        step: this.incompleteStep,
+      };
     }
     return {
       response: this.findAvaliableTime(appointment),
