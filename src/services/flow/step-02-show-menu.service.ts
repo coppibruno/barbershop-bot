@@ -10,10 +10,11 @@ export class StepShowMenuFlow {
   }
 
   showMenu(user: string) {
-    return (
-      `${user}, escolha uma das opções a seguir. \n ` +
-      this.menu.map((item) => `${item} \n`)
-    );
+    const menu =
+      `${user}, escolha uma das opções a seguir. \n` +
+      this.menu.map((item) => `${item} \n`);
+
+    return menu.replaceAll(',', '');
   }
 
   async getUser(accountId: string): Promise<string> {
