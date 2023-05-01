@@ -27,43 +27,4 @@ export class FlowContext {
 
     return indexMenu;
   }
-
-  static showMenu(user: string) {
-    return (
-      `${user}, escolha uma opção de 0 a 2. \n ` +
-      this.MENU.map((item) => `${item} \n`)
-    );
-  }
-
-  static getTextByMenu(menu: number): string {
-    type IResponseByAccount = {
-      [key: number]: string;
-    };
-    const options: IResponseByAccount = {
-      0: this.MAKE_APPOINTMENT,
-      1: this.RENAME_USER,
-    };
-    return options[menu];
-  }
-
-  static showTextByMenu(menuSelected: number) {
-    if (menuSelected === 0) {
-      return this.GOODBYE;
-    }
-    const menu = menuSelected - 1;
-    return this.getTextByMenu(menu);
-  }
-
-  static findAvaliableTime(dayMonth: string) {
-    return `Para o dia ${dayMonth} temos esses horários disponiveis: \n
-        09:00 \n
-        10:00 \n
-        11:00 \n
-        14:00 \n
-        15:00 \n
-        17:00 \n
-        18:00 \n
-        19:00 \n
-    `;
-  }
 }
