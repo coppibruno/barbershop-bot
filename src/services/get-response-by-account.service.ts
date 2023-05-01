@@ -1,45 +1,123 @@
 import ConversationRepository from '../repositories/conversationRepository';
 import {FindConversationsService} from './find-conversation.service';
+import {FlowContext} from '../flow';
+import {QuestionError} from '../helpers';
+import 'dotenv/config';
+import {AppointmentIsValidHelper} from '../helpers/validate-appoitment';
+const BOT_NUMBER = process.env.BOT_NUMBER;
 
-enum Questions {
-  WELCOME = 'Olá, seja bem vindo a Brodis Barbearia. Como você gostaria de ser identificado?',
-}
-
+type IResponseByAccount = {
+  [key: number]: string;
+};
 export class GetResponseByAccountService {
-  private readonly serviceRepository: ConversationRepository;
   private readonly findConversationService: FindConversationsService;
 
-  constructor(
-    serviceRepository: ConversationRepository,
-    findConversationService: FindConversationsService,
-  ) {
-    this.serviceRepository = serviceRepository;
+  constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
   }
 
-  async getUserName(listConvesation: any) {
-    return listConvesation[2].body;
-  }
-
-  async execute(accountId: string) {
-    const conversation = await this.serviceRepository.find({
+  async getStepFlow(accountId: string): Promise<number> {
+    const conversation = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
-        fromPhone: 14155238886, //adicionar env
+        fromPhone: Number(BOT_NUMBER),
       },
     });
+    const step = conversation?.step || 0;
+    return step + 1;
+  }
 
-    //instalar biblioteca de date para verificar se teve iteração nas ultimas 2hrs. Caso não tenha. mandar mensagem de boas vindas (1° passo)
-    //verificar a ultima resposta do robô para responder ao usuario
-    //mostrar o menu
+  async getOptionMenu(
+    accountId: string,
+  ): Promise<number | QuestionError.TRY_AGAIN> {
+    const result = await this.findConversationService.findOne({
+      where: {
+        accountId: accountId,
+      },
+    });
+    if (!result) {
+      throw new Error('Flow Error get day month');
+    }
 
-    if (conversation.length === 0) {
-      return Questions.WELCOME;
-    } else if (conversation.length === 1) {
-      // const name = await this.getUserName();
-      return `${name}, qual dia você gostaria de marcar agendamento? Digite dia/mês. Exemplo 01/04`;
+    const menu = Number(result.body);
+
+    const options = FlowContext.getIndexMenu();
+    if (options.includes(menu)) {
+      return Number(menu);
+    }
+    return QuestionError.TRY_AGAIN;
+  }
+
+  async getDayMonth(accountId: string): Promise<string> {
+    const result = await this.findConversationService.findOne({
+      where: {
+        accountId: accountId,
+        //adicionar from phone user
+      },
+    });
+    if (!result) {
+      throw new Error('Flow Error get day month');
+    }
+    const dayMonth = result.body;
+
+    if (!AppointmentIsValidHelper(dayMonth)) {
+      return QuestionError.TRY_AGAIN;
+    }
+    return dayMonth;
+  }
+
+  async getUserName(accountId: string): Promise<string> {
+    const result = await this.findConversationService.findOne({
+      where: {
+        accountId: accountId,
+      },
+    });
+    if (!result) {
+      throw new Error('Conversation not found to find a user name');
+    }
+    const name = result.body;
+    return name;
+  }
+
+  async execute(accountId: string): Promise<{step: number; response: string}> {
+    type TypeStep = keyof IResponseByAccount;
+    const step: TypeStep = await this.getStepFlow(accountId);
+
+    if (step === 1) {
+      return {response: FlowContext.WELCOME, step: 1};
+    } else if (step === 2) {
+      const user = await this.getUserName(accountId);
+      return {response: FlowContext.showMenu(user), step: 2};
+    } else if (step === 3) {
+      const menuSelected = await this.getOptionMenu(accountId);
+      if (menuSelected === QuestionError.TRY_AGAIN) {
+        return {response: QuestionError.TRY_AGAIN, step: 2};
+      }
+      const menuText = FlowContext.showTextByMenu(menuSelected);
+      let internalStep: number = 0;
+      if (menuText === FlowContext.MAKE_APPOINTMENT) {
+        internalStep = 3;
+      } else if (menuText === FlowContext.RENAME_USER) {
+        internalStep = 1;
+      }
+      return {
+        response: menuText,
+        step: internalStep,
+      };
+    } else if (step === 4) {
+      const dayMonth = await this.getDayMonth(accountId);
+
+      if (dayMonth === QuestionError.TRY_AGAIN) {
+        return {response: QuestionError.TRY_AGAIN, step: 3};
+      }
+      return {
+        response: FlowContext.findAvaliableTime(dayMonth),
+        step: 4,
+      };
+    } else if (step === 5) {
+      return {response: 'method not implemented', step: 999};
     } else {
-      return 'valor não implementado';
+      return {response: 'method not implemented', step: 999};
     }
   }
 }

@@ -15,6 +15,7 @@ export default class ConversationRepository implements IRepository {
         fromPhone: conversationEntity.fromPhone,
         toPhone: conversationEntity.toPhone,
         accountId: conversationEntity.accountId,
+        step: conversationEntity.step,
       },
     });
   }
@@ -22,6 +23,18 @@ export default class ConversationRepository implements IRepository {
   async find(where: WhereRepository) {
     return await prisma.conversations.findMany({
       ...where,
+      orderBy: {
+        id: 'desc',
+      },
+    });
+  }
+
+  async findOne(where: WhereRepository) {
+    return await prisma.conversations.findFirst({
+      ...where,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 

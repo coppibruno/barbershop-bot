@@ -1,5 +1,10 @@
+import {ConversationEntity} from '../../entity/conversation';
 import ResponseSendMessage from './response';
 
 export interface SendWhatsappMessage {
-  sendMessage(body: string): Promise<ResponseSendMessage>;
+  sendMessage(data: {
+    from: number;
+    body: string;
+    to: number;
+  }): Promise<ConversationEntity>;
 }

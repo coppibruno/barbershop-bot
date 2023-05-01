@@ -18,5 +18,6 @@ model Conversations {
   toPhone   Int
   body      String
   accountId String
+  step      Int?
   createdAt DateTime @default(now())
 }

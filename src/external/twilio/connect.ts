@@ -5,7 +5,6 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 
 export abstract class TwilioConnect {
   static connect() {
-    console.log(accountSid, authToken);
     if (!accountSid || !authToken) {
       throw new Error('credetials twilio not found');
     }

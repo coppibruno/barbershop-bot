@@ -1,14 +1,19 @@
-import {SendWhatsappMessage} from '../interfaces/sendMessage';
+import {ConversationEntity} from '../entity/conversation';
+import {TwilioSendWhatsappMessage} from '../external/twilio/send-new-message';
 import ResponseSendMessage from '../interfaces/sendMessage/response';
 
 export class SendMessageWhatsappService {
   private readonly serviceSenderMessage;
 
-  constructor(serviceSenderMessage: SendWhatsappMessage) {
+  constructor(serviceSenderMessage: TwilioSendWhatsappMessage) {
     this.serviceSenderMessage = serviceSenderMessage;
   }
 
-  async execute(body: string): Promise<ResponseSendMessage> {
-    return this.serviceSenderMessage.sendMessage(body);
+  async execute(data: {
+    from: number;
+    body: string;
+    to: number;
+  }): Promise<ConversationEntity> {
+    return this.serviceSenderMessage.sendMessage(data);
   }
 }

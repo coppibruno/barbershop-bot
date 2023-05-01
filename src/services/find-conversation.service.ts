@@ -1,5 +1,3 @@
-import {ConversationEntity} from '../entity/conversation';
-import {WhereRepository} from '../interfaces/repositories';
 import ConversationRepository from '../repositories/conversationRepository';
 import {Conversations} from '@prisma/client';
 
@@ -10,8 +8,18 @@ export class FindConversationsService {
     this.serviceRepository = serviceRepository;
   }
 
-  async execute(options: {where: any}): Promise<Conversations[]> {
+  async find(options: {
+    where: Partial<Conversations>;
+  }): Promise<Conversations[]> {
     return this.serviceRepository.find({
+      where: options.where,
+    });
+  }
+
+  async findOne(options: {
+    where: Partial<Conversations>;
+  }): Promise<Conversations | null> {
+    return this.serviceRepository.findOne({
       where: options.where,
     });
   }
