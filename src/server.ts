@@ -1,11 +1,10 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import express from 'express';
-import {Router, Request, Response} from 'express';
+import express, {Router, Request, Response} from 'express';
 import {PrismaClient} from '@prisma/client';
 
-import {messageRouter} from './controllers';
+import {messageRouterController} from './controllers';
 const prisma = new PrismaClient();
 
 const port = process.env.PORT;
@@ -36,7 +35,7 @@ route.get('/hello-world', (req: Request, res: Response) => {
   res.send('hello');
 });
 
-app.use('/message', messageRouter);
+app.use('/message', messageRouterController);
 
 app.listen(port, () => {
   console.log('Server running on port ' + port);

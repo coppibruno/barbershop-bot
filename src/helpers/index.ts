@@ -1,3 +1,3 @@
 import {QuestionError} from './questions-errors.enum';
-
-export {QuestionError};
+import {AppointmentIsValidHelper} from './validate-appoitment';
+export {QuestionError, AppointmentIsValidHelper};

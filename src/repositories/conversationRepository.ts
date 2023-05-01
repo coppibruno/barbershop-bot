@@ -1,10 +1,8 @@
 import {PrismaClient, Conversations} from '@prisma/client';
-import {ConversationEntity} from '../entity/conversation';
-import IRepository, {WhereRepository} from '../interfaces/repositories';
+import {ConversationEntity} from '../entity/conversationEntity';
+import {WhereRepository, IRepository} from '../interfaces';
 const prisma = new PrismaClient();
 
-/*Todo: Implementar interface com metodos de create, find, save, delete*/
-/*Todo: Remover a dependencia do prisma dentro dos repositories*/
 export default class ConversationRepository implements IRepository {
   async create(conversationEntity: ConversationEntity): Promise<Conversations> {
     return prisma.conversations.create({
@@ -37,7 +35,4 @@ export default class ConversationRepository implements IRepository {
       },
     });
   }
-
-  save() {}
-  delete() {}
 }

@@ -1,4 +1,4 @@
-import {ConversationEntity} from '../entity/conversation';
+import {ConversationEntity} from '../entity/conversationEntity';
 import ConversationRepository from '../repositories/conversationRepository';
 
 export class CreateConversationService {

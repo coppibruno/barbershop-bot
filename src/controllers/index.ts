@@ -1,2 +1,2 @@
-import {messageRouter} from './message';
-export {messageRouter};
+import {messageRouterController} from './message.controller';
+export {messageRouterController};

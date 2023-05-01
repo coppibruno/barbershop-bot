@@ -17,7 +17,7 @@ export class FlowContext {
     'Horário não encontrado. Digite novamente.';
   public static readonly TIME_FOUND = `Horário marcado. ${barbershopName} agradece a preferencia, nos encontramos no dia X`;
 
-  static getIndexMenu(): Number[] {
+  static getIndexMenu(): number[] {
     const lastIndex = this.MENU.length - 1;
 
     const indexMenu = [];
@@ -29,11 +29,10 @@ export class FlowContext {
   }
 
   static showMenu(user: string) {
-    // this.user = user;
-    return `${user}, escolha uma opção de 0 a 2. \n ${this.MENU.map(
-      (item) => `${item} \n`,
-    )}
-    `;
+    return (
+      `${user}, escolha uma opção de 0 a 2. \n ` +
+      this.MENU.map((item) => `${item} \n`)
+    );
   }
 
   static getTextByMenu(menu: number): string {

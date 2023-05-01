@@ -1,5 +1,4 @@
-import {Conversations} from '@prisma/client';
-import {ConversationEntity} from '../entity/conversation';
+import {ConversationEntity} from '../entity/conversationEntity';
 import {GetConversationTwilio} from '../external/twilio/get-conversation';
 import {IConversationTwilio} from '../interfaces/external';
 import {CreateConversationService} from './create-conversation.service';
@@ -36,17 +35,20 @@ export class FlowConversationService {
       senderConversationEntity.accountId,
     );
     const {response, step} = reply;
-    const botAnswer = {
-      from: Number(BOT_NUMBER),
-      to: senderConversationEntity.fromPhone,
+
+    const botAnswer: ConversationEntity = {
+      fromPhone: Number(BOT_NUMBER),
+      toPhone: senderConversationEntity.fromPhone,
       body: response,
+      accountId: senderConversationEntity.accountId,
+      messageId: senderConversationEntity.messageId,
+      name: senderConversationEntity.name,
+      step,
     };
 
-    const sendAnswer = await this.sendMessageWhatsappService.execute(botAnswer);
+    await this.sendMessageWhatsappService.execute(botAnswer);
 
-    sendAnswer.step = step;
-
-    await this.createConversationService.execute(sendAnswer);
+    await this.createConversationService.execute(botAnswer);
 
     return response;
   }

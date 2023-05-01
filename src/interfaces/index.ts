@@ -1,3 +1,4 @@
-import {SendWhatsappMessage} from './sendMessage';
+import {IConversationTwilio} from './external';
+import {WhereRepository, IRepository} from './repositories';
 
-export {SendWhatsappMessage};
+export {IConversationTwilio, WhereRepository, IRepository};

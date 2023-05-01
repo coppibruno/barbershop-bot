@@ -1,12 +1,12 @@
-import {ConversationEntity} from '../entity/conversation';
-import IRepository from '../interfaces/repositories';
+import {ConversationEntity} from '../entity/conversationEntity';
+import ConversationRepository from '../repositories/conversationRepository';
 /**
  * Classe responsável por tratar os dados
  */
 export class SaveConversationService {
   private readonly serviceRepository;
 
-  constructor(serviceRepository: IRepository) {
+  constructor(serviceRepository: ConversationRepository) {
     this.serviceRepository = serviceRepository;
   }
 

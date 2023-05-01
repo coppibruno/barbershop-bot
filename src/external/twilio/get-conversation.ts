@@ -1,15 +1,10 @@
-import {ConversationEntity} from '../../entity/conversation';
+import {ConversationEntity} from '../../entity/conversationEntity';
 import {IConversationTwilio} from '../../interfaces/external';
-import {FindConversationsService} from '../../services/find-conversation.service';
 
 /**
  * Classe responsável por tratar dados de integração de whatsapp do twilio para a entitidade
  */
 export class GetConversationTwilio {
-  constructor(
-    private readonly findConversationsService: FindConversationsService,
-  ) {}
-
   async execute(
     iConversationTwilio: IConversationTwilio,
   ): Promise<ConversationEntity> {

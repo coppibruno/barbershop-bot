@@ -1,4 +1,3 @@
-import ConversationRepository from '../repositories/conversationRepository';
 import {FindConversationsService} from './find-conversation.service';
 import {FlowContext} from '../flow';
 import {QuestionError} from '../helpers';
