@@ -1,10 +1,17 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import express, {Router, Request, Response} from 'express';
+import express from 'express';
 import {PrismaClient} from '@prisma/client';
-
 import {messageRouterController} from './controllers';
+import * as nodeCron from 'node-cron';
+import {AutomaticFlowCloseIfNoReplyServiceFactory} from './factory/services/automatic-flow-close-if-no-reply-service.factory';
+
+nodeCron.schedule('0 * * * *', async function () {
+  const service = AutomaticFlowCloseIfNoReplyServiceFactory();
+  await service.execute();
+});
+
 const prisma = new PrismaClient();
 
 const port = process.env.PORT;
@@ -26,17 +33,11 @@ main()
 
 const app = express();
 
-const route = Router();
-
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
-route.get('/hello-world', (req: Request, res: Response) => {
-  res.send('hello');
-});
-
 app.use('/message', messageRouterController);
 
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log('Server running on port ' + port);
 });

@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import {
   StepFindAvaliableDateFlow,
+  StepGetDateAppointmentFlow,
   StepResponseByOptionMenuFlow,
   StepShowMenuFlow,
   StepWelcomeFlow,
@@ -18,12 +19,10 @@ export class GetResponseByAccountService {
     private readonly stepShowMenuFlow: StepShowMenuFlow,
     private readonly stepResponseByOptionMenuFlow: StepResponseByOptionMenuFlow,
     private readonly stepFindAvaliableDateFlow: StepFindAvaliableDateFlow,
+    private readonly stepGetDateAppointmentFlow: StepGetDateAppointmentFlow,
   ) {}
 
-  async execute(accountId: string): Promise<IFlowResult> {
-    type TypeStep = keyof IResponseByAccount;
-    const step: TypeStep = await this.getStepConversation.execute(accountId);
-
+  async handleStep(accountId: string, step: number) {
     if (step === 1) {
       return this.stepWelcomeFlow.execute();
     } else if (step === 2) {
@@ -33,9 +32,20 @@ export class GetResponseByAccountService {
     } else if (step === 4) {
       return this.stepFindAvaliableDateFlow.execute(accountId);
     } else if (step === 5) {
-      return {response: 'method not implemented', step: 999};
+      return this.stepGetDateAppointmentFlow.execute(accountId);
     } else {
       return {response: 'method not implemented', step: 999};
+    }
+  }
+
+  async execute(accountId: string): Promise<IFlowResult> {
+    type TypeStep = keyof IResponseByAccount;
+    const step: TypeStep = await this.getStepConversation.execute(accountId);
+    try {
+      return await this.handleStep(accountId, step);
+    } catch (error) {
+      console.error(error);
+      return await this.handleStep(accountId, step - 1);
     }
   }
 }

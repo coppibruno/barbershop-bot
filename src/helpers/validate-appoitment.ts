@@ -1,20 +1,56 @@
 import moment from 'moment';
-export const AppointmentIsValidHelper = (dayMonth: string) => {
-  if (dayMonth.length !== 5) {
-    return false;
-  }
-  if (dayMonth[2] !== '/') {
-    return false;
-  }
+import {InvalidDateError} from '../errors';
+import {ValidateIfIsDezember} from './validate-if-is-dezember';
 
-  const splited = dayMonth.split('/');
-  const day = splited[0];
-  const month = splited[1];
-  const fullDate = `${day}/${month}/2023`;
-  const date = moment(fullDate, 'DD/MM/YYYY');
+type IResponse =
+  | InvalidDateError.INVALID_DATE
+  | InvalidDateError.INVALID_DATE_DEZEMBER
+  | InvalidDateError.SUNDAY_DATE
+  | InvalidDateError.SUNDAY_DATE_DEZEMBER
+  | true;
+
+const AppointmentIsValidHelperDezember = (dayMonthYear: string): IResponse => {
+  let date;
+  try {
+    date = moment(dayMonthYear, 'DD/MM/YYYY').hours(23).minutes(59).seconds(59);
+  } catch (error) {
+    console.error(error);
+    return InvalidDateError.INVALID_DATE_DEZEMBER;
+  }
 
   if (date.isBefore()) {
-    return false;
+    return InvalidDateError.INVALID_DATE_DEZEMBER;
+  }
+
+  //Sunday
+  if (date.isoWeekday() === 7) {
+    return InvalidDateError.SUNDAY_DATE_DEZEMBER;
+  }
+
+  return true;
+};
+
+export const AppointmentIsValidHelper = (dayMonth: string): IResponse => {
+  if (ValidateIfIsDezember()) {
+    return AppointmentIsValidHelperDezember(dayMonth);
+  }
+
+  let date;
+  try {
+    const fullDate = `${dayMonth}/${new Date().getFullYear()}`;
+    date = moment(fullDate, 'DD/MM/YYYY').hours(23).minutes(59).seconds(59);
+  } catch (error) {
+    console.error(error);
+    return InvalidDateError.INVALID_DATE;
+  }
+
+  if (date.isBefore()) {
+    return InvalidDateError.INVALID_DATE;
+  }
+
+  //Sunday
+  if (date.isoWeekday() === 7) {
+    return InvalidDateError.SUNDAY_DATE;
   }
 
   return true;

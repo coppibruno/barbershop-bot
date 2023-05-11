@@ -13,13 +13,16 @@ export class GetConversationTwilio {
     const accountId = iConversationTwilio.AccountSid;
 
     const conversationEntity: ConversationEntity = {
-      name: null,
+      name: '',
       fromPhone: Number(fromPhone),
       toPhone: Number(toPhone),
       body: iConversationTwilio.Body,
       messageId: iConversationTwilio.MessageSid,
       step: null,
+      state: 'IN_PROGRESS',
+      options: {},
       accountId,
+      protocol: Date.now(),
     };
 
     return conversationEntity;

@@ -12,12 +12,31 @@ datasource db {
 
 model Conversations {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  protocol  Int
   messageId String
-  name      String?
+  name      String   @default("")
   fromPhone Int
   toPhone   Int
   body      String
   accountId String
   step      Int?
+  state     State    @default(IN_PROGRESS)
+  options   Json?
   createdAt DateTime @default(now())
+}
+
+enum State {
+  IN_PROGRESS
+  FINISHED
+}
+
+model Meetings {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  phone     Int
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([phone, startDate])
 }

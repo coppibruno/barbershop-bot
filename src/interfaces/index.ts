@@ -1,4 +1,4 @@
 import {IConversationTwilio} from './external';
-import {WhereRepository, IRepository} from './repositories';
+import {OptionsQuery, IRepository} from './repositories';
 
-export {IConversationTwilio, WhereRepository, IRepository};
+export {IConversationTwilio, OptionsQuery, IRepository};

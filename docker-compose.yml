@@ -1,17 +1,14 @@
 version: '3.8'
 services:
+   # Replica Set (required for Prisma Client)
   barbershop:
-    image: 'bitnami/mongodb:latest'
+    build: ./mongodb_replica
     environment:
-      - MONGODB_ADVERTISED_HOSTNAME=127.0.0.1
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_ROOT_USER=barbershop
-      - MONGODB_ROOT_PASSWORD=barbershop
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      MONGO_INITDB_ROOT_USERNAME: barbershop
+      MONGO_INITDB_ROOT_PASSWORD: barbershop
+      MONGO_REPLICA_HOST: localhost
+      MONGO_REPLICA_PORT: 27018
     ports:
-      - '27017:27017'
-    volumes:
-      - 'mongo-db:/bitnami/mongodb'
-
+      - '27018:27018'
 volumes:
   mongo-db:

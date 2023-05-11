@@ -2,6 +2,7 @@ import {FlowContext} from '../../flow.context';
 import {IFlowResult} from '../../interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
 import {InvalidMenuOptionError} from '../../errors/invalid-menu-option.enum';
+import {ValidateIfIsDezember} from '../../helpers/validate-if-is-dezember';
 
 export class StepResponseByOptionMenuFlow {
   private readonly findConversationService: FindConversationsService;
@@ -10,6 +11,8 @@ export class StepResponseByOptionMenuFlow {
   private readonly stepRenameUser: number = 1;
 
   private readonly messageToMakeAppointment = FlowContext.MAKE_APPOINTMENT;
+  private readonly messageToMakeAppointmentDezember =
+    FlowContext.MAKE_APPOINTMENT_DEZEMBER;
   private readonly messageToRenameUser = FlowContext.RENAME_USER;
   private readonly messageToGoodBye = FlowContext.GOODBYE;
 
@@ -27,8 +30,14 @@ export class StepResponseByOptionMenuFlow {
 
     const menu = menuSelected - 1;
 
+    const isDezember = ValidateIfIsDezember();
+    let messageToMakeAppointment = this.messageToMakeAppointment;
+    if (isDezember) {
+      messageToMakeAppointment = this.messageToMakeAppointmentDezember;
+    }
+
     const options: IResponseByAccount = {
-      0: this.messageToMakeAppointment,
+      0: messageToMakeAppointment,
       1: this.messageToRenameUser,
     };
     return options[menu];
@@ -40,6 +49,11 @@ export class StepResponseByOptionMenuFlow {
     const result = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
+        toPhone: Number(FlowContext.BOT_NUMBER),
+        step: 2,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
     if (!result) {
@@ -64,8 +78,11 @@ export class StepResponseByOptionMenuFlow {
       };
     }
     const menuText = this.showTextByMenu(menuSelected);
-    let step: number = 0;
-    if (menuText === this.messageToMakeAppointment) {
+    let step: number = 0; //criar ENUM para identificar qual será o proximo passo
+    if (
+      menuText === this.messageToMakeAppointment ||
+      menuText === this.messageToMakeAppointmentDezember
+    ) {
       step = this.stepCompleted;
     } else if (menuText === this.messageToRenameUser) {
       step = this.stepRenameUser;

@@ -8,15 +8,25 @@ export class GetStepConversation {
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
   }
-
   async execute(accountId: string): Promise<number> {
     const conversation = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
         fromPhone: Number(BOT_NUMBER),
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
-    const step = conversation?.step || 0;
+
+    let step: number = 0;
+    if (conversation) {
+      step = conversation.step || 0;
+
+      if (conversation.state === 'FINISHED') {
+        step = 0;
+      }
+    }
     return step + 1;
   }
 }

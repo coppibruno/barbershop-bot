@@ -1,7 +1,9 @@
 import {StepShowMenuFlow} from '../../../services/flow';
-import {FindConversationsServiceFactory} from '../find-conversations-service.factory';
+import {GetUserNameConversationServiceFactory} from '../get-user-name-conversations-service.factory';
 
 export const ShowMenuServiceFactory = (): StepShowMenuFlow => {
-  const findConversationsService = FindConversationsServiceFactory();
-  return new StepShowMenuFlow(findConversationsService);
+  const getUserNameConversationService =
+    GetUserNameConversationServiceFactory();
+
+  return new StepShowMenuFlow(getUserNameConversationService);
 };

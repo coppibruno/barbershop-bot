@@ -1,6 +1,7 @@
 import {GetResponseByAccountService} from '../../services/get-response-by-account.service';
 import {
   FindAvaliableDateServiceFactory,
+  GetDateAppointmentServiceFactory,
   ResponseByOptionMenuServiceFactory,
   ShowMenuServiceFactory,
   WelcomeFlowServiceFactory,
@@ -13,6 +14,7 @@ export const GetResponseByAccountServiceFactory = () => {
   const stepShowMenuFlow = ShowMenuServiceFactory();
   const stepResponseByOptionMenuFlow = ResponseByOptionMenuServiceFactory();
   const stepFindAvaliableDateFlow = FindAvaliableDateServiceFactory();
+  const stepGetDateAppointmentFlow = GetDateAppointmentServiceFactory();
 
   return new GetResponseByAccountService(
     getStepConversation,
@@ -20,5 +22,6 @@ export const GetResponseByAccountServiceFactory = () => {
     stepShowMenuFlow,
     stepResponseByOptionMenuFlow,
     stepFindAvaliableDateFlow,
+    stepGetDateAppointmentFlow,
   );
 };

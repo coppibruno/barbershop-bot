@@ -1,12 +1,13 @@
 import {FlowContext} from '../../flow.context';
 import {IFlowResult} from '../../interfaces/flow';
-import {FindConversationsService} from '../find-conversation.service';
+import {GetUserNameConversation} from '../get-user-name.service';
 
 export class StepShowMenuFlow {
-  private readonly findConversationService: FindConversationsService;
+  private readonly getUserNameConversation: GetUserNameConversation;
+
   private readonly menu = FlowContext.MENU;
-  constructor(findConversationService: FindConversationsService) {
-    this.findConversationService = findConversationService;
+  constructor(getUserNameConversation: GetUserNameConversation) {
+    this.getUserNameConversation = getUserNameConversation;
   }
 
   showMenu(user: string) {
@@ -17,21 +18,12 @@ export class StepShowMenuFlow {
     return menu.replaceAll(',', '');
   }
 
-  async getUser(accountId: string): Promise<string> {
-    const result = await this.findConversationService.findOne({
-      where: {
-        accountId: accountId,
-      },
-    });
-    if (!result) {
-      throw new Error('Conversation not found to find a user name');
-    }
-    const name = result.body;
-    return name;
+  async getUser(accountId: string): Promise<null | string> {
+    return this.getUserNameConversation.execute(accountId);
   }
 
   async execute(accountId: string): Promise<IFlowResult> {
-    const user = await this.getUser(accountId);
+    const user = (await this.getUser(accountId)) || '';
     return {response: this.showMenu(user), step: 2};
   }
 }
