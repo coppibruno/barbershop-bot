@@ -1,6 +1,9 @@
 import {FlowContext} from '../flow.context';
 import {FindConversationsService} from './find-conversation.service';
 
+/**
+ * Busca o nome do usuário
+ */
 export class GetUserNameConversation {
   private readonly findConversationService: FindConversationsService;
 

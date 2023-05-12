@@ -1,7 +1,6 @@
-import 'dotenv/config';
 import {
   StepFindAvaliableDateFlow,
-  StepGetDateAppointmentFlow,
+  StepGetDateAndReplyAppointmentFlow,
   StepResponseByOptionMenuFlow,
   StepShowMenuFlow,
   StepWelcomeFlow,
@@ -12,6 +11,9 @@ import {GetStepConversation} from './get-step-conversation.service';
 type IResponseByAccount = {
   [key: number]: string;
 };
+/**
+ * Retorna o resultado do serviço executado
+ */
 export class GetResponseByAccountService {
   constructor(
     private readonly getStepConversation: GetStepConversation,
@@ -19,7 +21,7 @@ export class GetResponseByAccountService {
     private readonly stepShowMenuFlow: StepShowMenuFlow,
     private readonly stepResponseByOptionMenuFlow: StepResponseByOptionMenuFlow,
     private readonly stepFindAvaliableDateFlow: StepFindAvaliableDateFlow,
-    private readonly stepGetDateAppointmentFlow: StepGetDateAppointmentFlow,
+    private readonly stepGetDateAndReplyAppointmentFlow: StepGetDateAndReplyAppointmentFlow,
   ) {}
 
   async handleStep(accountId: string, step: number) {
@@ -32,7 +34,7 @@ export class GetResponseByAccountService {
     } else if (step === 4) {
       return this.stepFindAvaliableDateFlow.execute(accountId);
     } else if (step === 5) {
-      return this.stepGetDateAppointmentFlow.execute(accountId);
+      return this.stepGetDateAndReplyAppointmentFlow.execute(accountId);
     } else {
       return {response: 'method not implemented', step: 999};
     }

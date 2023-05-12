@@ -1,12 +1,11 @@
 import {PrismaClient, Conversations} from '@prisma/client';
-import {ConversationEntity} from '../entity/conversationEntity';
+import {ConversationEntity} from '../entity/conversation.entity';
 import {OptionsQuery, IRepository} from '../interfaces';
-import 'dotenv/config';
-const BOT_NUMBER = process.env.BOT_NUMBER;
+import {FlowContext} from '../flow.context';
 
 const prisma = new PrismaClient();
 
-export default class ConversationRepository implements IRepository {
+export class ConversationRepository implements IRepository {
   async create(conversationEntity: ConversationEntity): Promise<Conversations> {
     return prisma.conversations.create({
       data: {
@@ -41,18 +40,14 @@ export default class ConversationRepository implements IRepository {
 
   async getGroupedByPhone() {
     return prisma.conversations.groupBy({
-      by: ['fromPhone', 'protocol', 'step'],
+      by: ['fromPhone', 'protocol'],
       where: {
         fromPhone: {
-          not: Number(BOT_NUMBER),
+          not: Number(FlowContext.BOT_NUMBER),
         },
-        state: 'IN_PROGRESS',
       },
       _max: {
         createdAt: true,
-      },
-      orderBy: {
-        step: 'desc',
       },
     });
   }

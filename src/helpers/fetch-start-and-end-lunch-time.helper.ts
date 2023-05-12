@@ -10,7 +10,7 @@ interface IResultLunchTime {
  * @param startTime hour/min: Exemplo: 12:00
  * @param endTime hour/min: Exemplo: 13:00
  */
-export const FetchStartAndEndLunchTime = (
+export const FetchStartAndEndLunchTimeHelper = (
   startTime: string,
   endTime: string,
 ): IResultLunchTime => {

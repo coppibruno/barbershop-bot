@@ -1,6 +1,9 @@
 import {Conversations} from '@prisma/client';
 import {FindConversationsService} from './find-conversation.service';
 
+/**
+ * Busca a ultima mensagem e retorna caso não tenha sido finalizada
+ */
 export class GetLastMessageInProgressConversationService {
   private readonly findConversationService: FindConversationsService;
 

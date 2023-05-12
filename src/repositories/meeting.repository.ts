@@ -1,9 +1,9 @@
 import {PrismaClient, Meetings} from '@prisma/client';
 import {OptionsQuery, IRepository} from '../interfaces';
-import {MeetingEntity} from '../entity/meetingEntity';
+import {MeetingEntity} from '../entity/meeting.entity';
 const prisma = new PrismaClient();
 
-export default class MeetingRepository implements IRepository {
+export class MeetingRepository implements IRepository {
   async create(meetingEntity: MeetingEntity): Promise<Meetings> {
     return prisma.meetings.create({
       data: {

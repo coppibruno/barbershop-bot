@@ -10,11 +10,11 @@ import {FindConversationsService} from '../find-conversation.service';
 import moment from 'moment-timezone';
 import {StepFindAvaliableDateFlow} from './step-04-find-avaliable-date.service';
 import {Meetings} from '@prisma/client';
-import MeetingRepository from '../../repositories/meetingRepository';
-import {MeetingEntity} from '../../entity/meetingEntity';
-import {FetchStartAndEndAppointmentTimeHelper} from '../../helpers/fetch-start-and-end-appointment-time';
-import {ValidateIfIsDezember} from '../../helpers/validate-if-is-dezember';
-import {PadStartDate} from '../../helpers/padStart';
+import {MeetingRepository} from '../../repositories/meeting.repository';
+import {MeetingEntity} from '../../entity/meeting.entity';
+import {FetchStartAndEndAppointmentTimeHelper} from '../../helpers/fetch-start-and-end-appointment-time.helper';
+import {ValidateIfIsDezemberHelper} from '../../helpers/validate-if-is-dezember.helper';
+import {PadStartDateHelper} from '../../helpers/pad-start.helper';
 interface AppointmentDate {
   startedDate: Date;
 }
@@ -30,7 +30,10 @@ interface IOptions {
   appointment: string;
 }
 
-export class StepGetDateAppointmentFlow {
+/**
+ * Etapa responsável por buscar horário selecionado, validar e retornar mensagem de sucesso caso seja.
+ */
+export class StepGetDateAndReplyAppointmentFlow {
   private readonly findConversationService: FindConversationsService;
   private readonly stepFindAvaliableDateFlow: StepFindAvaliableDateFlow;
   private readonly meetingRepository: MeetingRepository;
@@ -134,7 +137,7 @@ export class StepGetDateAppointmentFlow {
       }
 
       if (formattedOption === FlowContext.OPTION_RETRY_DATE_APPOINTMENT) {
-        if (ValidateIfIsDezember()) {
+        if (ValidateIfIsDezemberHelper()) {
           return RetryNewAppointmentDate.MAKE_APPOINTMENT_DEZEMBER;
         }
         return RetryNewAppointmentDate.MAKE_APPOINTMENT;
@@ -190,23 +193,23 @@ export class StepGetDateAppointmentFlow {
       result.response = appointment;
     } else {
       const {startedDate} = appointment;
-      const day = PadStartDate(moment(startedDate).date(), 2);
-      const month = PadStartDate(moment(startedDate).month() + 1, 2);
+      const day = PadStartDateHelper(moment(startedDate).date(), 2);
+      const month = PadStartDateHelper(moment(startedDate).month() + 1, 2);
       const year = moment(startedDate).year();
 
-      const startedAppointmentHours = PadStartDate(
+      const startedAppointmentHours = PadStartDateHelper(
         moment(startedDate).clone().hours(),
         2,
       );
 
-      const startedAppointmentMinutes = PadStartDate(
+      const startedAppointmentMinutes = PadStartDateHelper(
         moment(startedDate).clone().minutes(),
         2,
       );
 
       let date = `${day}/${month}`;
 
-      if (ValidateIfIsDezember()) {
+      if (ValidateIfIsDezemberHelper()) {
         date += `/${year}`;
       }
 

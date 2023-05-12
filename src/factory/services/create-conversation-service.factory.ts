@@ -1,8 +1,9 @@
-import ConversationRepository from '../../repositories/conversationRepository';
+import {ConversationRepository} from '../../repositories/conversation.repository';
 import {CreateConversationService} from '../../services/create-conversation.service';
 
-export const CreateConversationServiceFactory = () => {
-  const conversationRepository = new ConversationRepository();
+export const CreateConversationServiceFactory =
+  (): CreateConversationService => {
+    const conversationRepository = new ConversationRepository();
 
-  return new CreateConversationService(conversationRepository);
-};
+    return new CreateConversationService(conversationRepository);
+  };

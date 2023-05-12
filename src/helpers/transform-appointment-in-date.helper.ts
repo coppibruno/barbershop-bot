@@ -1,5 +1,5 @@
 import moment, {Moment} from 'moment';
-import {ValidateIfIsDezember} from './validate-if-is-dezember';
+import {ValidateIfIsDezemberHelper} from './validate-if-is-dezember.helper';
 import {InvalidDateError} from '../errors';
 
 const TransformAppointmentInDateHelperDezember = (dayMonthYear: string) => {
@@ -14,13 +14,18 @@ const TransformAppointmentInDateHelperDezember = (dayMonthYear: string) => {
   return date;
 };
 
+/**
+ * Função que recebe o dia e mês e retorna um objeto de data
+ * @param dayMonth dia/mes - dia e mes no formato DD/MM
+ * @returns object moment de data
+ */
 export const TransformAppointmentInDateHelper = (
   dayMonth: string,
 ):
   | Moment
   | InvalidDateError.INVALID_DATE
   | InvalidDateError.INVALID_DATE_DEZEMBER => {
-  if (ValidateIfIsDezember()) {
+  if (ValidateIfIsDezemberHelper()) {
     return TransformAppointmentInDateHelperDezember(dayMonth);
   }
   let date;

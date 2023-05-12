@@ -1,4 +1,4 @@
-import {ConversationEntity} from '../../entity/conversationEntity';
+import {ConversationEntity} from '../../entity/conversation.entity';
 import {IConversationTwilio} from '../../interfaces/external';
 
 /**

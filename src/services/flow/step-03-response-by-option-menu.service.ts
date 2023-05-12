@@ -2,8 +2,13 @@ import {FlowContext} from '../../flow.context';
 import {IFlowResult} from '../../interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
 import {InvalidMenuOptionError} from '../../errors/invalid-menu-option.enum';
-import {ValidateIfIsDezember} from '../../helpers/validate-if-is-dezember';
-
+import {ValidateIfIsDezemberHelper} from '../../helpers/validate-if-is-dezember.helper';
+/**
+ * Etapa responsável por processar a opção digitada no menu e responder conforme opção escolhida
+ * 1- Agendar horário
+ * 2- Renomear nome de identificação
+ * 0- Encerrar atendimento
+ */
 export class StepResponseByOptionMenuFlow {
   private readonly findConversationService: FindConversationsService;
   private readonly stepCompleted: number = 3;
@@ -30,7 +35,7 @@ export class StepResponseByOptionMenuFlow {
 
     const menu = menuSelected - 1;
 
-    const isDezember = ValidateIfIsDezember();
+    const isDezember = ValidateIfIsDezemberHelper();
     let messageToMakeAppointment = this.messageToMakeAppointment;
     if (isDezember) {
       messageToMakeAppointment = this.messageToMakeAppointmentDezember;

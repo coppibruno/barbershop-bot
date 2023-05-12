@@ -1,8 +1,8 @@
 import {TwilioConnect} from './connect';
-import 'dotenv/config';
-import {ConversationEntity} from '../../entity/conversationEntity';
+import {ConversationEntity} from '../../entity/conversation.entity';
+import {FlowContext} from '../../flow.context';
 
-const BOT_NUMBER = process.env.BOT_NUMBER;
+const BOT_NUMBER = Number(FlowContext.BOT_NUMBER);
 /**
  * Classe responsável por enviar mensagem
  */

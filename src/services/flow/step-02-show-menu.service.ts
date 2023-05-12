@@ -1,7 +1,9 @@
 import {FlowContext} from '../../flow.context';
 import {IFlowResult} from '../../interfaces/flow';
 import {GetUserNameConversation} from '../get-user-name.service';
-
+/**
+ * Etapa responsável por mostrar o menu de opções ao usuário
+ */
 export class StepShowMenuFlow {
   private readonly getUserNameConversation: GetUserNameConversation;
 

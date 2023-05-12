@@ -1,5 +1,5 @@
 import {InvalidDateError} from '../errors';
-import {TransformAppointmentInDateHelper} from './transform-appointment-in-date';
+import {TransformAppointmentInDateHelper} from './transform-appointment-in-date.helper';
 
 interface IStartAndEndDate {
   startDate: Date;

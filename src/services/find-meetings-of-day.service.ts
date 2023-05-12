@@ -1,11 +1,14 @@
 import {Meetings} from '@prisma/client';
-import MeetingRepository from '../repositories/meetingRepository';
+import {MeetingRepository} from '../repositories/meeting.repository';
 import {Moment} from 'moment-timezone';
-import {FetchStartAndEndAppointmentTimeHelper} from '../helpers/fetch-start-and-end-appointment-time';
+import {FetchStartAndEndAppointmentTimeHelper} from '../helpers/fetch-start-and-end-appointment-time.helper';
 import {FlowContext} from '../flow.context';
 import {InvalidDateError} from '../errors';
-import {ValidateIfIsDezember} from '../helpers/validate-if-is-dezember';
+import {ValidateIfIsDezemberHelper} from '../helpers/validate-if-is-dezember.helper';
 
+/**
+ * Busca uma lista de agendamentos do dia passado por parâmetro
+ */
 export class FindMeetingsOfDayService {
   private readonly serviceRepository;
 
@@ -24,7 +27,7 @@ export class FindMeetingsOfDayService {
 
     let dayMonth = `${day}/${month}`;
 
-    if (ValidateIfIsDezember()) {
+    if (ValidateIfIsDezemberHelper()) {
       dayMonth += `/${year}`;
     }
 

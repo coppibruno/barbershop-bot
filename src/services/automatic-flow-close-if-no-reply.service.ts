@@ -1,11 +1,13 @@
-import ConversationRepository from '../repositories/conversationRepository';
+import {ConversationRepository} from '../repositories/conversation.repository';
 import moment from 'moment-timezone';
 import {CreateConversationService} from './create-conversation.service';
 import {SendMessageWhatsappService} from './send-message.service';
-import {ConversationEntity} from '../entity/conversationEntity';
+import {ConversationEntity} from '../entity/conversation.entity';
 import {FindConversationsService} from './find-conversation.service';
 import {FlowContext} from '../flow.context';
-
+/**
+ * Envia uma mensagem automática para o usuário caso o mesmo fique ocioso, o atendimento será encerrado.
+ */
 export class AutomaticFlowCloseIfNoReplyService {
   private readonly serviceRepository;
   private readonly createConversationService: CreateConversationService;
@@ -30,6 +32,7 @@ export class AutomaticFlowCloseIfNoReplyService {
     for (const chat of chats) {
       const createdAt: Date | null = chat._max.createdAt;
       const fromPhone: number = chat.fromPhone;
+      const protocol: number = chat.protocol;
 
       const lastIterationDate = moment(createdAt);
       const now = moment(new Date());
@@ -41,6 +44,10 @@ export class AutomaticFlowCloseIfNoReplyService {
         const client = await this.findConversationsService.findOne({
           where: {
             fromPhone: fromPhone,
+            protocol: protocol,
+          },
+          orderBy: {
+            createdAt: 'desc',
           },
         });
         if (client && client.state !== 'FINISHED') {

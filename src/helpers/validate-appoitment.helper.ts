@@ -1,6 +1,6 @@
 import moment from 'moment';
 import {InvalidDateError} from '../errors';
-import {ValidateIfIsDezember} from './validate-if-is-dezember';
+import {ValidateIfIsDezemberHelper} from './validate-if-is-dezember.helper';
 
 type IResponse =
   | InvalidDateError.INVALID_DATE
@@ -30,8 +30,13 @@ const AppointmentIsValidHelperDezember = (dayMonthYear: string): IResponse => {
   return true;
 };
 
+/**
+ * Função que recebe um dia/mês e valida se o formato é esperado pela aplicação
+ * @param dayMonth dia/mês nesse formato DD/MM
+ * @returns Retorna Erro ou bool true
+ */
 export const AppointmentIsValidHelper = (dayMonth: string): IResponse => {
-  if (ValidateIfIsDezember()) {
+  if (ValidateIfIsDezemberHelper()) {
     return AppointmentIsValidHelperDezember(dayMonth);
   }
 

@@ -1,6 +1,8 @@
-import {ConversationEntity} from '../entity/conversationEntity';
+import {ConversationEntity} from '../entity/conversation.entity';
 import {TwilioSendWhatsappMessage} from '../external/twilio/send-new-message';
-
+/**
+ * Envia uma mensagem whatsapp pelo twilio
+ */
 export class SendMessageWhatsappService {
   private readonly serviceSenderMessage;
 

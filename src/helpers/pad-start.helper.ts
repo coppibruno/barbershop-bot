@@ -3,7 +3,7 @@
  * @param value data 1
  * @param padStar número de casas. Ex: 2.
  */
-export const PadStartDate = (
+export const PadStartDateHelper = (
   value: string | number,
   padStart: number,
 ): string => {

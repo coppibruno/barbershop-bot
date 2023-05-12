@@ -1,7 +1,8 @@
+import {FlowContext} from '../flow.context';
 import {FindConversationsService} from './find-conversation.service';
-import 'dotenv/config';
-const BOT_NUMBER = process.env.BOT_NUMBER;
-
+/**
+ * Busca a etapa atual do atendimento
+ */
 export class GetStepConversation {
   private readonly findConversationService: FindConversationsService;
 
@@ -12,7 +13,7 @@ export class GetStepConversation {
     const conversation = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
-        fromPhone: Number(BOT_NUMBER),
+        fromPhone: Number(FlowContext.BOT_NUMBER),
       },
       orderBy: {
         createdAt: 'desc',

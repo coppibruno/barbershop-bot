@@ -1,6 +1,6 @@
 import {
   AppointmentIsValidHelper,
-  FetchStartAndEndLunchTime,
+  FetchStartAndEndLunchTimeHelper,
   TransformAppointmentInDateHelper,
 } from '../../helpers';
 import {InvalidDateError} from '../../errors';
@@ -10,13 +10,16 @@ import {FlowContext} from '../../flow.context';
 import moment, {Moment} from 'moment-timezone';
 import {FindMeetingsOfDayService} from '../find-meetings-of-day.service';
 import {Meetings} from '@prisma/client';
-import {PadStartDate} from '../../helpers/padStart';
+import {PadStartDateHelper} from '../../helpers/pad-start.helper';
 
 interface IOptionsAppointment {
   options: string[];
   response: string;
 }
 
+/**
+ * Etapa responsável por buscar horários disponiveis no dia escolhido pelo usuário
+ */
 export class StepFindAvaliableDateFlow {
   private readonly findConversationService: FindConversationsService;
   private readonly findMeetingsOfDayService: FindMeetingsOfDayService;
@@ -103,7 +106,7 @@ export class StepFindAvaliableDateFlow {
     if (!this.startLunchTimeOff && !this.endLunchTimeOff) {
       return false;
     }
-    const {start, end} = FetchStartAndEndLunchTime(
+    const {start, end} = FetchStartAndEndLunchTimeHelper(
       String(this.startLunchTimeOff),
       String(this.endLunchTimeOff),
     );
@@ -157,17 +160,23 @@ export class StepFindAvaliableDateFlow {
     do {
       const currentStartAppointment = currentAppointment.clone();
 
-      const hourStartTime = PadStartDate(currentStartAppointment.hours(), 2);
+      const hourStartTime = PadStartDateHelper(
+        currentStartAppointment.hours(),
+        2,
+      );
 
-      const minStartTime = PadStartDate(currentStartAppointment.minutes(), 2);
+      const minStartTime = PadStartDateHelper(
+        currentStartAppointment.minutes(),
+        2,
+      );
 
       const currentEndAppointment = currentAppointment
         .add(this.appointmentTimeInMinutes, 'minutes')
         .clone();
 
-      const hourEndTime = PadStartDate(currentEndAppointment.hours(), 2);
+      const hourEndTime = PadStartDateHelper(currentEndAppointment.hours(), 2);
 
-      const minEndTime = PadStartDate(currentEndAppointment.minutes(), 2);
+      const minEndTime = PadStartDateHelper(currentEndAppointment.minutes(), 2);
 
       const isLunchTime = this.validateIfAppointmentIsLunchTime(
         currentStartAppointment,

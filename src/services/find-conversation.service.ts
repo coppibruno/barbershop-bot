@@ -1,12 +1,10 @@
 import {OptionsQuery} from '../interfaces/repositories';
-import ConversationRepository from '../repositories/conversationRepository';
+import {ConversationRepository} from '../repositories/conversation.repository';
 import {Conversations} from '@prisma/client';
 
-type Options = {
-  where?: Partial<Conversations>;
-  orderBy?: any;
-};
-
+/**
+ * Busca uma ou várias Conversations no banco
+ */
 export class FindConversationsService {
   private readonly serviceRepository;
 

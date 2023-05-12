@@ -1,16 +1,21 @@
-import {ConversationEntity} from '../entity/conversationEntity';
+import {ConversationEntity} from '../entity/conversation.entity';
+
 import {GetConversationTwilio} from '../external/twilio/get-conversation';
+
 import {FlowContext} from '../flow.context';
+
 import {IConversationTwilio} from '../interfaces/external';
+
+//services
 import {CreateConversationService} from './create-conversation.service';
-import {FindConversationsService} from './find-conversation.service';
 import {GetLastMessageInProgressConversationService} from './get-last-message-in-progress.service';
 import {GetResponseByAccountService} from './get-response-by-account.service';
 import {GetUserNameConversation} from './get-user-name.service';
 import {SendMessageWhatsappService} from './send-message.service';
-import 'dotenv/config';
-const BOT_NUMBER = process.env.BOT_NUMBER;
 
+/**
+ * Responsável pelo fluxo de receber mensagem do usuário, persistir, processar e buscar dados, retornar a mensagem do assistênte virtual
+ */
 export class FlowConversationService {
   private readonly getConversationTwilio;
   private readonly createConversationService;
@@ -64,7 +69,7 @@ export class FlowConversationService {
     );
 
     const botAnswer: ConversationEntity = {
-      fromPhone: Number(BOT_NUMBER),
+      fromPhone: Number(FlowContext.BOT_NUMBER),
       toPhone: senderConversationEntity.fromPhone,
       body: response,
       accountId: senderConversationEntity.accountId,

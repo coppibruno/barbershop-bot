@@ -1,6 +1,8 @@
-import {ConversationEntity} from '../entity/conversationEntity';
-import ConversationRepository from '../repositories/conversationRepository';
-
+import {ConversationEntity} from '../entity/conversation.entity';
+import {ConversationRepository} from '../repositories/conversation.repository';
+/**
+ * Responsável persistir uma entidade de conversations
+ */
 export class CreateConversationService {
   private readonly serviceRepository;
 
