@@ -1,8 +1,9 @@
-import moment, {Moment} from 'moment-timezone';
+import moment, {Moment} from 'moment';
+import {IncorrectParamIsProvided} from '../errors';
 
 interface IResultLunchTime {
-  start: Moment;
-  end: Moment;
+  start?: Moment;
+  end?: Moment;
 }
 
 /**
@@ -13,9 +14,13 @@ interface IResultLunchTime {
 export const FetchStartAndEndLunchTimeHelper = (
   startTime: string,
   endTime: string,
-): IResultLunchTime => {
+): IResultLunchTime | IncorrectParamIsProvided => {
   const start = startTime.split(':');
   const end = endTime.split(':');
+
+  if (start.length !== 2 || end.length !== 2) {
+    return new IncorrectParamIsProvided();
+  }
 
   const startHour = Number(start[0]);
   const startMin = Number(start[1]);

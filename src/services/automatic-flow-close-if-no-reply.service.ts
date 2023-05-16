@@ -1,5 +1,5 @@
 import {ConversationRepository} from '../repositories/conversation.repository';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import {CreateConversationService} from './create-conversation.service';
 import {SendMessageWhatsappService} from './send-message.service';
 import {ConversationEntity} from '../entity/conversation.entity';

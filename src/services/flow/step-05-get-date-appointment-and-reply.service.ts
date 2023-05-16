@@ -7,7 +7,7 @@ import {InvalidMenuOptionError} from '../../errors/invalid-menu-option.enum';
 import {FlowContext} from '../../flow.context';
 import {IFlowResult} from '../../interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import {StepFindAvaliableDateFlow} from './step-04-find-avaliable-date.service';
 import {Meetings} from '@prisma/client';
 import {MeetingRepository} from '../../repositories/meeting.repository';

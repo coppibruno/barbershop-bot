@@ -7,7 +7,7 @@ import {InvalidDateError} from '../../errors';
 import {IAppointmentsResult, IFlowResult} from '../../interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
 import {FlowContext} from '../../flow.context';
-import moment, {Moment} from 'moment-timezone';
+import moment, {Moment} from 'moment';
 import {FindMeetingsOfDayService} from '../find-meetings-of-day.service';
 import {Meetings} from '@prisma/client';
 import {PadStartDateHelper} from '../../helpers/pad-start.helper';

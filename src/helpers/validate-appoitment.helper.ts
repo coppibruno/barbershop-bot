@@ -1,6 +1,7 @@
-import moment from 'moment';
+import moment, {Moment} from 'moment';
 import {InvalidDateError} from '../errors';
 import {ValidateIfIsDezemberHelper} from './validate-if-is-dezember.helper';
+import {PadStartDateHelper} from './pad-start.helper';
 
 type IResponse =
   | InvalidDateError.INVALID_DATE
@@ -9,25 +10,33 @@ type IResponse =
   | InvalidDateError.SUNDAY_DATE_DEZEMBER
   | true;
 
-const AppointmentIsValidHelperDezember = (dayMonthYear: string): IResponse => {
-  let date;
-  try {
-    date = moment(dayMonthYear, 'DD/MM/YYYY').hours(23).minutes(59).seconds(59);
-  } catch (error) {
-    console.error(error);
-    return InvalidDateError.INVALID_DATE_DEZEMBER;
-  }
+export const isDezember = () => !!ValidateIfIsDezemberHelper();
 
-  if (date.isBefore()) {
-    return InvalidDateError.INVALID_DATE_DEZEMBER;
-  }
+export const getMoment = (dayMonthYear: string) => {
+  const date = moment(dayMonthYear, 'DD/MM/YYYY')
+    .hours(23)
+    .minutes(59)
+    .seconds(59);
+  return date;
+};
 
-  //Sunday
-  if (date.isoWeekday() === 7) {
-    return InvalidDateError.SUNDAY_DATE_DEZEMBER;
-  }
+export const isSunday = (date: Moment) => {
+  return date.isoWeekday() === 7;
+};
+export const isBefore = (date: Moment) => {
+  return date.isBefore();
+};
 
-  return true;
+export const INVALID_DATE = () => {
+  return isDezember() === true
+    ? InvalidDateError.INVALID_DATE_DEZEMBER
+    : InvalidDateError.INVALID_DATE;
+};
+
+export const INVALID_SUNDAY = () => {
+  return isDezember() === true
+    ? InvalidDateError.SUNDAY_DATE_DEZEMBER
+    : InvalidDateError.SUNDAY_DATE;
 };
 
 /**
@@ -36,26 +45,30 @@ const AppointmentIsValidHelperDezember = (dayMonthYear: string): IResponse => {
  * @returns Retorna Erro ou bool true
  */
 export const AppointmentIsValidHelper = (dayMonth: string): IResponse => {
-  if (ValidateIfIsDezemberHelper()) {
-    return AppointmentIsValidHelperDezember(dayMonth);
-  }
+  const [day, month] = dayMonth.split('/');
+  const newDay = PadStartDateHelper(day, 2);
+  const newMonth = PadStartDateHelper(month, 2);
+
+  dayMonth = `${newDay}/${newMonth}`;
 
   let date;
   try {
-    const fullDate = `${dayMonth}/${new Date().getFullYear()}`;
-    date = moment(fullDate, 'DD/MM/YYYY').hours(23).minutes(59).seconds(59);
+    if (!isDezember()) {
+      dayMonth += `/${new Date().getFullYear()}`;
+    }
+
+    date = getMoment(dayMonth);
   } catch (error) {
-    console.error(error);
-    return InvalidDateError.INVALID_DATE;
+    return INVALID_DATE();
   }
 
-  if (date.isBefore()) {
-    return InvalidDateError.INVALID_DATE;
+  if (isBefore(date)) {
+    return INVALID_DATE();
   }
 
   //Sunday
-  if (date.isoWeekday() === 7) {
-    return InvalidDateError.SUNDAY_DATE;
+  if (isSunday(date)) {
+    return INVALID_SUNDAY();
   }
 
   return true;

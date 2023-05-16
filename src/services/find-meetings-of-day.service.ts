@@ -1,6 +1,6 @@
 import {Meetings} from '@prisma/client';
 import {MeetingRepository} from '../repositories/meeting.repository';
-import {Moment} from 'moment-timezone';
+import {Moment} from 'moment';
 import {FetchStartAndEndAppointmentTimeHelper} from '../helpers/fetch-start-and-end-appointment-time.helper';
 import {FlowContext} from '../flow.context';
 import {InvalidDateError} from '../errors';

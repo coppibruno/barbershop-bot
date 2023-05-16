@@ -2,16 +2,14 @@ import moment, {Moment} from 'moment';
 import {ValidateIfIsDezemberHelper} from './validate-if-is-dezember.helper';
 import {InvalidDateError} from '../errors';
 
-const TransformAppointmentInDateHelperDezember = (dayMonthYear: string) => {
-  let date;
-  try {
-    date = moment(dayMonthYear, 'DD/MM/YYYY');
-  } catch (error) {
-    console.log(error);
-    return InvalidDateError.INVALID_DATE_DEZEMBER;
-  }
+export const getMoment = (dayMonth: string) => moment(dayMonth, 'DD/MM/YYYY');
 
-  return date;
+export const isDezember = () => !!ValidateIfIsDezemberHelper();
+
+export const INVALID_DATE = () => {
+  return isDezember()
+    ? InvalidDateError.INVALID_DATE_DEZEMBER
+    : InvalidDateError.INVALID_DATE;
 };
 
 /**
@@ -25,16 +23,16 @@ export const TransformAppointmentInDateHelper = (
   | Moment
   | InvalidDateError.INVALID_DATE
   | InvalidDateError.INVALID_DATE_DEZEMBER => {
-  if (ValidateIfIsDezemberHelper()) {
-    return TransformAppointmentInDateHelperDezember(dayMonth);
-  }
   let date;
-  try {
-    date = moment(dayMonth, 'DD/MM/YYYY');
-  } catch (error) {
-    console.log(error);
-    return InvalidDateError.INVALID_DATE;
+
+  if (!isDezember()) {
+    dayMonth += `/${new Date().getFullYear()}`;
   }
 
+  try {
+    date = getMoment(dayMonth);
+  } catch (error) {
+    return INVALID_DATE();
+  }
   return date;
 };
