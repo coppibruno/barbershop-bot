@@ -3,6 +3,23 @@ import {IFlowResult} from '../../interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
 import {InvalidMenuOptionError} from '../../errors/invalid-menu-option.enum';
 import {ValidateIfIsDezemberHelper} from '../../helpers/validate-if-is-dezember.helper';
+import {DefaultError} from '../../errors';
+
+const isDezember = () => ValidateIfIsDezemberHelper();
+
+enum OptionsMenuEnum {
+  CLOSE_SERVICE = 0,
+  MAKE_APPOINTMENT = 1,
+  RENAME_USER = 2,
+}
+
+enum ResponseOptionEnum {
+  MAKE_APPOINTMENT = 'MAKE_APPOINTMENT',
+  RENAME_USER = 'RENAME_USER',
+  CLOSE_SERVICE = 'CLOSE_SERVICE',
+  INVALID_OPTION = 'INVALID_OPTION',
+}
+
 /**
  * Etapa responsável por processar a opção digitada no menu e responder conforme opção escolhida
  * 1- Agendar horário
@@ -11,46 +28,43 @@ import {ValidateIfIsDezemberHelper} from '../../helpers/validate-if-is-dezember.
  */
 export class StepResponseByOptionMenuFlow {
   private readonly findConversationService: FindConversationsService;
-  private readonly stepCompleted: number = 3;
-  private readonly incompleteStep: number = 2;
-  private readonly stepRenameUser: number = 1;
+  public readonly stepCompleted: number = 3;
+  public readonly incompleteStep: number = 2;
+  public readonly stepRenameUser: number = 1;
 
-  private readonly messageToMakeAppointment = FlowContext.MAKE_APPOINTMENT;
-  private readonly messageToMakeAppointmentDezember =
-    FlowContext.MAKE_APPOINTMENT_DEZEMBER;
-  private readonly messageToRenameUser = FlowContext.RENAME_USER;
-  private readonly messageToGoodBye = FlowContext.GOODBYE;
+  public readonly messageToMakeAppointment = isDezember()
+    ? FlowContext.MAKE_APPOINTMENT_DEZEMBER
+    : FlowContext.MAKE_APPOINTMENT;
+  public readonly messageToRenameUser = FlowContext.RENAME_USER;
+  public readonly messageToGoodBye = FlowContext.GOODBYE;
+
+  public readonly menu = FlowContext.MENU_2;
 
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
   }
 
-  showTextByMenu(menuSelected: number): string {
-    type IResponseByAccount = {
-      [key: number]: string;
-    };
-    if (menuSelected === 0) {
-      return this.messageToGoodBye;
+  replyByMenu(option: number): ResponseOptionEnum {
+    const options = this.menu;
+
+    const optionSelected = options.find((menu) => menu.option === option);
+
+    if (!optionSelected) {
+      return ResponseOptionEnum.INVALID_OPTION;
     }
 
-    const menu = menuSelected - 1;
-
-    const isDezember = ValidateIfIsDezemberHelper();
-    let messageToMakeAppointment = this.messageToMakeAppointment;
-    if (isDezember) {
-      messageToMakeAppointment = this.messageToMakeAppointmentDezember;
+    if (optionSelected.option === OptionsMenuEnum.CLOSE_SERVICE) {
+      return ResponseOptionEnum.CLOSE_SERVICE;
+    } else if (optionSelected.option === OptionsMenuEnum.MAKE_APPOINTMENT) {
+      return ResponseOptionEnum.MAKE_APPOINTMENT;
+    } else if (optionSelected.option === OptionsMenuEnum.RENAME_USER) {
+      return ResponseOptionEnum.RENAME_USER;
     }
 
-    const options: IResponseByAccount = {
-      0: messageToMakeAppointment,
-      1: this.messageToRenameUser,
-    };
-    return options[menu];
+    throw new Error('Option not implemented');
   }
 
-  async getOptionMenu(
-    accountId: string,
-  ): Promise<number | InvalidMenuOptionError.INVALID_MENU_OPTION> {
+  async getOptionMenu(accountId: string): Promise<number> {
     const result = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
@@ -65,36 +79,49 @@ export class StepResponseByOptionMenuFlow {
       throw new Error('Flow Error get day month');
     }
 
-    const menu = Number(result.body);
-
-    const options = FlowContext.getIndexMenu();
-    if (options.includes(menu)) {
-      return Number(menu);
-    }
-    return InvalidMenuOptionError.INVALID_MENU_OPTION;
+    return Number(result.body);
   }
 
   async execute(accountId: string): Promise<IFlowResult> {
-    const menuSelected = await this.getOptionMenu(accountId);
-    if (menuSelected === InvalidMenuOptionError.INVALID_MENU_OPTION) {
+    const defaultResult = {
+      response: DefaultError.TRY_AGAIN,
+      step: this.incompleteStep,
+    };
+
+    try {
+      const selected = await this.getOptionMenu(accountId);
+
+      const result = this.replyByMenu(selected);
+
+      let step: number = 0;
+      let response;
+      if (result === ResponseOptionEnum.MAKE_APPOINTMENT) {
+        response = this.messageToMakeAppointment;
+        step = this.stepCompleted;
+      } else if (result === ResponseOptionEnum.RENAME_USER) {
+        response = this.messageToRenameUser;
+        step = this.stepRenameUser;
+      } else if (result === ResponseOptionEnum.CLOSE_SERVICE) {
+        response = this.messageToGoodBye;
+        step = this.incompleteStep;
+      } else if (result === ResponseOptionEnum.INVALID_OPTION) {
+        response = InvalidMenuOptionError.INVALID_MENU_OPTION;
+        step = this.incompleteStep;
+      } else {
+        response = defaultResult.response;
+        step = defaultResult.step;
+      }
+
       return {
-        response: InvalidMenuOptionError.INVALID_MENU_OPTION,
-        step: this.incompleteStep,
+        response,
+        step,
+      };
+    } catch (error) {
+      console.error(error);
+      return {
+        response: defaultResult.response,
+        step: defaultResult.step,
       };
     }
-    const menuText = this.showTextByMenu(menuSelected);
-    let step: number = 0; //criar ENUM para identificar qual será o proximo passo
-    if (
-      menuText === this.messageToMakeAppointment ||
-      menuText === this.messageToMakeAppointmentDezember
-    ) {
-      step = this.stepCompleted;
-    } else if (menuText === this.messageToRenameUser) {
-      step = this.stepRenameUser;
-    }
-    return {
-      response: menuText,
-      step,
-    };
   }
 }

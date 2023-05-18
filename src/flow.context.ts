@@ -16,6 +16,11 @@ export class FlowContext {
     '2- Trocar nome de identificação',
     '0- Encerrar atendimento',
   ];
+  public static readonly MENU_2 = [
+    {option: 0, label: 'Encerrar atendimento'},
+    {option: 1, label: 'Agendar horário'},
+    {option: 2, label: 'Trocar nome de identificação'},
+  ];
   public static readonly MENU_LENGTH = this.MENU.length;
   public static readonly MAKE_APPOINTMENT: string =
     'Para agendar, digite o dia e mês. Exemplo: 01/02';

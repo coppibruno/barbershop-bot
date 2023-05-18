@@ -27,8 +27,7 @@ export const FetchStartAndEndAppointmentTimeHelper = (
 ):
   | IStartAndEndDate
   | InvalidDateError.INVALID_DATE
-  | InvalidDateError.INVALID_DATE_DEZEMBER
-  | IncorrectParamIsProvided => {
+  | InvalidDateError.INVALID_DATE_DEZEMBER => {
   const startDate = TransformAppointmentInDateHelper(dayMonth);
 
   if (
@@ -41,7 +40,7 @@ export const FetchStartAndEndAppointmentTimeHelper = (
   const appointmentSplit = appointmentTime.split('-');
 
   if (!isValid(appointmentTime)) {
-    return new IncorrectParamIsProvided();
+    throw new IncorrectParamIsProvided();
   }
 
   const startAppointment = appointmentSplit[0];

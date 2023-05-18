@@ -1,6 +1,5 @@
 import {faker} from '@faker-js/faker';
 import * as TransformAppointmentInDateHelper from '../transform-appointment-in-date.helper';
-import {Moment} from 'moment';
 import {InvalidDateError} from '../../errors';
 const mockedTime = faker.date.future();
 const day = mockedTime.getDate();

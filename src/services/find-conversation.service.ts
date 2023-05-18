@@ -22,7 +22,7 @@ export class FindConversationsService {
 
   async findOne(
     options: OptionsQuery = {orderBy: {createdAt: 'desc'}},
-  ): Promise<Conversations | null> {
+  ): Promise<Conversations> {
     return this.serviceRepository.findOne({
       ...options,
     });

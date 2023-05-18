@@ -23,7 +23,7 @@ export class ConversationRepository implements IRepository {
     });
   }
 
-  async find(where: OptionsQuery) {
+  async find(where: OptionsQuery): Promise<Conversations[]> {
     return await prisma.conversations.findMany({
       ...where,
       orderBy: {
@@ -32,13 +32,13 @@ export class ConversationRepository implements IRepository {
     });
   }
 
-  async findOne(options: OptionsQuery): Promise<Conversations | null> {
+  async findOne(options: OptionsQuery): Promise<Conversations> {
     return await prisma.conversations.findFirst({
       ...options,
     });
   }
 
-  async getGroupedByPhone() {
+  async getGroupedByPhone(): Promise<any> {
     return prisma.conversations.groupBy({
       by: ['fromPhone', 'protocol'],
       where: {

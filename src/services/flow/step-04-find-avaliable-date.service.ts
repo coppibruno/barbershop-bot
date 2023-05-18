@@ -11,6 +11,23 @@ import moment, {Moment} from 'moment';
 import {FindMeetingsOfDayService} from '../find-meetings-of-day.service';
 import {Meetings} from '@prisma/client';
 import {PadStartDateHelper} from '../../helpers/pad-start.helper';
+import {isDezember} from '../../helpers/validate-appoitment.helper';
+
+export const isSaturday = (date) => date.isoWeekday() === 6;
+
+export const INVALID_DATE = ():
+  | InvalidDateError.INVALID_DATE_DEZEMBER
+  | InvalidDateError.INVALID_DATE => {
+  return isDezember() === true
+    ? InvalidDateError.INVALID_DATE_DEZEMBER
+    : InvalidDateError.INVALID_DATE;
+};
+
+export const INVALID_SUNDAY = () => {
+  return isDezember() === true
+    ? InvalidDateError.SUNDAY_DATE_DEZEMBER
+    : InvalidDateError.SUNDAY_DATE;
+};
 
 interface IOptionsAppointment {
   options: string[];
@@ -23,11 +40,11 @@ interface IOptionsAppointment {
 export class StepFindAvaliableDateFlow {
   private readonly findConversationService: FindConversationsService;
   private readonly findMeetingsOfDayService: FindMeetingsOfDayService;
-  private readonly stepCompleted: number = 4;
-  private readonly incompleteStep: number = 3;
+  public readonly stepCompleted: number = 4;
+  public readonly incompleteStep: number = 3;
 
-  private readonly startAppointmentDay = FlowContext.START_APPOINTMENT_DAY;
-  private readonly endAppointmentDay = FlowContext.END_APPOINTMENT_DAY;
+  public startAppointmentDay = FlowContext.START_APPOINTMENT_DAY;
+  public endAppointmentDay = FlowContext.END_APPOINTMENT_DAY;
   private readonly startSaturdayAppointmentDay =
     FlowContext.START_SATURDAY_APPOINTMENT_DAY;
   private readonly endSaturdayAppointmentDay =
@@ -47,7 +64,7 @@ export class StepFindAvaliableDateFlow {
     this.findMeetingsOfDayService = findMeetingsOfDayService;
   }
 
-  getStartAndEndDateFromAppointment(date: Moment): {
+  getMaxAndMinAppointmentFromDay(date: Moment): {
     startDate: Moment;
     endDate: Moment;
   } {
@@ -60,9 +77,9 @@ export class StepFindAvaliableDateFlow {
     let endHour = Number(endTime[0]);
     let endMin = Number(endTime[1]);
 
-    const isSaturday = date.isoWeekday() === 6;
+    const saturday = isSaturday(date);
 
-    if (isSaturday) {
+    if (saturday) {
       const startTime = this.startSaturdayAppointmentDay.split(':');
       const endTime = this.endSaturdayAppointmentDay.split(':');
 
@@ -134,14 +151,14 @@ export class StepFindAvaliableDateFlow {
     const dateAppointment = TransformAppointmentInDateHelper(dayMonth);
 
     if (
-      dateAppointment === InvalidDateError.INVALID_DATE ||
-      dateAppointment === InvalidDateError.INVALID_DATE_DEZEMBER
+      dateAppointment === InvalidDateError.INVALID_DATE_DEZEMBER ||
+      dateAppointment === InvalidDateError.INVALID_DATE
     ) {
       return [];
     }
 
     const {startDate, endDate} =
-      this.getStartAndEndDateFromAppointment(dateAppointment);
+      this.getMaxAndMinAppointmentFromDay(dateAppointment);
 
     /*
     9:00
@@ -233,7 +250,7 @@ export class StepFindAvaliableDateFlow {
           '',
         );
     } else {
-      response = `Para o dia ${dayMonth} não temos esses horários disponiveis. \n`;
+      response = `Para o dia ${dayMonth} não temos horários disponiveis. \n`;
     }
 
     response += `\n`;
@@ -268,21 +285,15 @@ export class StepFindAvaliableDateFlow {
 
   async execute(accountId: string): Promise<IFlowResult> {
     const appointment = await this.getDateAppointment(accountId);
-    if (
-      appointment === InvalidDateError.INVALID_DATE ||
-      appointment === InvalidDateError.INVALID_DATE_DEZEMBER
-    ) {
+    if (appointment === INVALID_DATE()) {
       return {
-        response: appointment,
+        response: INVALID_DATE(),
         step: this.incompleteStep,
       };
     }
-    if (
-      appointment === InvalidDateError.SUNDAY_DATE ||
-      appointment === InvalidDateError.SUNDAY_DATE_DEZEMBER
-    ) {
+    if (appointment === INVALID_SUNDAY()) {
       return {
-        response: appointment,
+        response: INVALID_SUNDAY(),
         step: this.incompleteStep,
       };
     }

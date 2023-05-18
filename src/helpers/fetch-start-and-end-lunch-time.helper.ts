@@ -14,12 +14,12 @@ interface IResultLunchTime {
 export const FetchStartAndEndLunchTimeHelper = (
   startTime: string,
   endTime: string,
-): IResultLunchTime | IncorrectParamIsProvided => {
+): IResultLunchTime => {
   const start = startTime.split(':');
   const end = endTime.split(':');
 
   if (start.length !== 2 || end.length !== 2) {
-    return new IncorrectParamIsProvided();
+    throw new IncorrectParamIsProvided();
   }
 
   const startHour = Number(start[0]);
