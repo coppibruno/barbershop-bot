@@ -10,7 +10,7 @@ export class MeetingRepositoryStub implements MeetingRepository {
   }
 
   async find(where: OptionsQuery) {
-    return Promise.resolve([fakeMeeting()]);
+    return Promise.resolve([fakeMeeting(), fakeMeeting()]);
   }
 
   async findOne(where: OptionsQuery) {

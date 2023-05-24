@@ -28,7 +28,7 @@ export class AutomaticFlowCloseIfNoReplyService {
 
   async execute() {
     const chats = await this.serviceRepository.getGroupedByPhone();
-    console.log(chats);
+
     for (const chat of chats) {
       const createdAt: Date | null = chat._max.createdAt;
       const fromPhone: number = chat.fromPhone;

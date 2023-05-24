@@ -13,6 +13,26 @@ import {Meetings} from '@prisma/client';
 import {PadStartDateHelper} from '../../helpers/pad-start.helper';
 import {isDezember} from '../../helpers/validate-appoitment.helper';
 
+export const isSameDate = (date1, date2) => date1.isSame(date2);
+
+export const isAfter = (date) => moment(date).isAfter();
+
+export const getDay = (date) => date.date();
+export const getMonth = (date) => date.getMonth() + 1;
+
+export const getHours = (date) => date.hours();
+export const getMins = (date) => date.minutes();
+
+export const getClone = (date) => date.clone();
+
+export const setDay = (date, day) => date.date(day);
+export const setMonth = (date, month) => date.month(month);
+export const addDate = (date, input, type) => date.add(input, type);
+
+export const setHours = (date, hour) => date.hours(hour);
+export const setMinutes = (date, min) => date.minutes(min);
+export const setSeconds = (date, sec) => date.seconds(sec);
+
 export const isSaturday = (date) => date.isoWeekday() === 6;
 
 export const INVALID_DATE = ():
@@ -38,22 +58,19 @@ interface IOptionsAppointment {
  * Etapa responsável por buscar horários disponiveis no dia escolhido pelo usuário
  */
 export class StepFindAvaliableDateFlow {
-  private readonly findConversationService: FindConversationsService;
-  private readonly findMeetingsOfDayService: FindMeetingsOfDayService;
+  public readonly findConversationService: FindConversationsService;
+  public readonly findMeetingsOfDayService: FindMeetingsOfDayService;
   public readonly stepCompleted: number = 4;
   public readonly incompleteStep: number = 3;
 
   public startAppointmentDay = FlowContext.START_APPOINTMENT_DAY;
   public endAppointmentDay = FlowContext.END_APPOINTMENT_DAY;
-  private readonly startSaturdayAppointmentDay =
+  public startSaturdayAppointmentDay =
     FlowContext.START_SATURDAY_APPOINTMENT_DAY;
-  private readonly endSaturdayAppointmentDay =
-    FlowContext.END_SATURDAY_APPOINTMENT_DAY;
-  private readonly startLunchTimeOff: string | boolean =
-    FlowContext.getStartLunchTime();
-  private readonly endLunchTimeOff: string | boolean =
-    FlowContext.getEndLunchTime();
-  private readonly appointmentTimeInMinutes =
+  public endSaturdayAppointmentDay = FlowContext.END_SATURDAY_APPOINTMENT_DAY;
+  public startLunchTimeOff: string | boolean = FlowContext.getStartLunchTime();
+  public endLunchTimeOff: string | boolean = FlowContext.getEndLunchTime();
+  public readonly appointmentTimeInMinutes =
     FlowContext.APPOINTMENT_TIME_IN_MINUTES;
 
   constructor(
@@ -62,6 +79,22 @@ export class StepFindAvaliableDateFlow {
   ) {
     this.findConversationService = findConversationService;
     this.findMeetingsOfDayService = findMeetingsOfDayService;
+  }
+
+  appointmentAlreadyUsed(meetsOfDay, startAppointment, endAppointment) {
+    return meetsOfDay.find((item) => {
+      return (
+        moment(startAppointment).seconds(1).isAfter(item.startDate) &&
+        moment(endAppointment).subtract(1, 'second').isBefore(item.endDate)
+      );
+    });
+  }
+
+  isOnLunchBreak({appointment, lunchStart, lunchEnd}) {
+    return (
+      moment(appointment).isAfter(lunchStart) &&
+      moment(appointment).isBefore(lunchEnd)
+    );
   }
 
   getMaxAndMinAppointmentFromDay(date: Moment): {
@@ -90,8 +123,16 @@ export class StepFindAvaliableDateFlow {
       endMin = Number(endTime[1]);
     }
 
-    const start = date.hours(startHour).minutes(startMin).seconds(0).clone();
-    const end = date.hours(endHour).minutes(endMin).seconds(0).clone();
+    const start = getClone(date);
+    const end = getClone(date);
+
+    setHours(start, startHour);
+    setMinutes(start, startMin);
+    setSeconds(start, 0);
+
+    setHours(end, endHour);
+    setMinutes(end, endMin);
+    setSeconds(end, 0);
 
     return {startDate: start, endDate: end};
   }
@@ -105,12 +146,11 @@ export class StepFindAvaliableDateFlow {
       return true;
     }
 
-    const meetExists = meetsOfDay.find((item) => {
-      return (
-        moment(startAppointment).seconds(1).isAfter(item.startDate) &&
-        moment(endAppointment).subtract(1, 'second').isBefore(item.endDate)
-      );
-    });
+    const meetExists = this.appointmentAlreadyUsed(
+      meetsOfDay,
+      startAppointment,
+      endAppointment,
+    );
 
     if (meetExists) {
       return false;
@@ -119,24 +159,25 @@ export class StepFindAvaliableDateFlow {
     return true;
   }
 
-  validateIfAppointmentIsLunchTime(appointmentStartDate: Moment): boolean {
+  validateIfAppointmentIsLunchTime(appointment: Moment): boolean {
     if (!this.startLunchTimeOff && !this.endLunchTimeOff) {
       return false;
     }
-    const {start, end} = FetchStartAndEndLunchTimeHelper(
+    const {start: lunchStart, end: lunchEnd} = FetchStartAndEndLunchTimeHelper(
       String(this.startLunchTimeOff),
       String(this.endLunchTimeOff),
     );
 
-    const day = appointmentStartDate.date();
-    const month = appointmentStartDate.month();
+    const day = getDay(appointment);
+    const month = getMonth(appointment);
 
-    start.date(day).month(month);
-    end.date(day).month(month);
-    if (
-      moment(appointmentStartDate).isAfter(start) &&
-      moment(appointmentStartDate).isBefore(end)
-    ) {
+    setDay(lunchStart, day);
+    setMonth(lunchStart, month);
+
+    setDay(lunchEnd, day);
+    setMonth(lunchEnd, month);
+
+    if (this.isOnLunchBreak({appointment, lunchStart, lunchEnd})) {
       return true;
     }
 
@@ -169,31 +210,34 @@ export class StepFindAvaliableDateFlow {
      |
     19:00
     */
-    let currentAppointment = startDate.clone();
+    let currentAppointment = getClone(startDate);
     let count: number = 0;
 
     const meetsOfDay = await this.findMeetingsOfDayService.execute(startDate);
 
     do {
-      const currentStartAppointment = currentAppointment.clone();
+      const currentStartAppointment = getClone(currentAppointment);
 
       const hourStartTime = PadStartDateHelper(
-        currentStartAppointment.hours(),
+        getHours(currentStartAppointment),
         2,
       );
 
       const minStartTime = PadStartDateHelper(
-        currentStartAppointment.minutes(),
+        getMins(currentStartAppointment),
         2,
       );
 
-      const currentEndAppointment = currentAppointment
-        .add(this.appointmentTimeInMinutes, 'minutes')
-        .clone();
+      const currentEndAppointment = getClone(
+        addDate(currentAppointment, this.appointmentTimeInMinutes, 'minutes'),
+      );
 
-      const hourEndTime = PadStartDateHelper(currentEndAppointment.hours(), 2);
+      const hourEndTime = PadStartDateHelper(
+        getHours(currentEndAppointment),
+        2,
+      );
 
-      const minEndTime = PadStartDateHelper(currentEndAppointment.minutes(), 2);
+      const minEndTime = PadStartDateHelper(getMins(currentEndAppointment), 2);
 
       const isLunchTime = this.validateIfAppointmentIsLunchTime(
         currentStartAppointment,
@@ -213,7 +257,7 @@ export class StepFindAvaliableDateFlow {
         continue;
       }
 
-      const isAfterNow = moment(currentStartAppointment).isAfter();
+      const isAfterNow = isAfter(currentStartAppointment);
 
       if (!isAfterNow) {
         continue;
@@ -226,7 +270,7 @@ export class StepFindAvaliableDateFlow {
         option: count,
         description: avaliableAppointment,
       });
-    } while (!currentAppointment.isSame(endDate));
+    } while (!isSameDate(currentAppointment, endDate));
 
     return avaliabledMeetings;
   }

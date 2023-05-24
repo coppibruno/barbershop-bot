@@ -1,13 +1,14 @@
 import {TwilioConnect} from './connect';
 import {ConversationEntity} from '../../entity/conversation.entity';
 import {FlowContext} from '../../flow.context';
+import {Twilio} from 'twilio';
 
 const BOT_NUMBER = Number(FlowContext.BOT_NUMBER);
 /**
  * Classe responsável por enviar mensagem
  */
 export class TwilioSendWhatsappMessage {
-  private connection = TwilioConnect.connect();
+  public connection: Twilio | null = TwilioConnect.connect();
 
   async sendMessage(conversationEntity: ConversationEntity): Promise<void> {
     const {body, toPhone} = conversationEntity;

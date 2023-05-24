@@ -10,7 +10,7 @@ export class ConversationRepositoryStub implements ConversationRepository {
   }
 
   async find(where: OptionsQuery) {
-    return Promise.resolve([fakeConversation()]);
+    return Promise.resolve([fakeConversation(), fakeConversation()]);
   }
 
   async findOne(options: OptionsQuery): Promise<Conversations> {

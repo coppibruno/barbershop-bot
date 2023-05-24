@@ -1,14 +1,15 @@
 import {IncorrectParamIsProvided, InvalidDateError} from '../errors';
 import {TransformAppointmentInDateHelper} from './transform-appointment-in-date.helper';
 
-const isValid = (appointmentTime: string): boolean => {
+export const isValid = (appointmentTime: string): boolean => {
+  if (!appointmentTime.includes('-')) {
+    return false;
+  }
   const appointmentSplit = appointmentTime.split('-');
-  const validParams = appointmentSplit.every(
+  return appointmentSplit.every(
     (appointment) =>
       appointment.trim().length === 5 && appointment.split(':').length === 2,
   );
-
-  return appointmentTime.length !== 5 && !validParams;
 };
 
 interface IStartAndEndDate {
@@ -45,7 +46,7 @@ export const FetchStartAndEndAppointmentTimeHelper = (
 
   const startAppointment = appointmentSplit[0];
   const endAppointment = appointmentSplit[1];
-
+  console.log(appointmentSplit, endAppointment);
   const startTime = {
     hours: Number(startAppointment.trim().split(':')[0]),
     minutes: Number(startAppointment.trim().split(':')[1]),

@@ -5,6 +5,7 @@ import {GetUserNameConversationStub} from './get-user-name-conversation-service.
 import {fakeMeeting} from './faker-meeting.mock';
 import {MeetingRepositoryStub} from './meeting-repository.mock';
 import {FindMeetingsOfDayServiceStub} from './find-meetings-of-day-service.mock';
+import {StepFindAvaliableDateServiceStub} from './step-find-avaliable-date-service.mock';
 
 export {
   ConversationRepositoryStub,
@@ -14,4 +15,5 @@ export {
   fakeMeeting,
   MeetingRepositoryStub,
   FindMeetingsOfDayServiceStub,
+  StepFindAvaliableDateServiceStub,
 };

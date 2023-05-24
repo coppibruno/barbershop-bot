@@ -6,23 +6,28 @@ import {
   fakeConversation,
 } from '../../__tests__/__mocks__/';
 
+const makeSut = () => {
+  const conversationRepositoryStub = new ConversationRepositoryStub();
+  const findConversationsServiceStub = new FindConversationsServiceStub(
+    conversationRepositoryStub,
+  );
+  const getUserNameStub = new GetUserNameConversationStub(
+    findConversationsServiceStub,
+  );
+
+  const sut = new Step.StepShowMenuFlow(getUserNameStub);
+  return {sut, conversationRepositoryStub, findConversationsServiceStub};
+};
+
 describe('Step Show Menu', () => {
   test('should return menu from user and step 2', async () => {
-    const conversationRepositoryStub = new ConversationRepositoryStub();
-    const findConversationsServiceStub = new FindConversationsServiceStub(
-      conversationRepositoryStub,
-    );
-    const getUserNameStub = new GetUserNameConversationStub(
-      findConversationsServiceStub,
-    );
+    const {sut, findConversationsServiceStub} = makeSut();
 
     const accountId = 'any_value';
 
-    const menu = new Step.StepShowMenuFlow(getUserNameStub);
+    const getUser = jest.spyOn(sut, 'getUser');
 
-    const getUser = jest.spyOn(menu, 'getUser');
-
-    const result = await menu.execute(accountId);
+    const result = await sut.execute(accountId);
 
     jest
       .spyOn(findConversationsServiceStub, 'execute')

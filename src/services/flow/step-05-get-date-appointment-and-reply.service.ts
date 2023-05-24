@@ -9,12 +9,13 @@ import {IFlowResult} from '../../interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
 import moment from 'moment';
 import {StepFindAvaliableDateFlow} from './step-04-find-avaliable-date.service';
-import {Meetings} from '@prisma/client';
+import {Conversations, Meetings} from '@prisma/client';
 import {MeetingRepository} from '../../repositories/meeting.repository';
 import {MeetingEntity} from '../../entity/meeting.entity';
 import {FetchStartAndEndAppointmentTimeHelper} from '../../helpers/fetch-start-and-end-appointment-time.helper';
 import {ValidateIfIsDezemberHelper} from '../../helpers/validate-if-is-dezember.helper';
 import {PadStartDateHelper} from '../../helpers/pad-start.helper';
+import {isDezember} from '../../helpers/validate-appoitment.helper';
 interface AppointmentDate {
   startedDate: Date;
 }
@@ -29,6 +30,16 @@ interface IOptions {
   option: number;
   appointment: string;
 }
+
+export const RETRY_NEW_APPOINTMENT = () =>
+  isDezember()
+    ? RetryNewAppointmentDate.MAKE_APPOINTMENT_DEZEMBER
+    : RetryNewAppointmentDate.MAKE_APPOINTMENT;
+
+export const INVALID_DATE = () =>
+  isDezember()
+    ? InvalidDateError.INVALID_DATE_DEZEMBER
+    : InvalidDateError.INVALID_DATE;
 
 /**
  * Etapa responsável por buscar horário selecionado, validar e retornar mensagem de sucesso caso seja.
@@ -111,9 +122,7 @@ export class StepGetDateAndReplyAppointmentFlow {
     }));
   }
 
-  async extractAppointmentSelected(
-    accountId: string,
-  ): Promise<IExtractAppointment> {
+  async findAppointmentSelected(accountId: string): Promise<Conversations> {
     const appointmentSelected = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
@@ -125,27 +134,34 @@ export class StepGetDateAndReplyAppointmentFlow {
       },
     });
 
+    if (!appointmentSelected) {
+      throw new Error('find appointment selected failed');
+    }
+
+    return appointmentSelected;
+  }
+
+  async extractAppointmentSelected(
+    accountId: string,
+  ): Promise<IExtractAppointment> {
+    const {body: appointmentSelected, options} =
+      await this.findAppointmentSelected(accountId);
+
     if (appointmentSelected) {
-      const optionSelected = appointmentSelected.body;
       let formattedOption: number;
 
       try {
-        formattedOption = Number(optionSelected);
+        formattedOption = Number(appointmentSelected);
       } catch (e: any) {
         console.error(e.message);
         return InvalidMenuOptionError.INVALID_MENU_OPTION;
       }
 
       if (formattedOption === FlowContext.OPTION_RETRY_DATE_APPOINTMENT) {
-        if (ValidateIfIsDezemberHelper()) {
-          return RetryNewAppointmentDate.MAKE_APPOINTMENT_DEZEMBER;
-        }
-        return RetryNewAppointmentDate.MAKE_APPOINTMENT;
+        return RETRY_NEW_APPOINTMENT();
       }
 
-      const menuOptions = this.extractAppointmentList(
-        appointmentSelected.options,
-      );
+      const menuOptions = this.extractAppointmentList(options);
 
       const optionExistsInArray = menuOptions.find(
         (i) => i.option === formattedOption,
@@ -156,6 +172,8 @@ export class StepGetDateAndReplyAppointmentFlow {
       }
 
       const appointmentTime = optionExistsInArray.appointment;
+
+      //ToDo: Verificar se o horario não está agendando antes de marcar
       const meetSaved = await this.saveAppointment(accountId, appointmentTime);
 
       if (meetSaved === DefaultError.TRY_AGAIN) {

@@ -39,17 +39,12 @@ describe('Fetch Start And End Lunch Time Helper', () => {
     const start = '12-00';
     const end = '13-00';
 
-    const error1 = FetchStartAndEndLunch.FetchStartAndEndLunchTimeHelper(
-      start,
-      end,
-    );
+    expect(() =>
+      FetchStartAndEndLunch.FetchStartAndEndLunchTimeHelper(start, end),
+    ).toThrow(IncorrectParamIsProvided);
 
-    const error2 = FetchStartAndEndLunch.FetchStartAndEndLunchTimeHelper(
-      '12h',
-      '13h',
-    );
-
-    expect(error1).toBeInstanceOf(IncorrectParamIsProvided);
-    expect(error2).toBeInstanceOf(IncorrectParamIsProvided);
+    expect(() =>
+      FetchStartAndEndLunch.FetchStartAndEndLunchTimeHelper('12h', '13h'),
+    ).toThrow(IncorrectParamIsProvided);
   });
 });

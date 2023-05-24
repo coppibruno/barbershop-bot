@@ -5,9 +5,7 @@ import {IConversationTwilio} from '../../interfaces/external';
  * Classe responsável por tratar dados de integração de whatsapp do twilio para a entitidade
  */
 export class GetConversationTwilio {
-  async execute(
-    iConversationTwilio: IConversationTwilio,
-  ): Promise<ConversationEntity> {
+  execute(iConversationTwilio: IConversationTwilio): ConversationEntity {
     const toPhone = iConversationTwilio.To.replace('whatsapp:+', '');
     const fromPhone = iConversationTwilio.From.replace('whatsapp:+', '');
     const accountId = iConversationTwilio.AccountSid;

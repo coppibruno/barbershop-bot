@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "start:dev": "npx tsc -p tsconfig.build.json && nodemon ./src/server.ts",
     "start:debug": "npx tsc -p tsconfig.build.json && nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/server.ts'",
     "build": "tsc",

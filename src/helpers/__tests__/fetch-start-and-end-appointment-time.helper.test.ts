@@ -27,6 +27,9 @@ describe('Fetch Start And End Appointment Time Helper', () => {
     const dayMonth = `${day}/${month}`;
 
     const appointment = '09:00 - 10:00';
+    jest
+      .spyOn(FetchStartAndEndAppointment, 'isValid')
+      .mockReturnValueOnce(true);
 
     const result =
       FetchStartAndEndAppointment.FetchStartAndEndAppointmentTimeHelper(
@@ -59,30 +62,29 @@ describe('Fetch Start And End Appointment Time Helper', () => {
   });
   test('should return incorrect param if invalid param is provided', () => {
     const dayMonth = `${day}/${month}`;
-    const errorAppointment = '09h-10h';
 
-    const error1 =
+    const errorAppointment = '09h-10h';
+    expect(() =>
       FetchStartAndEndAppointment.FetchStartAndEndAppointmentTimeHelper(
         dayMonth,
         errorAppointment,
-      );
+      ),
+    ).toThrow(IncorrectParamIsProvided);
 
     const errorAppointment2 = '9:00 - 10:00';
-    const error2 =
+    expect(() =>
       FetchStartAndEndAppointment.FetchStartAndEndAppointmentTimeHelper(
         dayMonth,
         errorAppointment2,
-      );
-    const errorAppointment3 = '09:00_10:00';
+      ),
+    ).toThrow(IncorrectParamIsProvided);
 
-    const error3 =
+    const errorAppointment3 = '09:00_10:00';
+    expect(() =>
       FetchStartAndEndAppointment.FetchStartAndEndAppointmentTimeHelper(
         dayMonth,
         errorAppointment3,
-      );
-
-    expect(error1).toBeInstanceOf(IncorrectParamIsProvided);
-    expect(error2).toBeInstanceOf(IncorrectParamIsProvided);
-    expect(error3).toBeInstanceOf(IncorrectParamIsProvided);
+      ),
+    ).toThrow(IncorrectParamIsProvided);
   });
 });
