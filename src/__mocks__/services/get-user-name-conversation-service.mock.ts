@@ -1,4 +1,4 @@
-import {GetUserNameConversation} from '../../get-user-name.service';
+import {GetUserNameConversation} from '@/services/get-user-name.service';
 import {FindConversationsServiceStub} from './find-conversation-service.mock';
 
 export class GetUserNameConversationStub extends GetUserNameConversation {

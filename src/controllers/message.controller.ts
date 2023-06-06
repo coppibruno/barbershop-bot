@@ -1,8 +1,8 @@
 import express, {Request, Response} from 'express';
 
-import {preventInvalidRequest} from '../middlewares/is-vaild-request.middleware';
-import {SendMessageWhatsappServiceFactory} from '../factory/services';
-import {FlowConversationServiceFactory} from '../factory/services/flow-conversation-service.factory';
+import {preventInvalidRequest} from '@/middlewares/is-vaild-request.middleware';
+import {SendMessageWhatsappServiceFactory} from '@/factory/services';
+import {FlowConversationServiceFactory} from '@/factory/services/flow-conversation-service.factory';
 
 export const messageRouterController = express.Router();
 

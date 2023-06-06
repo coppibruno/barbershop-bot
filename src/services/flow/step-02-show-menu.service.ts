@@ -1,6 +1,6 @@
 import {FlowContext} from '../../flow.context';
-import {IFlowResult} from '../../interfaces/flow';
-import {GetUserNameConversation} from '../get-user-name.service';
+import {IFlowResult} from '@/interfaces/flow';
+import {GetUserNameConversation} from '@/services/get-user-name.service';
 /**
  * Etapa responsável por mostrar o menu de opções ao usuário
  */

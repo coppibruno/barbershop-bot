@@ -1,5 +1,5 @@
-import {ConversationEntity} from '../entity/conversation.entity';
-import {TwilioSendWhatsappMessage} from '../external/twilio/send-new-message';
+import {ConversationEntity} from '@/entity/conversation.entity';
+import {TwilioSendWhatsappMessage} from '@/external/twilio/send-new-message';
 /**
  * Envia uma mensagem whatsapp pelo twilio
  */

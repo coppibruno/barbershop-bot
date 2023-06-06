@@ -1,5 +1,5 @@
 import * as Service from '../create-conversation.service';
-import {ConversationRepositoryStub, fakeConversation} from './__mocks__';
+import {ConversationRepositoryStub, fakeConversation} from '@/__mocks__';
 
 describe('Create Conversation Service', () => {
   test('should create conversation', async () => {

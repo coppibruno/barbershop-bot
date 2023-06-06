@@ -1,6 +1,6 @@
 import {Twilio} from 'twilio';
-import {ConversationEntity} from '../../entity';
-import {TwilioSendWhatsappMessage} from '../twilio/send-new-message';
+import {ConversationEntity} from '@/entity';
+import {TwilioSendWhatsappMessage} from '@/external/twilio/send-new-message';
 
 export abstract class TwilioConnect {
   static connect(): Twilio | null {

@@ -1,9 +1,8 @@
 import {faker} from '@faker-js/faker';
 import * as Service from '../find-meetings-of-day.service';
-import {MeetingRepositoryStub} from './__mocks__';
+import {MeetingRepositoryStub} from '@/__mocks__';
 import * as isDezember from '../../helpers/validate-if-is-dezember.helper';
 import * as startEndDate from '../../helpers/fetch-start-and-end-appointment-time.helper';
-import {InvalidDateError} from '../../errors';
 
 const mockedDate = faker.date.future();
 const day = mockedDate.getDay();
@@ -44,18 +43,5 @@ describe('Find Meetings of day Service', () => {
         },
       },
     });
-  });
-  test('should return a empty array if invalid date is provided', async () => {
-    const meetingRepositoryStub = new MeetingRepositoryStub();
-
-    const create = new Service.FindMeetingsOfDayService(meetingRepositoryStub);
-
-    jest
-      .spyOn(startEndDate, 'FetchStartAndEndAppointmentTimeHelper')
-      .mockImplementationOnce(() => InvalidDateError.INVALID_DATE);
-
-    const exec = await create.execute('anyDate' as any);
-
-    expect(exec.length).toBe(0);
   });
 });

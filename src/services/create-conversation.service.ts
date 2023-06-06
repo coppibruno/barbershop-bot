@@ -1,5 +1,5 @@
-import {ConversationEntity} from '../entity/conversation.entity';
-import {ConversationRepository} from '../repositories/conversation.repository';
+import {ConversationEntity} from '@/entity/conversation.entity';
+import {ConversationRepository} from '@/repositories/conversation.repository';
 /**
  * Responsável persistir uma entidade de conversations
  */

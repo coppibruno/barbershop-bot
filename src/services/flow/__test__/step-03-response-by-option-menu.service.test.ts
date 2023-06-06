@@ -3,7 +3,7 @@ import {
   ConversationRepositoryStub,
   FindConversationsServiceStub,
   fakeConversation,
-} from '../../__tests__/__mocks__/';
+} from '@/__mocks__';
 import {InvalidMenuOptionError} from '../../../errors';
 
 const makeSut = () => {

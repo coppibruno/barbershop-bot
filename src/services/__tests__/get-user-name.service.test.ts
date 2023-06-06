@@ -1,10 +1,9 @@
-import {FlowContext} from '../../flow.context';
 import * as Service from '../get-user-name.service';
 import {
   ConversationRepositoryStub,
   FindConversationsServiceStub,
   fakeConversation,
-} from './__mocks__';
+} from '@/__mocks__';
 
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();

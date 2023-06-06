@@ -1,10 +1,11 @@
 import {Meetings} from '@prisma/client';
-import {MeetingRepository} from '../repositories/meeting.repository';
+import {MeetingRepository} from '@/repositories/meeting.repository';
 import {Moment} from 'moment';
-import {FetchStartAndEndAppointmentTimeHelper} from '../helpers/fetch-start-and-end-appointment-time.helper';
+import {
+  FetchStartAndEndAppointmentTimeHelper,
+  ValidateIfIsDezemberHelper,
+} from '@/helpers';
 import {FlowContext} from '../flow.context';
-import {InvalidDateError} from '../errors';
-import {ValidateIfIsDezemberHelper} from '../helpers/validate-if-is-dezember.helper';
 
 export const getDay = (date) => date.date();
 export const getMonth = (date) => date.month() + 1;
@@ -44,13 +45,6 @@ export class FindMeetingsOfDayService {
       dayMonth,
       workTime,
     );
-
-    if (
-      objStartDateEndDate === InvalidDateError.INVALID_DATE ||
-      objStartDateEndDate === InvalidDateError.INVALID_DATE_DEZEMBER
-    ) {
-      return [];
-    }
 
     const {startDate, endDate} = objStartDateEndDate;
 

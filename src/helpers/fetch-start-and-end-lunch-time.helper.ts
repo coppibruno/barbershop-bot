@@ -1,5 +1,5 @@
 import moment, {Moment} from 'moment';
-import {IncorrectParamIsProvided} from '../errors';
+import {STEP_NOT_IMPLEMETED} from '@/errors';
 
 interface IResultLunchTime {
   start?: Moment;
@@ -19,7 +19,7 @@ export const FetchStartAndEndLunchTimeHelper = (
   const end = endTime.split(':');
 
   if (start.length !== 2 || end.length !== 2) {
-    throw new IncorrectParamIsProvided();
+    throw STEP_NOT_IMPLEMETED;
   }
 
   const startHour = Number(start[0]);

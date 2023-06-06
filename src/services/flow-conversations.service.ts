@@ -1,26 +1,28 @@
-import {ConversationEntity} from '../entity/conversation.entity';
+import {ConversationEntity} from '@/entity/conversation.entity';
 
-import {GetConversationTwilio} from '../external/twilio/get-conversation';
+import {GetConversationTwilio} from '@/external/twilio/get-conversation';
 
 import {FlowContext} from '../flow.context';
 
-import {IConversationTwilio} from '../interfaces/external';
+import {IConversationTwilio} from '@/interfaces/external';
 
 //services
-import {CreateConversationService} from './create-conversation.service';
-import {GetLastMessageInProgressConversationService} from './get-last-message-in-progress.service';
-import {GetResponseByAccountService} from './get-response-by-account.service';
-import {GetUserNameConversation} from './get-user-name.service';
-import {SendMessageWhatsappService} from './send-message.service';
+import {
+  CreateConversationService,
+  GetLastMessageInProgressConversationService,
+  GetResponseByAccountService,
+  GetUserNameConversation,
+  SendMessageWhatsappService,
+} from '@/services';
 
 /**
  * Responsável pelo fluxo de receber mensagem do usuário, persistir, processar e buscar dados, retornar a mensagem do assistênte virtual
  */
 export class FlowConversationService {
-  private readonly getConversationTwilio;
-  private readonly createConversationService;
-  private readonly getResponseByAccountService;
-  private readonly sendMessageWhatsappService;
+  private readonly getConversationTwilio: GetConversationTwilio;
+  private readonly createConversationService: CreateConversationService;
+  private readonly getResponseByAccountService: GetResponseByAccountService;
+  private readonly sendMessageWhatsappService: SendMessageWhatsappService;
   private readonly getUserNameConversation: GetUserNameConversation;
   private readonly getLastMessageInProgressConversationService: GetLastMessageInProgressConversationService;
 
@@ -43,7 +45,7 @@ export class FlowConversationService {
 
   async execute(message: IConversationTwilio): Promise<string> {
     const senderConversationEntity: ConversationEntity =
-      await this.getConversationTwilio.execute(message);
+      this.getConversationTwilio.execute(message);
 
     const lastMessage =
       await this.getLastMessageInProgressConversationService.execute(

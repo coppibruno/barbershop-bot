@@ -1,5 +1,5 @@
 import {FlowContext} from '../../flow.context';
-import {IFlowResult} from '../../interfaces/flow';
+import {IFlowResult} from '@/interfaces/flow';
 /**
  * Etapa responsável por dar boas vindas ao cliente
  */

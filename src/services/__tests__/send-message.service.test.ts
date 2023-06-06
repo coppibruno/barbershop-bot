@@ -1,6 +1,5 @@
-import {TwilioSendWhatsappMessageStub} from '../../external/__mocks__/twilio-send-whatsapp-message.mock';
+import {TwilioSendWhatsappMessageStub, fakeConversation} from '@/__mocks__';
 import * as Service from '../send-message.service';
-import {fakeConversation} from './__mocks__';
 
 describe('Send Message Service', () => {
   test('should call external service with correct value', async () => {

@@ -1,6 +1,6 @@
 import {PrismaClient, Conversations} from '@prisma/client';
-import {ConversationEntity} from '../entity/conversation.entity';
-import {OptionsQuery, IRepository} from '../interfaces';
+import {ConversationEntity} from '@/entity/conversation.entity';
+import {OptionsQuery, IRepository} from '@/interfaces';
 import {FlowContext} from '../flow.context';
 
 const prisma = new PrismaClient();

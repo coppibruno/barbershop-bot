@@ -4,7 +4,7 @@ import {
   FindConversationsServiceStub,
   GetUserNameConversationStub,
   fakeConversation,
-} from '../../__tests__/__mocks__/';
+} from '@/__mocks__';
 
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();

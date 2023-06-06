@@ -1,7 +1,6 @@
 import {faker} from '@faker-js/faker';
 import * as FetchStartAndEndAppointment from '../fetch-start-and-end-appointment-time.helper';
-import {IncorrectParamIsProvided, InvalidDateError} from '../../errors';
-import * as TransformAppointmentInDate from '../transform-appointment-in-date.helper';
+import {STEP_NOT_IMPLEMETED} from '../../errors';
 const mockedTime = faker.date.future();
 const day = mockedTime.getDate();
 const month = mockedTime.getMonth() + 1;
@@ -40,26 +39,6 @@ describe('Fetch Start And End Appointment Time Helper', () => {
     expect(result).toHaveProperty('startDate');
     expect(result).toHaveProperty('endDate');
   });
-  test('should return invalid date if invalid param is provided', () => {
-    const dayMonth = `${day} - ${month}`;
-    const errorAppointment = '09:00 - 10:00';
-
-    jest
-      .spyOn(TransformAppointmentInDate, 'getMoment')
-      .mockImplementationOnce(() => {
-        throw new Error('any error');
-      });
-
-    const error1 =
-      FetchStartAndEndAppointment.FetchStartAndEndAppointmentTimeHelper(
-        dayMonth,
-        errorAppointment,
-      );
-
-    expect(error1).toBe(
-      InvalidDateError.INVALID_DATE || InvalidDateError.INVALID_DATE_DEZEMBER,
-    );
-  });
   test('should return incorrect param if invalid param is provided', () => {
     const dayMonth = `${day}/${month}`;
 
@@ -69,7 +48,7 @@ describe('Fetch Start And End Appointment Time Helper', () => {
         dayMonth,
         errorAppointment,
       ),
-    ).toThrow(IncorrectParamIsProvided);
+    ).toThrow(STEP_NOT_IMPLEMETED);
 
     const errorAppointment2 = '9:00 - 10:00';
     expect(() =>
@@ -77,7 +56,7 @@ describe('Fetch Start And End Appointment Time Helper', () => {
         dayMonth,
         errorAppointment2,
       ),
-    ).toThrow(IncorrectParamIsProvided);
+    ).toThrow(STEP_NOT_IMPLEMETED);
 
     const errorAppointment3 = '09:00_10:00';
     expect(() =>
@@ -85,6 +64,6 @@ describe('Fetch Start And End Appointment Time Helper', () => {
         dayMonth,
         errorAppointment3,
       ),
-    ).toThrow(IncorrectParamIsProvided);
+    ).toThrow(STEP_NOT_IMPLEMETED);
   });
 });

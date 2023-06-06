@@ -1,15 +1,26 @@
-import {ConversationRepository} from '../repositories/conversation.repository';
 import moment from 'moment';
-import {CreateConversationService} from './create-conversation.service';
-import {SendMessageWhatsappService} from './send-message.service';
-import {ConversationEntity} from '../entity/conversation.entity';
-import {FindConversationsService} from './find-conversation.service';
+
+import {ConversationRepository} from '@/repositories/conversation.repository';
+
+//services
+import {
+  CreateConversationService,
+  SendMessageWhatsappService,
+  FindConversationsService,
+} from '@/services';
+
+import {ConversationEntity} from '@/entity/conversation.entity';
 import {FlowContext} from '../flow.context';
+
+export const setMoment = (date) => moment(date);
+export const getDurationInHours = ({start, end}) =>
+  parseInt(String(moment.duration(start.diff(end)).asHours()));
+
 /**
  * Envia uma mensagem automática para o usuário caso o mesmo fique ocioso, o atendimento será encerrado.
  */
 export class AutomaticFlowCloseIfNoReplyService {
-  private readonly serviceRepository;
+  private readonly serviceRepository: ConversationRepository;
   private readonly createConversationService: CreateConversationService;
   private readonly sendMessageWhatsappService: SendMessageWhatsappService;
   private readonly findConversationsService: FindConversationsService;
@@ -34,11 +45,10 @@ export class AutomaticFlowCloseIfNoReplyService {
       const fromPhone: number = chat.fromPhone;
       const protocol: number = chat.protocol;
 
-      const lastIterationDate = moment(createdAt);
-      const now = moment(new Date());
+      const lastIterationDate = setMoment(createdAt);
+      const now = setMoment(new Date());
 
-      const duration = moment.duration(now.diff(lastIterationDate));
-      const hours = parseInt(String(duration.asHours()));
+      const hours = getDurationInHours({start: now, end: lastIterationDate});
 
       if (hours >= 1) {
         const client = await this.findConversationsService.findOne({

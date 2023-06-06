@@ -1,6 +1,6 @@
 import {faker} from '@faker-js/faker';
 import * as FetchStartAndEndLunch from '../fetch-start-and-end-lunch-time.helper';
-import {IncorrectParamIsProvided} from '../../errors';
+import {STEP_NOT_IMPLEMETED} from '../../errors';
 
 const mockedTime = faker.date.future();
 const day = mockedTime.getDate();
@@ -41,10 +41,10 @@ describe('Fetch Start And End Lunch Time Helper', () => {
 
     expect(() =>
       FetchStartAndEndLunch.FetchStartAndEndLunchTimeHelper(start, end),
-    ).toThrow(IncorrectParamIsProvided);
+    ).toThrow(STEP_NOT_IMPLEMETED);
 
     expect(() =>
       FetchStartAndEndLunch.FetchStartAndEndLunchTimeHelper('12h', '13h'),
-    ).toThrow(IncorrectParamIsProvided);
+    ).toThrow(STEP_NOT_IMPLEMETED);
   });
 });

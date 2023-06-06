@@ -1,43 +1,70 @@
+import moment, {Moment} from 'moment';
+import {Conversations, Meetings} from '@prisma/client';
+
+import {FlowContext} from '../../flow.context';
+
+//errors
 import {
   DefaultError,
+  STEP_NOT_IMPLEMETED,
   InvalidDateError,
   RetryNewAppointmentDate,
-} from '../../errors';
-import {InvalidMenuOptionError} from '../../errors/invalid-menu-option.enum';
-import {FlowContext} from '../../flow.context';
-import {IFlowResult} from '../../interfaces/flow';
-import {FindConversationsService} from '../find-conversation.service';
-import moment from 'moment';
+  MEETING_ALREDY_IN_USE,
+  NotFoundError,
+} from '@/errors';
+
+//services
+import {
+  FindConversationsService,
+  GetUserNameConversation,
+  GetPhoneByAccountIdConversation,
+} from '@/services';
 import {StepFindAvaliableDateFlow} from './step-04-find-avaliable-date.service';
-import {Conversations, Meetings} from '@prisma/client';
-import {MeetingRepository} from '../../repositories/meeting.repository';
-import {MeetingEntity} from '../../entity/meeting.entity';
-import {FetchStartAndEndAppointmentTimeHelper} from '../../helpers/fetch-start-and-end-appointment-time.helper';
-import {ValidateIfIsDezemberHelper} from '../../helpers/validate-if-is-dezember.helper';
-import {PadStartDateHelper} from '../../helpers/pad-start.helper';
-import {isDezember} from '../../helpers/validate-appoitment.helper';
+
+//helpers
+import {
+  FetchStartAndEndAppointmentTimeHelper,
+  ValidateIfIsDezemberHelper,
+  PadStartDateHelper,
+  TransformAppointmentInDateHelper,
+} from '@/helpers';
+
+import {IFlowResult} from '@/interfaces/flow';
+
+import {MeetingRepository} from '@/repositories/meeting.repository';
+import {MeetingEntity} from '@/entity/meeting.entity';
+
 interface AppointmentDate {
   startedDate: Date;
 }
 
+export enum AppointmentResultEnum {
+  NEW_APPOINTMENT = 'NEW_APPOINTMENT',
+}
+
 type IExtractAppointment =
   | AppointmentDate
-  | RetryNewAppointmentDate.MAKE_APPOINTMENT
-  | RetryNewAppointmentDate.MAKE_APPOINTMENT_DEZEMBER
-  | InvalidMenuOptionError.INVALID_MENU_OPTION
-  | DefaultError.TRY_AGAIN;
+  | AppointmentResultEnum.NEW_APPOINTMENT;
 interface IOptions {
   option: number;
   appointment: string;
 }
 
+export const getClone = (date) => date.clone();
+export const getHours = (date) => date.hours();
+export const getMins = (date) => date.minutes();
+export const setHours = (date, hour) => date.hours(hour);
+export const setMinutes = (date, min) => date.minutes(min);
+export const setSeconds = (date, sec) => date.seconds(sec);
+export const addDate = (date, input, type) => date.add(input, type);
+
 export const RETRY_NEW_APPOINTMENT = () =>
-  isDezember()
+  ValidateIfIsDezemberHelper()
     ? RetryNewAppointmentDate.MAKE_APPOINTMENT_DEZEMBER
     : RetryNewAppointmentDate.MAKE_APPOINTMENT;
 
 export const INVALID_DATE = () =>
-  isDezember()
+  ValidateIfIsDezemberHelper()
     ? InvalidDateError.INVALID_DATE_DEZEMBER
     : InvalidDateError.INVALID_DATE;
 
@@ -48,85 +75,158 @@ export class StepGetDateAndReplyAppointmentFlow {
   private readonly findConversationService: FindConversationsService;
   private readonly stepFindAvaliableDateFlow: StepFindAvaliableDateFlow;
   private readonly meetingRepository: MeetingRepository;
+  private readonly getUserNameConversation: GetUserNameConversation;
+  private readonly getPhoneByAccountIdConversation: GetPhoneByAccountIdConversation;
   private readonly stepCompleted: number = 5;
   private readonly incompleteStep: number = 4;
   private readonly stepDateAppointment: number = 3;
+  private readonly timeAppointment = FlowContext.APPOINTMENT_TIME_IN_MINUTES;
 
   constructor(
     findConversationService: FindConversationsService,
     stepFindAvaliableDateFlow: StepFindAvaliableDateFlow,
     meetingRepository: MeetingRepository,
+    getUserNameConversation: GetUserNameConversation,
+    getPhoneByAccountIdConversation: GetPhoneByAccountIdConversation,
   ) {
     this.findConversationService = findConversationService;
     this.stepFindAvaliableDateFlow = stepFindAvaliableDateFlow;
     this.meetingRepository = meetingRepository;
+    this.getUserNameConversation = getUserNameConversation;
+    this.getPhoneByAccountIdConversation = getPhoneByAccountIdConversation;
   }
 
+  findMeetingIsAvaliable = async ({startDate, endDate, phone}) => {
+    const result = await this.meetingRepository.find({
+      where: {
+        phone,
+        startDate,
+        endDate,
+      },
+    });
+    return result;
+  };
+
+  /**
+   *
+   * @param startOfAppointment Hora/Min agendamento. Ex: 09:00
+   * @param startDateAppointment Objeto moment com a data do agendamento
+   * @returns Hora inicio e fim do agendamento em formato string. Ex: '09:00 - 10:00'
+   */
+  getStartAndEndAppointment = (
+    startOfAppointment: string,
+    startDateAppointment: Moment,
+  ): string => {
+    const startAppointment = startOfAppointment.split(':');
+    const hourStart = startAppointment[0].trim();
+    const minStart = startAppointment[1].trim();
+
+    setHours(startDateAppointment, Number(hourStart));
+    setMinutes(startDateAppointment, Number(minStart));
+    setSeconds(startDateAppointment, 0);
+
+    const endDateAppointment = getClone(startDateAppointment);
+
+    addDate(endDateAppointment, this.timeAppointment, 'minutes');
+
+    const endHourAppointment = PadStartDateHelper(
+      getHours(endDateAppointment),
+      2,
+    );
+    const endMinsAppointment = PadStartDateHelper(
+      getMins(endDateAppointment),
+      2,
+    );
+
+    return `${hourStart}:${minStart} - ${endHourAppointment}:${endMinsAppointment}`;
+  };
+
+  /**
+   *
+   * @param accountId account id string
+   * @param appointmentTime Horário/min agendamento. Ex: 09:00
+   * @returns MeetingEntity
+   */
   async getDataToNewMeet(
     accountId: string,
     appointmentTime: string,
-  ): Promise<DefaultError.TRY_AGAIN | MeetingEntity> {
-    const history = await this.findConversationService.find({
-      where: {accountId: accountId},
-    });
+  ): Promise<MeetingEntity> {
+    const [name, phone, dayMonth] = await Promise.all([
+      this.getUserNameConversation.execute(accountId),
+      this.getPhoneByAccountIdConversation.execute(accountId),
+      this.stepFindAvaliableDateFlow.getDateAppointment(accountId),
+    ]);
 
-    const stepDayAppointment = history.find(
-      (item) =>
-        item.step === 3 && item.toPhone === Number(FlowContext.BOT_NUMBER),
+    const startDateAppointment = TransformAppointmentInDateHelper(dayMonth);
+
+    appointmentTime = this.getStartAndEndAppointment(
+      appointmentTime,
+      startDateAppointment,
     );
-    if (!stepDayAppointment) {
-      return DefaultError.TRY_AGAIN;
-    }
 
-    const dayMonth = stepDayAppointment.body;
     const objStartDateEndDate = FetchStartAndEndAppointmentTimeHelper(
       dayMonth,
       appointmentTime,
     );
 
-    if (
-      objStartDateEndDate === InvalidDateError.INVALID_DATE ||
-      objStartDateEndDate === InvalidDateError.INVALID_DATE_DEZEMBER
-    ) {
-      return DefaultError.TRY_AGAIN;
-    }
-
     const {startDate, endDate} = objStartDateEndDate;
 
     const meetingEntity: MeetingEntity = {
-      name: stepDayAppointment.name,
-      phone: stepDayAppointment.fromPhone,
-      startDate: startDate,
-      endDate: endDate,
+      name,
+      phone,
+      startDate,
+      endDate,
     };
+
+    const timeAlreadyMarked = await this.findMeetingIsAvaliable({
+      startDate,
+      endDate,
+      phone,
+    });
+
+    if (timeAlreadyMarked.length > 0) {
+      throw MEETING_ALREDY_IN_USE;
+    }
+
     return meetingEntity;
   }
 
+  /**
+   *
+   * @param accountId account id String
+   * @param appointment Horário/min agendamento. Ex: 09:00
+   * @returns Meetings no sucesso ou try again em caso de algum erro
+   */
   async saveAppointment(
     accountId: string,
     appointment: string,
-  ): Promise<Meetings | DefaultError.TRY_AGAIN> {
+  ): Promise<Meetings> {
     const meetingEntity = await this.getDataToNewMeet(accountId, appointment);
-    if (meetingEntity === DefaultError.TRY_AGAIN) {
-      return DefaultError.TRY_AGAIN;
-    }
+
     return this.meetingRepository.create(meetingEntity);
   }
 
+  /**
+   *
+   * @param options array de opções. Ex: ['09:00', '10:00', '11:00', ...]
+   * @returns Array formatado com propriedades de Option e Appointment. Ex: [{option: 1, appointment: '09:00'}, ...]
+   */
   extractAppointmentList(options: any): IOptions[] {
-    const list = Object.keys(options).map(Number);
     const appointments = Object.values(options).map(String);
-    return list.map((option) => ({
-      option,
-      appointment: appointments[option - 1],
-    }));
+
+    let count = 0;
+    const result = appointments.map((description) => {
+      count++;
+      return {option: count, appointment: description};
+    });
+    return result;
   }
 
   async findAppointmentSelected(accountId: string): Promise<Conversations> {
     const appointmentSelected = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
-        step: 4,
+        step: this.incompleteStep,
         toPhone: Number(FlowContext.BOT_NUMBER),
       },
       orderBy: {
@@ -135,108 +235,100 @@ export class StepGetDateAndReplyAppointmentFlow {
     });
 
     if (!appointmentSelected) {
-      throw new Error('find appointment selected failed');
+      throw new NotFoundError('Unable fetch scheduled appointment');
     }
 
     return appointmentSelected;
   }
-
-  async extractAppointmentSelected(
-    accountId: string,
-  ): Promise<IExtractAppointment> {
+  /**
+   *
+   * @param accountId account id string
+   * @returns
+   */
+  async getAppointmentMarked(accountId: string): Promise<IExtractAppointment> {
     const {body: appointmentSelected, options} =
       await this.findAppointmentSelected(accountId);
 
-    if (appointmentSelected) {
-      let formattedOption: number;
+    let formattedOption: number;
 
-      try {
-        formattedOption = Number(appointmentSelected);
-      } catch (e: any) {
-        console.error(e.message);
-        return InvalidMenuOptionError.INVALID_MENU_OPTION;
-      }
-
-      if (formattedOption === FlowContext.OPTION_RETRY_DATE_APPOINTMENT) {
-        return RETRY_NEW_APPOINTMENT();
-      }
-
-      const menuOptions = this.extractAppointmentList(options);
-
-      const optionExistsInArray = menuOptions.find(
-        (i) => i.option === formattedOption,
-      );
-
-      if (!optionExistsInArray) {
-        return InvalidMenuOptionError.INVALID_MENU_OPTION;
-      }
-
-      const appointmentTime = optionExistsInArray.appointment;
-
-      //ToDo: Verificar se o horario não está agendando antes de marcar
-      const meetSaved = await this.saveAppointment(accountId, appointmentTime);
-
-      if (meetSaved === DefaultError.TRY_AGAIN) {
-        return DefaultError.TRY_AGAIN;
-      }
-
-      return {
-        startedDate: meetSaved.startDate,
-      };
+    try {
+      formattedOption = Number(appointmentSelected);
+    } catch (e: any) {
+      console.error(e.message);
+      throw STEP_NOT_IMPLEMETED;
     }
-    return DefaultError.TRY_AGAIN;
+
+    if (formattedOption === FlowContext.OPTION_RETRY_DATE_APPOINTMENT) {
+      return AppointmentResultEnum.NEW_APPOINTMENT;
+    }
+
+    const menuOptions = this.extractAppointmentList(options);
+
+    const optionExistsInArray = menuOptions.find(
+      (i) => i.option === formattedOption,
+    );
+
+    if (!optionExistsInArray) {
+      throw STEP_NOT_IMPLEMETED;
+    }
+
+    const appointmentTime = optionExistsInArray.appointment;
+
+    const meetSaved = await this.saveAppointment(accountId, appointmentTime);
+
+    return {
+      startedDate: meetSaved.startDate,
+    };
   }
 
   async execute(accountId: string): Promise<IFlowResult> {
-    const appointment = await this.extractAppointmentSelected(accountId);
-    const {options} = await this.stepFindAvaliableDateFlow.execute(accountId);
-
     const result: IFlowResult = {
-      response: '',
+      response: DefaultError.TRY_AGAIN,
       step: this.incompleteStep,
-      options,
+      options: [],
     };
 
-    if (appointment === DefaultError.TRY_AGAIN) {
-      result.step = this.incompleteStep;
-      result.response = DefaultError.TRY_AGAIN;
-    } else if (appointment === InvalidMenuOptionError.INVALID_MENU_OPTION) {
-      result.step = this.incompleteStep;
-      result.response = InvalidMenuOptionError.INVALID_MENU_OPTION;
-    } else if (
-      appointment === RetryNewAppointmentDate.MAKE_APPOINTMENT ||
-      appointment === RetryNewAppointmentDate.MAKE_APPOINTMENT_DEZEMBER
-    ) {
-      result.step = this.stepDateAppointment;
-      result.response = appointment;
-    } else {
-      const {startedDate} = appointment;
-      const day = PadStartDateHelper(moment(startedDate).date(), 2);
-      const month = PadStartDateHelper(moment(startedDate).month() + 1, 2);
-      const year = moment(startedDate).year();
+    try {
+      const appointment = await this.getAppointmentMarked(accountId);
+      const {options} = await this.stepFindAvaliableDateFlow.execute(accountId);
 
-      const startedAppointmentHours = PadStartDateHelper(
-        moment(startedDate).clone().hours(),
-        2,
-      );
+      result.options = options;
 
-      const startedAppointmentMinutes = PadStartDateHelper(
-        moment(startedDate).clone().minutes(),
-        2,
-      );
+      if (appointment !== AppointmentResultEnum.NEW_APPOINTMENT) {
+        const {startedDate} = appointment;
+        const day = PadStartDateHelper(moment(startedDate).date(), 2);
+        const month = PadStartDateHelper(moment(startedDate).month() + 1, 2);
+        const year = moment(startedDate).year();
 
-      let date = `${day}/${month}`;
+        const startedAppointmentHours = PadStartDateHelper(
+          moment(startedDate).clone().hours(),
+          2,
+        );
 
-      if (ValidateIfIsDezemberHelper()) {
-        date += `/${year}`;
+        const startedAppointmentMinutes = PadStartDateHelper(
+          moment(startedDate).clone().minutes(),
+          2,
+        );
+
+        let date = `${day}/${month}`;
+
+        if (ValidateIfIsDezemberHelper()) {
+          date += `/${year}`;
+        }
+
+        const time = `${startedAppointmentHours}:${startedAppointmentMinutes}`;
+
+        result.step = this.stepCompleted;
+        result.response = FlowContext.successfulAppointmentMessage(date, time);
+      } else {
+        result.step = this.stepDateAppointment;
+        result.response = RETRY_NEW_APPOINTMENT();
       }
 
-      const time = `${startedAppointmentHours}:${startedAppointmentMinutes}`;
-
-      result.step = this.stepCompleted;
-      result.response = FlowContext.successfulAppointmentMessage(date, time);
+      return result;
+    } catch (error) {
+      console.log(error);
+      return result;
     }
-
-    return result;
   }
 }

@@ -1,12 +1,12 @@
-import {Meetings} from '@prisma/client';
+import {faker} from '@faker-js/faker';
 import {Moment} from 'moment';
-import {IAppointmentsResult, IFlowResult} from '../../../interfaces';
-import {StepFindAvaliableDateFlow} from '../../flow';
+import {Meetings} from '@prisma/client';
+
+import {IAppointmentsResult, IFlowResult} from '@/interfaces';
+import {StepFindAvaliableDateFlow} from '@/services/flow';
+
 import {FindConversationsServiceStub} from './find-conversation-service.mock';
 import {FindMeetingsOfDayServiceStub} from './find-meetings-of-day-service.mock';
-import {faker} from '@faker-js/faker';
-import {FindConversationsService} from '../../find-conversation.service';
-import {FindMeetingsOfDayService} from '../../find-meetings-of-day.service';
 
 interface IOptionsAppointment {
   options: string[];
@@ -15,13 +15,15 @@ interface IOptionsAppointment {
 
 const mockedTime = faker.date.future();
 
-export class StepFindAvaliableDateServiceStub
-  implements StepFindAvaliableDateFlow
-{
+export class StepFindAvaliableDateServiceStub extends StepFindAvaliableDateFlow {
+  public readonly findConversationServiceStub: FindConversationsServiceStub;
+  public readonly findMeetingsOfDayServiceStub: FindMeetingsOfDayServiceStub;
   constructor(
-    public readonly findConversationService: FindConversationsServiceStub,
-    public readonly findMeetingsOfDayService: FindMeetingsOfDayServiceStub,
-  ) {}
+    findConversationServiceStub: FindConversationsServiceStub,
+    findMeetingsOfDayServiceStub: FindMeetingsOfDayServiceStub,
+  ) {
+    super(findConversationServiceStub, findMeetingsOfDayServiceStub);
+  }
   public stepCompleted: number;
   public incompleteStep: number;
   public startAppointmentDay: string;

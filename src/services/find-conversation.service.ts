@@ -1,5 +1,5 @@
-import {OptionsQuery} from '../interfaces/repositories';
-import {ConversationRepository} from '../repositories/conversation.repository';
+import {OptionsQuery} from '@/interfaces/repositories';
+import {ConversationRepository} from '@/repositories/conversation.repository';
 import {Conversations} from '@prisma/client';
 
 /**

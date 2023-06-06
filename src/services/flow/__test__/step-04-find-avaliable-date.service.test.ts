@@ -6,12 +6,11 @@ import {
   FindMeetingsOfDayServiceStub,
   MeetingRepositoryStub,
   fakeMeeting,
-} from '../../__tests__/__mocks__/';
+} from '@/__mocks__';
 import {faker} from '@faker-js/faker';
 import * as IsValid from '../../../helpers/validate-appoitment.helper';
 import {IAppointmentsResult} from '../../../interfaces/flow';
 import * as DateHelper from '../../../helpers/transform-appointment-in-date.helper';
-import {InvalidDateError} from '../../../errors';
 import * as StartEndLunchTime from '../../../helpers/fetch-start-and-end-lunch-time.helper';
 
 const fakeAppointmentResult: IAppointmentsResult = {
@@ -157,17 +156,6 @@ describe('GetAppointmentsOfDate', () => {
     const result = await sut.getAppointmentsOfDate(dayMonth);
 
     expect(result).toStrictEqual(expect.any(Array));
-  });
-  test('should return a empty list if invalid date is provided', async () => {
-    const {sut} = makeSut();
-
-    jest
-      .spyOn(DateHelper, 'TransformAppointmentInDateHelper')
-      .mockImplementationOnce(() => InvalidDateError.INVALID_DATE);
-
-    const result = await sut.getAppointmentsOfDate(dayMonth);
-
-    expect(result.length).toBe(0);
   });
 });
 

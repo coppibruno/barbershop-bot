@@ -1,9 +1,7 @@
-import {Conversations} from '@prisma/client';
-import {ConversationEntity} from '../../../entity';
-import {OptionsQuery} from '../../../interfaces/repositories';
-import {FindConversationsService} from '../../find-conversation.service';
-import {ConversationRepositoryStub} from './conversation-repository.mock';
-import {fakeConversation} from './faker-conversation.mock';
+import {OptionsQuery} from '@/interfaces/repositories';
+import {FindConversationsService} from '@/services/find-conversation.service';
+import {ConversationRepositoryStub} from '../repositories/conversation-repository.mock';
+import {fakeConversation} from '../entities/faker-conversation.mock';
 
 export class FindConversationsServiceStub extends FindConversationsService {
   constructor(serviceRepositoryStub: ConversationRepositoryStub) {

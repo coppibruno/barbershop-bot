@@ -1,9 +1,8 @@
 import {FlowContext} from '../../flow.context';
-import {IFlowResult} from '../../interfaces/flow';
-import {FindConversationsService} from '../find-conversation.service';
-import {InvalidMenuOptionError} from '../../errors/invalid-menu-option.enum';
-import {ValidateIfIsDezemberHelper} from '../../helpers/validate-if-is-dezember.helper';
-import {DefaultError} from '../../errors';
+import {IFlowResult} from '@/interfaces/flow';
+import {FindConversationsService} from '@/services/find-conversation.service';
+import {InvalidMenuOptionError, DefaultError} from '@/errors';
+import {ValidateIfIsDezemberHelper} from '@/helpers/validate-if-is-dezember.helper';
 
 const isDezember = () => ValidateIfIsDezemberHelper();
 

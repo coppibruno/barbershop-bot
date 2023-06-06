@@ -1,8 +1,8 @@
 import {Conversations} from '@prisma/client';
-import {ConversationEntity} from '../../../entity';
-import {ConversationRepository} from '../../../repositories';
-import {fakeConversation} from './faker-conversation.mock';
-import {OptionsQuery} from '../../../interfaces';
+import {ConversationEntity} from '@/entity';
+import {ConversationRepository} from '@/repositories';
+import {fakeConversation} from '../entities/faker-conversation.mock';
+import {OptionsQuery} from '@/interfaces';
 
 export class ConversationRepositoryStub implements ConversationRepository {
   async create(conversationEntity: ConversationEntity): Promise<Conversations> {

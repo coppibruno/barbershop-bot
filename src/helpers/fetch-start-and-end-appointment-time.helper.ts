@@ -1,4 +1,4 @@
-import {IncorrectParamIsProvided, InvalidDateError} from '../errors';
+import {STEP_NOT_IMPLEMETED} from '@/errors';
 import {TransformAppointmentInDateHelper} from './transform-appointment-in-date.helper';
 
 export const isValid = (appointmentTime: string): boolean => {
@@ -25,28 +25,18 @@ interface IStartAndEndDate {
 export const FetchStartAndEndAppointmentTimeHelper = (
   dayMonth: string,
   appointmentTime: string,
-):
-  | IStartAndEndDate
-  | InvalidDateError.INVALID_DATE
-  | InvalidDateError.INVALID_DATE_DEZEMBER => {
+): IStartAndEndDate => {
   const startDate = TransformAppointmentInDateHelper(dayMonth);
-
-  if (
-    startDate === InvalidDateError.INVALID_DATE ||
-    startDate === InvalidDateError.INVALID_DATE_DEZEMBER
-  ) {
-    return startDate;
-  }
 
   const appointmentSplit = appointmentTime.split('-');
 
   if (!isValid(appointmentTime)) {
-    throw new IncorrectParamIsProvided();
+    throw STEP_NOT_IMPLEMETED;
   }
 
   const startAppointment = appointmentSplit[0];
   const endAppointment = appointmentSplit[1];
-  console.log(appointmentSplit, endAppointment);
+
   const startTime = {
     hours: Number(startAppointment.trim().split(':')[0]),
     minutes: Number(startAppointment.trim().split(':')[1]),

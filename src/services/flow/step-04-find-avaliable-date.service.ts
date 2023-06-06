@@ -1,17 +1,22 @@
+import moment, {Moment} from 'moment';
+import {Meetings} from '@prisma/client';
+
+//helpers
 import {
   AppointmentIsValidHelper,
   FetchStartAndEndLunchTimeHelper,
   TransformAppointmentInDateHelper,
-} from '../../helpers';
-import {InvalidDateError} from '../../errors';
-import {IAppointmentsResult, IFlowResult} from '../../interfaces/flow';
-import {FindConversationsService} from '../find-conversation.service';
+  ValidateIfIsDezemberHelper,
+  PadStartDateHelper,
+} from '@/helpers';
+
+//services
+import {FindConversationsService, FindMeetingsOfDayService} from '@/services';
+
+import {InvalidDateError} from '@/errors';
+import {IAppointmentsResult, IFlowResult} from '@/interfaces/flow';
+
 import {FlowContext} from '../../flow.context';
-import moment, {Moment} from 'moment';
-import {FindMeetingsOfDayService} from '../find-meetings-of-day.service';
-import {Meetings} from '@prisma/client';
-import {PadStartDateHelper} from '../../helpers/pad-start.helper';
-import {isDezember} from '../../helpers/validate-appoitment.helper';
 
 export const isSameDate = (date1, date2) => date1.isSame(date2);
 
@@ -38,13 +43,13 @@ export const isSaturday = (date) => date.isoWeekday() === 6;
 export const INVALID_DATE = ():
   | InvalidDateError.INVALID_DATE_DEZEMBER
   | InvalidDateError.INVALID_DATE => {
-  return isDezember() === true
+  return ValidateIfIsDezemberHelper() === true
     ? InvalidDateError.INVALID_DATE_DEZEMBER
     : InvalidDateError.INVALID_DATE;
 };
 
 export const INVALID_SUNDAY = () => {
-  return isDezember() === true
+  return ValidateIfIsDezemberHelper() === true
     ? InvalidDateError.SUNDAY_DATE_DEZEMBER
     : InvalidDateError.SUNDAY_DATE;
 };
@@ -191,25 +196,9 @@ export class StepFindAvaliableDateFlow {
 
     const dateAppointment = TransformAppointmentInDateHelper(dayMonth);
 
-    if (
-      dateAppointment === InvalidDateError.INVALID_DATE_DEZEMBER ||
-      dateAppointment === InvalidDateError.INVALID_DATE
-    ) {
-      return [];
-    }
-
     const {startDate, endDate} =
       this.getMaxAndMinAppointmentFromDay(dateAppointment);
 
-    /*
-    9:00
-     |
-    11:00 - 12:00 - marcado
-    12:00 - 13:00 OFF
-    14:30 - 15:30 - marcado
-     |
-    19:00
-    */
     let currentAppointment = getClone(startDate);
     let count: number = 0;
 
@@ -231,13 +220,6 @@ export class StepFindAvaliableDateFlow {
       const currentEndAppointment = getClone(
         addDate(currentAppointment, this.appointmentTimeInMinutes, 'minutes'),
       );
-
-      const hourEndTime = PadStartDateHelper(
-        getHours(currentEndAppointment),
-        2,
-      );
-
-      const minEndTime = PadStartDateHelper(getMins(currentEndAppointment), 2);
 
       const isLunchTime = this.validateIfAppointmentIsLunchTime(
         currentStartAppointment,
@@ -262,7 +244,7 @@ export class StepFindAvaliableDateFlow {
       if (!isAfterNow) {
         continue;
       }
-      const avaliableAppointment = `${hourStartTime}:${minStartTime} - ${hourEndTime}:${minEndTime}`;
+      const avaliableAppointment = `${hourStartTime}:${minStartTime}`;
 
       count++;
 

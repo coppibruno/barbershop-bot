@@ -1,5 +1,5 @@
 import * as Service from '../find-conversation.service';
-import {ConversationRepositoryStub, fakeConversation} from './__mocks__';
+import {ConversationRepositoryStub, fakeConversation} from '@/__mocks__';
 
 describe('Find Conversation Service', () => {
   test('should return a list of conversationEntity', async () => {

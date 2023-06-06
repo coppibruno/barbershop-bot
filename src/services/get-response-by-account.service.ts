@@ -5,8 +5,9 @@ import {
   StepShowMenuFlow,
   StepWelcomeFlow,
 } from './flow';
-import {IFlowResult} from '../interfaces/flow';
+import {IFlowResult} from '@/interfaces/flow';
 import {GetStepConversation} from './get-step-conversation.service';
+import {STEP_NOT_IMPLEMETED} from '@/errors';
 
 type IResponseByAccount = {
   [key: number]: string;
@@ -24,7 +25,7 @@ export class GetResponseByAccountService {
     private readonly stepGetDateAndReplyAppointmentFlow: StepGetDateAndReplyAppointmentFlow,
   ) {}
 
-  async handleStep(accountId: string, step: number) {
+  async handleStep(accountId: string, step: number): Promise<IFlowResult> {
     if (step === 1) {
       return this.stepWelcomeFlow.execute();
     } else if (step === 2) {
@@ -36,7 +37,7 @@ export class GetResponseByAccountService {
     } else if (step === 5) {
       return this.stepGetDateAndReplyAppointmentFlow.execute(accountId);
     } else {
-      return {response: 'method not implemented', step: 999};
+      throw STEP_NOT_IMPLEMETED;
     }
   }
 
