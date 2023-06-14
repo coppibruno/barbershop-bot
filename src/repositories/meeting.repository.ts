@@ -32,4 +32,20 @@ export class MeetingRepository implements IRepository {
       },
     });
   }
+
+  async upsert({where}: OptionsQuery, data: Partial<Meetings>) {
+    return await prisma.meetings.upsert({
+      create: {
+        name: null,
+        phone: null,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        disabledByAdmin: data.disabledByAdmin,
+      },
+      update: {
+        ...data,
+      },
+      where,
+    });
+  }
 }

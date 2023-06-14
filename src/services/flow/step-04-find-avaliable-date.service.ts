@@ -78,6 +78,8 @@ export class StepFindAvaliableDateFlow {
   public readonly appointmentTimeInMinutes =
     FlowContext.APPOINTMENT_TIME_IN_MINUTES;
 
+  public readonly isOpenMonday: boolean = FlowContext.IS_OPEN_MONDAY;
+
   constructor(
     findConversationService: FindConversationsService,
     findMeetingsOfDayService: FindMeetingsOfDayService,
@@ -306,10 +308,11 @@ export class StepFindAvaliableDateFlow {
     if (validationDate === true) {
       return dayMonth;
     }
-    return validationDate;
+    throw new Error('invalid date is provided');
   }
 
   async execute(accountId: string): Promise<IFlowResult> {
+    //TODO: TRATAR ERROS AQUI, CATCH PARA CASO DER ERRO VOLTAR E EXIBIR O MENU DA ETAPA ANTERIOR
     const appointment = await this.getDateAppointment(accountId);
     if (appointment === INVALID_DATE()) {
       return {

@@ -189,7 +189,9 @@ describe('Get Response By Account Service', () => {
 
     jest
       .spyOn(stepFindAvaliableDateFlowStub, 'execute')
-      .mockImplementationOnce(() => Promise.reject(new Error()));
+      .mockImplementationOnce(() => {
+        throw new Error('fake error');
+      });
 
     const result = await sut.execute(account);
     expect(result.step).toBe(3);

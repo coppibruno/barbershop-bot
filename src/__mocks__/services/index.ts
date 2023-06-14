@@ -7,19 +7,17 @@ import {SendMessageWhatsappServiceStub} from './send-message-service.mock';
 import {CreateConversationServiceStub} from './create-conversation-service.mock';
 import {GetLastMessageInProgressConversationServiceStub} from './get-last-message-in-progress-service.mock';
 import {GetResponseByAccountServiceStub} from './get-response-by-account-service.mock';
-
-//Todo: mover para dentro da pasta flow
-import {StepFindAvaliableDateServiceStub} from './step-find-avaliable-date-service.mock';
+import {DisableMeetingsOfIntervalServiceStub} from './disable-meetings-of-interval.service.mock';
 
 export {
   FindConversationsServiceStub,
   GetUserNameConversationStub,
   FindMeetingsOfDayServiceStub,
-  StepFindAvaliableDateServiceStub,
   GetPhoneByAccountStub,
   GetStepConversationStub,
   SendMessageWhatsappServiceStub,
   CreateConversationServiceStub,
   GetLastMessageInProgressConversationServiceStub,
   GetResponseByAccountServiceStub,
+  DisableMeetingsOfIntervalServiceStub,
 };

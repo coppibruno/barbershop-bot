@@ -2,6 +2,7 @@ import {InvalidDateError} from '../../errors';
 import * as ValidateAppointmentHelper from '../validate-appoitment.helper';
 import {faker} from '@faker-js/faker';
 import * as ValidateIfIsDezember from '../validate-if-is-dezember.helper';
+import * as FlowContext from '@/flow.context';
 
 const mockedTime = faker.date.future();
 const day = mockedTime.getDate();
@@ -34,6 +35,9 @@ describe('Appointment Is Valid Helper', () => {
       .mockReturnValueOnce(false);
     jest
       .spyOn(ValidateAppointmentHelper, 'isSunday')
+      .mockReturnValueOnce(false);
+    jest
+      .spyOn(ValidateAppointmentHelper, 'isMonday')
       .mockReturnValueOnce(false);
 
     const validFormat = `${day}/${month}`;
@@ -71,6 +75,28 @@ describe('Appointment Is Valid Helper', () => {
       ValidateAppointmentHelper.AppointmentIsValidHelper(validFormat);
 
     expect(expectedError).toBe(InvalidDateError.SUNDAY_DATE);
+  });
+  test('should return error if it is configured for monday does not open and the day for monday', () => {
+    jest
+      .spyOn(ValidateIfIsDezember, 'ValidateIfIsDezemberHelper')
+      .mockReturnValueOnce(false);
+
+    jest
+      .spyOn(ValidateAppointmentHelper, 'isBefore')
+      .mockReturnValueOnce(false);
+    jest
+      .spyOn(ValidateAppointmentHelper, 'isSunday')
+      .mockReturnValueOnce(false);
+    jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValueOnce(true);
+    jest
+      .spyOn(ValidateAppointmentHelper, 'isOpenMonday')
+      .mockReturnValueOnce(false);
+
+    const validFormat = `${day}/${month}`;
+    const expectedError =
+      ValidateAppointmentHelper.AppointmentIsValidHelper(validFormat);
+
+    expect(expectedError).toBe(InvalidDateError.INVALID_MONDAY_DATE);
   });
 });
 

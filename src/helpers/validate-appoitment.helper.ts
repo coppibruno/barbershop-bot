@@ -2,12 +2,15 @@ import moment, {Moment} from 'moment';
 import {InvalidDateError} from '../errors';
 import {ValidateIfIsDezemberHelper} from './validate-if-is-dezember.helper';
 import {PadStartDateHelper} from './pad-start.helper';
+import {FlowContext} from '@/flow.context';
 
 type IResponse =
   | InvalidDateError.INVALID_DATE
   | InvalidDateError.INVALID_DATE_DEZEMBER
   | InvalidDateError.SUNDAY_DATE
   | InvalidDateError.SUNDAY_DATE_DEZEMBER
+  | InvalidDateError.INVALID_MONDAY_DATE_DEZEMBER
+  | InvalidDateError.INVALID_MONDAY_DATE
   | true;
 
 export const isDezember = () => !!ValidateIfIsDezemberHelper();
@@ -20,11 +23,18 @@ export const getMoment = (dayMonthYear: string) => {
   return date;
 };
 
+export const isMonday = (date: Moment) => {
+  return date.isoWeekday() === 1;
+};
 export const isSunday = (date: Moment) => {
   return date.isoWeekday() === 7;
 };
 export const isBefore = (date: Moment) => {
   return date.isBefore();
+};
+
+export const isOpenMonday = (): boolean => {
+  return FlowContext.IS_OPEN_MONDAY;
 };
 
 export const INVALID_DATE = () => {
@@ -37,6 +47,12 @@ export const INVALID_SUNDAY = () => {
   return isDezember() === true
     ? InvalidDateError.SUNDAY_DATE_DEZEMBER
     : InvalidDateError.SUNDAY_DATE;
+};
+
+export const INVALID_MONDAY = () => {
+  return isDezember() === true
+    ? InvalidDateError.INVALID_MONDAY_DATE_DEZEMBER
+    : InvalidDateError.INVALID_MONDAY_DATE;
 };
 
 /**
@@ -69,6 +85,10 @@ export const AppointmentIsValidHelper = (dayMonth: string): IResponse => {
   //Sunday
   if (isSunday(date)) {
     return INVALID_SUNDAY();
+  }
+
+  if (!isOpenMonday() && isMonday(date)) {
+    return INVALID_MONDAY();
   }
 
   return true;

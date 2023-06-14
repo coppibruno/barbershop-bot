@@ -1,6 +1,6 @@
 import {faker} from '@faker-js/faker';
 import * as FetchStartAndEndAppointment from '../fetch-start-and-end-appointment-time.helper';
-import {STEP_NOT_IMPLEMETED} from '../../errors';
+import {InvalidDataIsProvidedError, STEP_NOT_IMPLEMETED} from '../../errors';
 const mockedTime = faker.date.future();
 const day = mockedTime.getDate();
 const month = mockedTime.getMonth() + 1;
@@ -41,14 +41,16 @@ describe('Fetch Start And End Appointment Time Helper', () => {
   });
   test('should return incorrect param if invalid param is provided', () => {
     const dayMonth = `${day}/${month}`;
-
+    const ERROR = new InvalidDataIsProvidedError(
+      'invalid data is provided on FetchStartAndEndAppointmentTimeHelper',
+    );
     const errorAppointment = '09h-10h';
     expect(() =>
       FetchStartAndEndAppointment.FetchStartAndEndAppointmentTimeHelper(
         dayMonth,
         errorAppointment,
       ),
-    ).toThrow(STEP_NOT_IMPLEMETED);
+    ).toThrow(ERROR);
 
     const errorAppointment2 = '9:00 - 10:00';
     expect(() =>
@@ -56,7 +58,7 @@ describe('Fetch Start And End Appointment Time Helper', () => {
         dayMonth,
         errorAppointment2,
       ),
-    ).toThrow(STEP_NOT_IMPLEMETED);
+    ).toThrow(ERROR);
 
     const errorAppointment3 = '09:00_10:00';
     expect(() =>
@@ -64,6 +66,6 @@ describe('Fetch Start And End Appointment Time Helper', () => {
         dayMonth,
         errorAppointment3,
       ),
-    ).toThrow(STEP_NOT_IMPLEMETED);
+    ).toThrow(ERROR);
   });
 });

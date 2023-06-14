@@ -6,7 +6,7 @@ import {
   GetPhoneByAccountStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
-  StepFindAvaliableDateServiceStub,
+  StepFindAvaliableDateFlowStub,
   fakeConversation,
   fakeMeeting,
 } from '@/__mocks__';
@@ -25,7 +25,7 @@ const makeSut = () => {
   const findMeetingsOfDayServiceStub = new FindMeetingsOfDayServiceStub(
     meetingRepositoryStub,
   );
-  const stepFindAvaliableDateFlowStub = new StepFindAvaliableDateServiceStub(
+  const stepFindAvaliableDateFlowStub = new StepFindAvaliableDateFlowStub(
     findConversationsServiceStub,
     findMeetingsOfDayServiceStub,
   );

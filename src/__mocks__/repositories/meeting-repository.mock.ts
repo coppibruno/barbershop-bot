@@ -16,4 +16,8 @@ export class MeetingRepositoryStub implements MeetingRepository {
   async findOne(where: OptionsQuery) {
     return Promise.resolve(fakeMeeting());
   }
+
+  async upsert({where}: OptionsQuery, data: Partial<Meetings>) {
+    return Promise.resolve(null);
+  }
 }

@@ -2,13 +2,13 @@ import {
   FindConversationsServiceStub,
   GetUserNameConversationStub,
   FindMeetingsOfDayServiceStub,
-  StepFindAvaliableDateServiceStub,
   GetPhoneByAccountStub,
   GetStepConversationStub,
   SendMessageWhatsappServiceStub,
   CreateConversationServiceStub,
   GetLastMessageInProgressConversationServiceStub,
   GetResponseByAccountServiceStub,
+  DisableMeetingsOfIntervalServiceStub,
 } from './services';
 
 import {
@@ -32,7 +32,6 @@ export {
   FindConversationsServiceStub,
   GetUserNameConversationStub,
   FindMeetingsOfDayServiceStub,
-  StepFindAvaliableDateServiceStub,
   GetPhoneByAccountStub,
   GetStepConversationStub,
   SendMessageWhatsappServiceStub,
@@ -47,6 +46,7 @@ export {
   StepFindAvaliableDateFlowStub,
   StepGetDateAndReplyAppointmentFlowStub,
   TwilioSendWhatsappMessageStub,
+  DisableMeetingsOfIntervalServiceStub,
   fakeConversation,
   fakeMeeting,
 };

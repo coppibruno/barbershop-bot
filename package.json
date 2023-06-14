@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test:all": "jest --silent --runInBand",
     "test": "jest --runInBand",
     "test:coverage": "npm test -- --coverage",
     "start:dev": "npx tsc -p tsconfig.build.json && nodemon ./src/server.ts",

@@ -9,4 +9,5 @@ export const fakeMeeting = (params?: Partial<MeetingEntity>): Meetings => ({
   endDate: faker.date.recent(),
   phone: 999999999,
   createdAt: faker.date.past(),
+  disabledByAdmin: false,
 });

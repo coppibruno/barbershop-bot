@@ -26,6 +26,7 @@ export class FindMeetingsOfDayService {
    * @returns Lista de <Meetings[]>
    */
   async execute(date: Moment): Promise<Meetings[]> {
+    //TODO: trocar para o helper fetch-max-and-min-appointment-from-day.helper
     const day = getDay(date);
     const month = getMonth(date);
     const year = getYear(date);

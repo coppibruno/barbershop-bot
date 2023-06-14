@@ -1,4 +1,4 @@
-import {STEP_NOT_IMPLEMETED} from '@/errors';
+import {InvalidDataIsProvidedError, STEP_NOT_IMPLEMETED} from '@/errors';
 import {TransformAppointmentInDateHelper} from './transform-appointment-in-date.helper';
 
 export const isValid = (appointmentTime: string): boolean => {
@@ -31,7 +31,9 @@ export const FetchStartAndEndAppointmentTimeHelper = (
   const appointmentSplit = appointmentTime.split('-');
 
   if (!isValid(appointmentTime)) {
-    throw STEP_NOT_IMPLEMETED;
+    throw new InvalidDataIsProvidedError(
+      'invalid data is provided on FetchStartAndEndAppointmentTimeHelper',
+    );
   }
 
   const startAppointment = appointmentSplit[0];

@@ -31,12 +31,13 @@ enum State {
 }
 
 model Meetings {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  phone     Int
-  startDate DateTime
-  endDate   DateTime
-  createdAt DateTime @default(now())
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  phone           Int
+  disabledByAdmin Boolean? @default(false)
+  startDate       DateTime
+  endDate         DateTime
+  createdAt       DateTime @default(now())
 
   @@unique([phone, startDate])
 }

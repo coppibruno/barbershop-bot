@@ -6,6 +6,7 @@ import {InvalidMenuOptionError} from './invalid-menu-option.enum';
 import {STEP_NOT_IMPLEMETED} from './internal/incorrect-param-is-provided.error';
 import {MEETING_ALREDY_IN_USE} from './internal/meeting-already-in-use';
 import {NotFoundError} from './internal/not-found.error';
+import {InvalidDataIsProvidedError} from './internal/invalid-data-is-provided.error';
 
 export {
   DefaultError,
@@ -18,4 +19,5 @@ export {
   STEP_NOT_IMPLEMETED,
   MEETING_ALREDY_IN_USE,
   NotFoundError,
+  InvalidDataIsProvidedError,
 };

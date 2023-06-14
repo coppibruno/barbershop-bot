@@ -16,7 +16,6 @@ enum ResponseOptionEnum {
   MAKE_APPOINTMENT = 'MAKE_APPOINTMENT',
   RENAME_USER = 'RENAME_USER',
   CLOSE_SERVICE = 'CLOSE_SERVICE',
-  INVALID_OPTION = 'INVALID_OPTION',
 }
 
 /**
@@ -49,7 +48,7 @@ export class StepResponseByOptionMenuFlow {
     const optionSelected = options.find((menu) => menu.option === option);
 
     if (!optionSelected) {
-      return ResponseOptionEnum.INVALID_OPTION;
+      throw new Error('invalid option selected');
     }
 
     if (optionSelected.option === OptionsMenuEnum.CLOSE_SERVICE) {
@@ -60,7 +59,7 @@ export class StepResponseByOptionMenuFlow {
       return ResponseOptionEnum.RENAME_USER;
     }
 
-    throw new Error('Option not implemented');
+    throw new Error('option not implemented');
   }
 
   async getOptionMenu(accountId: string): Promise<number> {
@@ -83,7 +82,7 @@ export class StepResponseByOptionMenuFlow {
 
   async execute(accountId: string): Promise<IFlowResult> {
     const defaultResult = {
-      response: DefaultError.TRY_AGAIN,
+      response: InvalidMenuOptionError.INVALID_MENU_OPTION,
       step: this.incompleteStep,
     };
 
@@ -103,12 +102,6 @@ export class StepResponseByOptionMenuFlow {
       } else if (result === ResponseOptionEnum.CLOSE_SERVICE) {
         response = this.messageToGoodBye;
         step = this.incompleteStep;
-      } else if (result === ResponseOptionEnum.INVALID_OPTION) {
-        response = InvalidMenuOptionError.INVALID_MENU_OPTION;
-        step = this.incompleteStep;
-      } else {
-        response = defaultResult.response;
-        step = defaultResult.step;
       }
 
       return {

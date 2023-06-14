@@ -287,7 +287,7 @@ export class StepGetDateAndReplyAppointmentFlow {
       step: this.incompleteStep,
       options: [],
     };
-
+    //TODO: TRATAR ERROS AQUI, CATCH PARA CASO DER ERRO VOLTAR E EXIBIR O MENU DA ETAPA ANTERIOR
     try {
       const appointment = await this.getAppointmentMarked(accountId);
       const {options} = await this.stepFindAvaliableDateFlow.execute(accountId);

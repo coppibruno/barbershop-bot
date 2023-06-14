@@ -6,7 +6,6 @@ enum ResponseOptionEnum {
   MAKE_APPOINTMENT = 'MAKE_APPOINTMENT',
   RENAME_USER = 'RENAME_USER',
   CLOSE_SERVICE = 'CLOSE_SERVICE',
-  INVALID_OPTION = 'INVALID_OPTION',
 }
 
 export class StepResponseByOptionMenuFlowStub extends StepResponseByOptionMenuFlow {
