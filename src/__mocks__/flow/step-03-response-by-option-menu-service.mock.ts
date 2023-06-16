@@ -1,12 +1,7 @@
 import {IFlowResult} from '@/interfaces/flow';
 import {StepResponseByOptionMenuFlow} from '@/services/flow/step-03-response-by-option-menu.service';
 import {FindConversationsServiceStub} from '@/__mocks__';
-
-enum ResponseOptionEnum {
-  MAKE_APPOINTMENT = 'MAKE_APPOINTMENT',
-  RENAME_USER = 'RENAME_USER',
-  CLOSE_SERVICE = 'CLOSE_SERVICE',
-}
+import {typeMenuUser} from '@/flow.context';
 
 export class StepResponseByOptionMenuFlowStub extends StepResponseByOptionMenuFlow {
   private readonly findConversationServiceStub: FindConversationsServiceStub;
@@ -15,8 +10,8 @@ export class StepResponseByOptionMenuFlowStub extends StepResponseByOptionMenuFl
     super(findConversationServiceStub);
   }
 
-  replyByMenu(option: number): ResponseOptionEnum {
-    return ResponseOptionEnum.MAKE_APPOINTMENT;
+  replyByMenu(option: number): typeMenuUser {
+    return typeMenuUser.APPOINTMENT;
   }
 
   async getOptionMenu(accountId: string): Promise<number> {

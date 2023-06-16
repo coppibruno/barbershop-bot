@@ -3,6 +3,7 @@ import * as Service from '../find-meetings-of-day.service';
 import {MeetingRepositoryStub} from '@/__mocks__';
 import * as isDezember from '../../helpers/validate-if-is-dezember.helper';
 import * as startEndDate from '../../helpers/fetch-start-and-end-appointment-time.helper';
+import * as FetchMaxAndMinAppointmentFromDay from '@/helpers/fetch-max-and-min-appointment-from-day.helper';
 
 const mockedDate = faker.date.future();
 const day = mockedDate.getDay();
@@ -23,6 +24,10 @@ jest
     startDate: mockedDate,
     endDate: mockedDate,
   }));
+
+jest
+  .spyOn(FetchMaxAndMinAppointmentFromDay, 'FetchMaxAndMinAppointmentFromDay')
+  .mockReturnValue({startDate: mockedDate, endDate: mockedDate});
 
 describe('Find Meetings of day Service', () => {
   test('should return a list of meetings of day on success', async () => {

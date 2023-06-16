@@ -7,7 +7,7 @@ import {GetUserNameConversation} from '@/services/get-user-name.service';
 export class StepShowMenuFlow {
   private readonly getUserNameConversation: GetUserNameConversation;
 
-  private readonly menu = FlowContext.MENU;
+  private readonly menu = FlowContext.getMenuUserFormatted();
   constructor(getUserNameConversation: GetUserNameConversation) {
     this.getUserNameConversation = getUserNameConversation;
   }

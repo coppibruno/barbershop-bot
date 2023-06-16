@@ -7,12 +7,20 @@ import {
   GetUserNameConversationStub,
   MeetingRepositoryStub,
   StepFindAvaliableDateFlowStub,
+  StepResponseByOptionMenuFlowStub,
   fakeConversation,
   fakeMeeting,
 } from '@/__mocks__';
-import {STEP_NOT_IMPLEMETED} from '../../../errors';
+import {
+  InvalidDataIsProvidedError,
+  InvalidMenuOptionError,
+  MEETING_ALREDY_IN_USE,
+  NotFoundError,
+  STEP_NOT_IMPLEMETED,
+} from '../../../errors';
 import {faker} from '@faker-js/faker';
 import * as StartAndEndAppontiment from '../../../helpers/fetch-start-and-end-appointment-time.helper';
+import * as TransformSampleObject from '../../../helpers/transform-sample-object-in-formatted-array.helper';
 
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
@@ -25,9 +33,15 @@ const makeSut = () => {
   const findMeetingsOfDayServiceStub = new FindMeetingsOfDayServiceStub(
     meetingRepositoryStub,
   );
+
+  const stepResponseByOptionMenuFlowStub = new StepResponseByOptionMenuFlowStub(
+    findConversationsServiceStub,
+  );
+
   const stepFindAvaliableDateFlowStub = new StepFindAvaliableDateFlowStub(
     findConversationsServiceStub,
     findMeetingsOfDayServiceStub,
+    stepResponseByOptionMenuFlowStub,
   );
 
   const getUserNameConversationStub = new GetUserNameConversationStub(
@@ -70,9 +84,60 @@ jest
     endDate: mockedTime as any,
   }));
 
+const optionsMenu = [
+  {option: 1, appointment: '09:00'},
+  {option: 2, appointment: '10:00'},
+  {option: 3, appointment: '11:00'},
+];
+
+jest
+  .spyOn(TransformSampleObject, 'TransformSampleObjectInFormattedArrayHelper')
+  .mockReturnValueOnce(optionsMenu);
+
 describe('Step Get Date Appointment And Reply execute', () => {
   test('should return success message that appointment is marked', async () => {
-    //todo
+    const {sut, stepFindAvaliableDateFlowStub} = makeSut();
+    const accountId = 'fake_account_id';
+
+    jest
+      .spyOn(sut, 'saveAppointmentMarked')
+      .mockImplementationOnce(() => Promise.resolve({startedDate: mockedTime}));
+
+    jest
+      .spyOn(stepFindAvaliableDateFlowStub, 'execute')
+      .mockImplementationOnce(() =>
+        Promise.resolve({options: ['09:00'], response: '', step: 4}),
+      );
+
+    const result = await sut.execute(accountId);
+
+    expect(result.response).toEqual(
+      expect.stringMatching(/Horário Agendado com sucesso/i),
+    );
+    expect(result.step).toBe(5);
+  });
+  test('should return message a invalid menu', async () => {
+    const {sut, stepFindAvaliableDateFlowStub} = makeSut();
+    const accountId = 'fake_account_id';
+
+    jest
+      .spyOn(sut, 'saveAppointmentMarked')
+      .mockImplementationOnce(() =>
+        Promise.reject(
+          new InvalidDataIsProvidedError('invalid menu is provided'),
+        ),
+      );
+
+    jest
+      .spyOn(stepFindAvaliableDateFlowStub, 'execute')
+      .mockImplementationOnce(() =>
+        Promise.resolve({options: ['09:00'], response: '', step: 4}),
+      );
+
+    const result = await sut.execute(accountId);
+
+    expect(result.response).toEqual(InvalidMenuOptionError.INVALID_MENU_OPTION);
+    expect(result.step).toBe(4);
   });
 });
 describe('findAppointmentSelected', () => {
@@ -83,10 +148,8 @@ describe('findAppointmentSelected', () => {
 
     const result = await sut.findAppointmentSelected(accountId);
 
-    expect(result).toBeTruthy();
-    expect(result).toHaveProperty('body');
-    expect(result).toHaveProperty('id');
-    expect(result).toHaveProperty('accountId');
+    expect(result).toHaveProperty('option');
+    expect(result).toHaveProperty('options');
   });
   test('should return error if findConversationsServiceStub return null', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
@@ -98,57 +161,17 @@ describe('findAppointmentSelected', () => {
       .mockImplementationOnce(() => Promise.resolve(null));
 
     await expect(() => sut.findAppointmentSelected(accountId)).rejects.toThrow(
-      Error,
+      new NotFoundError('Unable fetch scheduled appointment'),
     );
   });
 });
-describe('extractAppointmentList', () => {
-  test('should return an object with appointment and list option', () => {
-    const {sut} = makeSut();
 
-    const result = sut.extractAppointmentList([
-      '09:00',
-      '10:00',
-      '11:00',
-      '12:00',
-    ]);
-
-    expect(result.length).toBe(4);
-    expect(result).toEqual([
-      {option: 1, appointment: '09:00'},
-      {option: 2, appointment: '10:00'},
-      {option: 3, appointment: '11:00'},
-      {option: 4, appointment: '12:00'},
-    ]);
-  });
-  //todo teste sem horario disponivel
-});
-describe('getStartAndEndAppointment', () => {
-  test('should return appointment start and end time', () => {
-    const {sut} = makeSut();
-
-    const appointment = '09:00';
-
-    const result = sut.getStartAndEndAppointment(
-      appointment,
-      mockedTime as any,
-    );
-
-    expect(result).toEqual(expect.any(String));
-    expect(result.length).toBe(13); //'HH:MM - HH:MM' (09:00 - 10:00)
-  });
-  //todo incorrect param
-});
 describe('getDataToNewMeet', () => {
   test('should return meeting entity on success', async () => {
-    const {sut, meetingRepositoryStub} = makeSut();
+    const {sut} = makeSut();
 
     const fakeAcoountId = 'fake_account_id';
     const appointment = '09:00';
-
-    jest
-      .spyOn(meetingRepositoryStub, 'find')
-      .mockImplementationOnce(() => Promise.resolve([]));
 
     const result = await sut.getDataToNewMeet(fakeAcoountId, appointment);
 
@@ -170,6 +193,10 @@ describe('saveAppointment', () => {
       .spyOn(sut, 'getDataToNewMeet')
       .mockImplementationOnce(() => Promise.resolve(fakeMeeting()));
 
+    jest
+      .spyOn(sut, 'findMeetingIsAvaliable')
+      .mockImplementationOnce(() => Promise.resolve(null));
+
     const result = await sut.saveAppointment(fakeAcoountId, appointment);
 
     expect(result).toHaveProperty('id');
@@ -179,34 +206,46 @@ describe('saveAppointment', () => {
     expect(result).toHaveProperty('phone');
     expect(result).toHaveProperty('createdAt');
   });
+  test('should return MEETING_ALREDY_IN_USE if meeting alred in use', async () => {
+    const {sut} = makeSut();
+
+    const fakeAcoountId = 'fake_account_id';
+    const appointment = '09:00';
+
+    jest
+      .spyOn(sut, 'getDataToNewMeet')
+      .mockImplementationOnce(() => Promise.resolve(fakeMeeting()));
+
+    jest
+      .spyOn(sut, 'findMeetingIsAvaliable')
+      .mockImplementationOnce(() => Promise.resolve(fakeMeeting()));
+
+    await expect(() =>
+      sut.saveAppointment(fakeAcoountId, appointment),
+    ).rejects.toThrow(MEETING_ALREDY_IN_USE);
+  });
 });
 
-describe('getAppointmentMarked', () => {
+describe('saveAppointmentMarked', () => {
   test('should return startedDate on success', async () => {
-    const {sut, findConversationsServiceStub, meetingRepositoryStub} =
-      makeSut();
+    const {sut} = makeSut();
 
     const accountId = 'fake_account_id';
+    jest.spyOn(sut, 'findAppointmentSelected').mockImplementationOnce(() =>
+      Promise.resolve({
+        option: 1,
+        options: optionsMenu,
+      }),
+    );
     jest
-      .spyOn(findConversationsServiceStub, 'findOne')
-      .mockImplementationOnce(() => {
-        return Promise.resolve(
-          fakeConversation({
-            body: '2',
-            options: {1: '09:00', 2: '10:00', 3: '11:00'},
-          }),
-        );
-      });
+      .spyOn(sut, 'saveAppointment')
+      .mockImplementationOnce(() => Promise.resolve(fakeMeeting()));
 
-    jest
-      .spyOn(meetingRepositoryStub, 'find')
-      .mockImplementationOnce(() => Promise.resolve([]));
-
-    const result = await sut.getAppointmentMarked(accountId);
+    const result = await sut.saveAppointmentMarked(accountId);
 
     expect(result).toHaveProperty('startedDate');
   });
-  test('should return STEP_NOT_IMPLEMETED error if appointment selected is not a number', async () => {
+  test('should return invalid menu is provided error if appointment selected is not a number', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
 
     const accountId = 'fake_account_id';
@@ -221,8 +260,8 @@ describe('getAppointmentMarked', () => {
         );
       });
 
-    await expect(() => sut.getAppointmentMarked(accountId)).rejects.toThrow(
-      STEP_NOT_IMPLEMETED,
+    await expect(() => sut.saveAppointmentMarked(accountId)).rejects.toThrow(
+      new InvalidDataIsProvidedError('invalid menu is provided'),
     );
   });
   test('should return type NEW_APPOINTMENT if OPTION_RETRY_DATE_APPOINTMENT is selected (option 0)', async () => {
@@ -240,11 +279,11 @@ describe('getAppointmentMarked', () => {
         );
       });
 
-    const result = await sut.getAppointmentMarked(accountId);
+    const result = await sut.saveAppointmentMarked(accountId);
 
     expect(result).toBe(Step.AppointmentResultEnum.NEW_APPOINTMENT);
   });
-  test('should return STEP_NOT_IMPLEMETED if option selected not exists', async () => {
+  test('should return invalid menu is provided if option selected not exists', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
 
     const accountId = 'fake_account_id';
@@ -259,17 +298,17 @@ describe('getAppointmentMarked', () => {
         );
       });
 
-    await expect(() => sut.getAppointmentMarked(accountId)).rejects.toThrow(
-      STEP_NOT_IMPLEMETED,
+    await expect(() => sut.saveAppointmentMarked(accountId)).rejects.toThrow(
+      new InvalidDataIsProvidedError('invalid menu is provided'),
     );
   });
 });
 
 describe('findMeetingIsAvaliable', () => {
-  test('should calls meeting repository sub with correct values', async () => {
+  test('should calls meeting repository with correct values', async () => {
     const {sut, meetingRepositoryStub} = makeSut();
 
-    const spyOn = jest.spyOn(meetingRepositoryStub, 'find');
+    const spyOn = jest.spyOn(meetingRepositoryStub, 'findOne');
 
     const phone = 999999;
     const startDate = mockedTime;

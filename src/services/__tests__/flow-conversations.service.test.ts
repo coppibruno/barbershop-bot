@@ -81,9 +81,11 @@ const makeGetReponseByAccountStub = () => {
   const stepResponseByOptionMenuFlowStub = new StepResponseByOptionMenuFlowStub(
     findConversationsServiceStub,
   );
+
   const stepFindAvaliableDateFlowStub = new StepFindAvaliableDateFlowStub(
     findConversationsServiceStub,
     findMeetingsOfDayServiceStub,
+    stepResponseByOptionMenuFlowStub,
   );
 
   const stepGetDateAndReplyAppointmentFlowStub =

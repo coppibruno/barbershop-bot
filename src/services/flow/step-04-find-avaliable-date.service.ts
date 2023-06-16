@@ -8,20 +8,23 @@ import {
   TransformAppointmentInDateHelper,
   ValidateIfIsDezemberHelper,
   PadStartDateHelper,
+  FetchMaxAndMinAppointmentFromDay,
 } from '@/helpers';
 
 //services
 import {FindConversationsService, FindMeetingsOfDayService} from '@/services';
 
-import {InvalidDateError} from '@/errors';
+import {InvalidDataIsProvidedError, InvalidDateError} from '@/errors';
 import {IAppointmentsResult, IFlowResult} from '@/interfaces/flow';
 
 import {FlowContext} from '../../flow.context';
+import {StepResponseByOptionMenuFlow} from './step-03-response-by-option-menu.service';
 
 export const isSameDate = (date1, date2) => date1.isSame(date2);
 
 export const isAfter = (date) => moment(date).isAfter();
 
+export const getDate = (date) => moment(date);
 export const getDay = (date) => date.date();
 export const getMonth = (date) => date.getMonth() + 1;
 
@@ -54,6 +57,12 @@ export const INVALID_SUNDAY = () => {
     : InvalidDateError.SUNDAY_DATE;
 };
 
+export const INVALID_MONDAY = () => {
+  return ValidateIfIsDezemberHelper() === true
+    ? InvalidDateError.INVALID_MONDAY_DATE_DEZEMBER
+    : InvalidDateError.INVALID_MONDAY_DATE;
+};
+
 interface IOptionsAppointment {
   options: string[];
   response: string;
@@ -65,31 +74,36 @@ interface IOptionsAppointment {
 export class StepFindAvaliableDateFlow {
   public readonly findConversationService: FindConversationsService;
   public readonly findMeetingsOfDayService: FindMeetingsOfDayService;
+  public readonly stepResponseByOptionMenuFlow: StepResponseByOptionMenuFlow;
   public readonly stepCompleted: number = 4;
   public readonly incompleteStep: number = 3;
 
-  public startAppointmentDay = FlowContext.START_APPOINTMENT_DAY;
-  public endAppointmentDay = FlowContext.END_APPOINTMENT_DAY;
-  public startSaturdayAppointmentDay =
-    FlowContext.START_SATURDAY_APPOINTMENT_DAY;
-  public endSaturdayAppointmentDay = FlowContext.END_SATURDAY_APPOINTMENT_DAY;
   public startLunchTimeOff: string | boolean = FlowContext.getStartLunchTime();
   public endLunchTimeOff: string | boolean = FlowContext.getEndLunchTime();
   public readonly appointmentTimeInMinutes =
     FlowContext.APPOINTMENT_TIME_IN_MINUTES;
-
-  public readonly isOpenMonday: boolean = FlowContext.IS_OPEN_MONDAY;
+  public disableAppointments: Meetings[] = [];
 
   constructor(
     findConversationService: FindConversationsService,
     findMeetingsOfDayService: FindMeetingsOfDayService,
+    stepResponseByOptionMenuFlow: StepResponseByOptionMenuFlow,
   ) {
     this.findConversationService = findConversationService;
     this.findMeetingsOfDayService = findMeetingsOfDayService;
+    this.stepResponseByOptionMenuFlow = stepResponseByOptionMenuFlow;
   }
-
-  appointmentAlreadyUsed(meetsOfDay, startAppointment, endAppointment) {
-    return meetsOfDay.find((item) => {
+  /**
+   * Percorre os apontamentos agendados e verifica se está preenchido com a data a ser processada
+   * @param startAppointment data de inicio do agendamento
+   * @param endAppointment data fim
+   * @returns Caso a data esteja preenchida retorna o agendamento
+   */
+  public appointmentAlreadyUsed(
+    startAppointment: Moment,
+    endAppointment: Moment,
+  ): Meetings {
+    return this.disableAppointments.find((item) => {
       return (
         moment(startAppointment).seconds(1).isAfter(item.startDate) &&
         moment(endAppointment).subtract(1, 'second').isBefore(item.endDate)
@@ -97,64 +111,24 @@ export class StepFindAvaliableDateFlow {
     });
   }
 
-  isOnLunchBreak({appointment, lunchStart, lunchEnd}) {
-    return (
-      moment(appointment).isAfter(lunchStart) &&
-      moment(appointment).isBefore(lunchEnd)
-    );
+  public dateIsLunchTime({date, lunchStart, lunchEnd}) {
+    return moment(date).isAfter(lunchStart) && moment(date).isBefore(lunchEnd);
   }
-
-  getMaxAndMinAppointmentFromDay(date: Moment): {
-    startDate: Moment;
-    endDate: Moment;
-  } {
-    const startTime = this.startAppointmentDay.split(':');
-    const endTime = this.endAppointmentDay.split(':');
-
-    let startHour = Number(startTime[0]);
-    let startMin = Number(startTime[1]);
-
-    let endHour = Number(endTime[0]);
-    let endMin = Number(endTime[1]);
-
-    const saturday = isSaturday(date);
-
-    if (saturday) {
-      const startTime = this.startSaturdayAppointmentDay.split(':');
-      const endTime = this.endSaturdayAppointmentDay.split(':');
-
-      startHour = Number(startTime[0]);
-      startMin = Number(startTime[1]);
-
-      endHour = Number(endTime[0]);
-      endMin = Number(endTime[1]);
-    }
-
-    const start = getClone(date);
-    const end = getClone(date);
-
-    setHours(start, startHour);
-    setMinutes(start, startMin);
-    setSeconds(start, 0);
-
-    setHours(end, endHour);
-    setMinutes(end, endMin);
-    setSeconds(end, 0);
-
-    return {startDate: start, endDate: end};
-  }
-
-  verifyIfAppointmentIsAvaliable(
-    meetsOfDay: Meetings[],
+  /**
+   * Verifica se o agendamento está disponivel
+   * @param startAppointment data de inicio do agendamento
+   * @param endAppointment data fim
+   * @returns Retorna true caso esteja disponível, false caso não
+   */
+  public verifyIfAppointmentIsAvaliable(
     startAppointment: Moment,
     endAppointment: Moment,
   ) {
-    if (meetsOfDay.length === 0) {
+    if (this.disableAppointments.length === 0) {
       return true;
     }
 
     const meetExists = this.appointmentAlreadyUsed(
-      meetsOfDay,
       startAppointment,
       endAppointment,
     );
@@ -165,8 +139,12 @@ export class StepFindAvaliableDateFlow {
 
     return true;
   }
-
-  validateIfAppointmentIsLunchTime(appointment: Moment): boolean {
+  /**
+   * Recebe a data do apontamento e retorna bool false ou true se a data está em horário de almoço
+   * @param date Data Moment
+   * @returns True caso esteja em horário de almoço, False caso não esteja
+   */
+  validateIfAppointmentIsLunchTime(date: Moment): boolean {
     if (!this.startLunchTimeOff && !this.endLunchTimeOff) {
       return false;
     }
@@ -175,8 +153,8 @@ export class StepFindAvaliableDateFlow {
       String(this.endLunchTimeOff),
     );
 
-    const day = getDay(appointment);
-    const month = getMonth(appointment);
+    const day = getDay(date);
+    const month = getMonth(date);
 
     setDay(lunchStart, day);
     setMonth(lunchStart, month);
@@ -184,14 +162,18 @@ export class StepFindAvaliableDateFlow {
     setDay(lunchEnd, day);
     setMonth(lunchEnd, month);
 
-    if (this.isOnLunchBreak({appointment, lunchStart, lunchEnd})) {
+    if (this.dateIsLunchTime({date, lunchStart, lunchEnd})) {
       return true;
     }
 
     return false;
   }
-
-  async getAppointmentsOfDate(
+  /**
+   * Retorna a lista de agendamentos disponiveis do dia passado por parâmetro
+   * @param dayMonth dia/mês. Formato 10/06
+   * @returns Retorna uma lista de agendamentos disponíveis
+   */
+  public async getAppointmentsOfDate(
     dayMonth: string,
   ): Promise<IAppointmentsResult[]> {
     const avaliabledMeetings: IAppointmentsResult[] = [];
@@ -199,12 +181,17 @@ export class StepFindAvaliableDateFlow {
     const dateAppointment = TransformAppointmentInDateHelper(dayMonth);
 
     const {startDate, endDate} =
-      this.getMaxAndMinAppointmentFromDay(dateAppointment);
+      FetchMaxAndMinAppointmentFromDay(dateAppointment);
+
+    const startDateMoment = getDate(startDate);
 
     let currentAppointment = getClone(startDate);
     let count: number = 0;
 
-    const meetsOfDay = await this.findMeetingsOfDayService.execute(startDate);
+    //10/06 - pega todos os agendamentos do dia 10/06
+    this.disableAppointments = await this.findMeetingsOfDayService.execute(
+      startDateMoment,
+    );
 
     do {
       const currentStartAppointment = getClone(currentAppointment);
@@ -223,6 +210,12 @@ export class StepFindAvaliableDateFlow {
         addDate(currentAppointment, this.appointmentTimeInMinutes, 'minutes'),
       );
 
+      const isAfterNow = isAfter(currentStartAppointment);
+
+      if (!isAfterNow) {
+        continue;
+      }
+
       const isLunchTime = this.validateIfAppointmentIsLunchTime(
         currentStartAppointment,
       );
@@ -233,7 +226,6 @@ export class StepFindAvaliableDateFlow {
 
       if (
         !this.verifyIfAppointmentIsAvaliable(
-          meetsOfDay,
           currentStartAppointment,
           currentEndAppointment,
         )
@@ -241,11 +233,6 @@ export class StepFindAvaliableDateFlow {
         continue;
       }
 
-      const isAfterNow = isAfter(currentStartAppointment);
-
-      if (!isAfterNow) {
-        continue;
-      }
       const avaliableAppointment = `${hourStartTime}:${minStartTime}`;
 
       count++;
@@ -258,25 +245,29 @@ export class StepFindAvaliableDateFlow {
 
     return avaliabledMeetings;
   }
+  /**
+   * Retorna string com a lista de horários disponiveis
+   * @param listOptions Lista de horários
+   * @param dayMonth dia/mês. Ex: 10/06
+   * @returns Retorna a lista de horários e a mensagem da lista de agendamentos
+   */
+  public getMessageListOptions(
+    listOptions: IAppointmentsResult[] = [],
+    dayMonth: string,
+  ): IOptionsAppointment {
+    const avaliableOptions: any = {};
 
-  async findAvaliableTime(dayMonth: string): Promise<IOptionsAppointment> {
-    let options = await this.getAppointmentsOfDate(dayMonth);
-
-    const formattedOptions = options.map(
-      ({option, description}) => `${option}- ${description} \n`,
-    );
-
-    const objectListOptions: any = {};
-    options.forEach(({option, description}) => {
-      objectListOptions[option] = description;
+    listOptions.forEach(({option, description}) => {
+      avaliableOptions[option] = description;
     });
+
     let response;
-    if (options.length > 0) {
-      response =
-        `Para o dia ${dayMonth} temos esses horários disponiveis, escolha uma das opções abaixo: \n\n${formattedOptions}`.replaceAll(
-          ',',
-          '',
-        );
+    if (listOptions.length > 0) {
+      response = `Para o dia ${dayMonth} temos esses horários disponiveis, escolha uma das opções abaixo: \n\n`;
+      response += listOptions.map(
+        ({option, description}) => `${option}- ${description} \n`,
+      );
+      response = response.replaceAll(',', '');
     } else {
       response = `Para o dia ${dayMonth} não temos horários disponiveis. \n`;
     }
@@ -284,9 +275,13 @@ export class StepFindAvaliableDateFlow {
     response += `\n`;
     response += `Digite 0 para escolher outra data`;
 
-    return {options: objectListOptions, response};
+    return {options: avaliableOptions, response};
   }
-
+  /**
+   * Busca o dia/mês digitado pelo usuário
+   * @param accountId usuario
+   * @returns Retorna o dia/mês. Ex 10/06
+   */
   async getDateAppointment(accountId: string): Promise<string> {
     const result = await this.findConversationService.findOne({
       where: {
@@ -303,36 +298,49 @@ export class StepFindAvaliableDateFlow {
     }
     const dayMonth = result.body;
 
-    const validationDate = AppointmentIsValidHelper(dayMonth);
+    const isValid = AppointmentIsValidHelper(dayMonth);
 
-    if (validationDate === true) {
+    if (isValid === true) {
       return dayMonth;
     }
-    throw new Error('invalid date is provided');
+
+    throw new InvalidDataIsProvidedError(isValid);
   }
 
   async execute(accountId: string): Promise<IFlowResult> {
-    //TODO: TRATAR ERROS AQUI, CATCH PARA CASO DER ERRO VOLTAR E EXIBIR O MENU DA ETAPA ANTERIOR
-    const appointment = await this.getDateAppointment(accountId);
-    if (appointment === INVALID_DATE()) {
-      return {
-        response: INVALID_DATE(),
-        step: this.incompleteStep,
-      };
-    }
-    if (appointment === INVALID_SUNDAY()) {
-      return {
-        response: INVALID_SUNDAY(),
-        step: this.incompleteStep,
-      };
-    }
+    try {
+      const dayMonthAppointment = await this.getDateAppointment(accountId);
 
-    const {options, response} = await this.findAvaliableTime(appointment);
+      const listOptions = await this.getAppointmentsOfDate(dayMonthAppointment);
 
-    return {
-      response,
-      options,
-      step: this.stepCompleted,
-    };
+      const {response, options} = this.getMessageListOptions(
+        listOptions,
+        dayMonthAppointment,
+      );
+
+      return {
+        response,
+        options,
+        step: this.stepCompleted,
+      };
+    } catch (error) {
+      console.error(error);
+
+      if (
+        [INVALID_DATE(), INVALID_SUNDAY(), INVALID_MONDAY()].includes(
+          error.message,
+        )
+      ) {
+        return {
+          response: error.message,
+          step: this.incompleteStep,
+        };
+      }
+
+      const {response, step} = await this.stepResponseByOptionMenuFlow.execute(
+        accountId,
+      );
+      return {response, step};
+    }
   }
 }

@@ -1,4 +1,4 @@
-import {FlowContext} from '../../flow.context';
+import {FlowContext, typeMenuUser} from '../../flow.context';
 import {IFlowResult} from '@/interfaces/flow';
 import {FindConversationsService} from '@/services/find-conversation.service';
 import {InvalidMenuOptionError, DefaultError} from '@/errors';
@@ -42,7 +42,7 @@ export class StepResponseByOptionMenuFlow {
     this.findConversationService = findConversationService;
   }
 
-  replyByMenu(option: number): ResponseOptionEnum {
+  replyByMenu(option: number): typeMenuUser {
     const options = this.menu;
 
     const optionSelected = options.find((menu) => menu.option === option);
@@ -51,15 +51,7 @@ export class StepResponseByOptionMenuFlow {
       throw new Error('invalid option selected');
     }
 
-    if (optionSelected.option === OptionsMenuEnum.CLOSE_SERVICE) {
-      return ResponseOptionEnum.CLOSE_SERVICE;
-    } else if (optionSelected.option === OptionsMenuEnum.MAKE_APPOINTMENT) {
-      return ResponseOptionEnum.MAKE_APPOINTMENT;
-    } else if (optionSelected.option === OptionsMenuEnum.RENAME_USER) {
-      return ResponseOptionEnum.RENAME_USER;
-    }
-
-    throw new Error('option not implemented');
+    return optionSelected.type;
   }
 
   async getOptionMenu(accountId: string): Promise<number> {
@@ -89,20 +81,27 @@ export class StepResponseByOptionMenuFlow {
     try {
       const selected = await this.getOptionMenu(accountId);
 
-      const result = this.replyByMenu(selected);
+      const menuSelectType = this.replyByMenu(selected);
 
-      let step: number = 0;
-      let response;
-      if (result === ResponseOptionEnum.MAKE_APPOINTMENT) {
-        response = this.messageToMakeAppointment;
-        step = this.stepCompleted;
-      } else if (result === ResponseOptionEnum.RENAME_USER) {
-        response = this.messageToRenameUser;
-        step = this.stepRenameUser;
-      } else if (result === ResponseOptionEnum.CLOSE_SERVICE) {
-        response = this.messageToGoodBye;
-        step = this.incompleteStep;
-      }
+      const types = [
+        {
+          type: typeMenuUser.APPOINTMENT,
+          response: this.messageToMakeAppointment,
+          step: this.stepCompleted,
+        },
+        {
+          type: typeMenuUser.CHANGE_NAME,
+          response: this.messageToRenameUser,
+          step: this.stepRenameUser,
+        },
+        {
+          type: typeMenuUser.CLOSE_SERVICE,
+          response: this.messageToGoodBye,
+          step: this.incompleteStep,
+        },
+      ];
+
+      const {response, step} = types.find(({type}) => type === menuSelectType);
 
       return {
         response,

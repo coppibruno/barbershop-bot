@@ -2,6 +2,7 @@ import {FlowContext} from '../../flow.context';
 import {IFlowResult} from '@/interfaces/flow';
 import {FindConversationsService} from '../find-conversation.service';
 import {WelcomeAdminAndShowMenu} from './welcome-admin-and-show-menu.service';
+import {InvalidMenuOptionError, NotFoundError} from '@/errors';
 /**
  * Etapa responsável responder conforme o menu solicitado no WelcomeAdminAndShowMenuService
  */
@@ -9,6 +10,8 @@ export class AdminResponseByOptionMenu {
   private readonly menu = FlowContext.MENU_ADMIN;
 
   private readonly findConversationService: FindConversationsService;
+  private msgIncorrectMenuIsProvided = 'menu not found';
+  private readonly previousMenuNumber = 6;
 
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
@@ -36,7 +39,7 @@ export class AdminResponseByOptionMenu {
     const menuSelected = this.menu.find(({option}) => option === menu);
 
     if (!menuSelected) {
-      throw new Error('menu not found');
+      throw new NotFoundError(this.msgIncorrectMenuIsProvided);
     }
 
     return menuSelected.callback;
@@ -50,7 +53,15 @@ export class AdminResponseByOptionMenu {
 
       return {response, step: 7};
     } catch (error) {
-      //call previous step
+      const {message} = error;
+
+      if (message === this.msgIncorrectMenuIsProvided) {
+        return {
+          response: InvalidMenuOptionError.INVALID_MENU_OPTION,
+          step: this.previousMenuNumber,
+        };
+      }
+
       const {response, step} = new WelcomeAdminAndShowMenu().execute();
 
       return {response, step};

@@ -7,6 +7,7 @@ import {FetchStartAndEndAppointmentTimeHelper} from './fetch-start-and-end-appoi
 import {RemoveBlankSpacesHelper} from './remove-blank-spaces.helper';
 import {FetchMaxAndMinAppointmentFromDay} from './fetch-max-and-min-appointment-from-day.helper';
 import {ConvertIntervalTimeInObject} from './convert-interval-time-in-object.helper';
+import {TransformSampleObjectInFormattedArrayHelper} from './transform-sample-object-in-formatted-array.helper';
 
 export {
   AppointmentIsValidHelper,
@@ -18,4 +19,5 @@ export {
   RemoveBlankSpacesHelper,
   FetchMaxAndMinAppointmentFromDay,
   ConvertIntervalTimeInObject,
+  TransformSampleObjectInFormattedArrayHelper,
 };

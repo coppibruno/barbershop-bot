@@ -1,5 +1,5 @@
 import {Moment} from 'moment';
-import {Conversations, Meetings} from '@prisma/client';
+import {Meetings} from '@prisma/client';
 import {faker} from '@faker-js/faker';
 
 import {
@@ -7,7 +7,6 @@ import {
   GetPhoneByAccountStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
-  fakeConversation,
   fakeMeeting,
 } from '@/__mocks__';
 
@@ -63,9 +62,9 @@ export class StepGetDateAndReplyAppointmentFlowStub extends StepGetDateAndReplyA
     );
   }
 
-  findMeetingIsAvaliable = async ({startDate, endDate, phone}) => {
-    return [fakeMeeting()];
-  };
+  async findMeetingIsAvaliable({startDate, endDate, phone}): Promise<Meetings> {
+    return Promise.resolve(null);
+  }
 
   /**
    *
@@ -106,21 +105,13 @@ export class StepGetDateAndReplyAppointmentFlowStub extends StepGetDateAndReplyA
     return Promise.resolve(fakeMeeting());
   }
 
-  /**
-   *
-   * @param options array de opções. Ex: ['09:00', '10:00', '11:00', ...]
-   * @returns Array formatado com propriedades de Option e Appointment. Ex: [{option: 1, appointment: '09:00'}, ...]
-   */
-  extractAppointmentList(options: any): IOptions[] {
-    return [
-      {appointment: '9:00', option: 1},
-      {appointment: '10:00', option: 2},
-      {appointment: '11:00', option: 3},
-    ];
-  }
-
-  async findAppointmentSelected(accountId: string): Promise<Conversations> {
-    return fakeConversation();
+  async findAppointmentSelected(
+    accountId: string,
+  ): Promise<{option: number; options: any}> {
+    return Promise.resolve({
+      option: 1,
+      options: {1: '09:00', 2: '10:00'},
+    });
   }
   /**
    *

@@ -1,22 +1,24 @@
 import * as Step from '../step-04-find-avaliable-date.service';
 import {
-  ConversationRepositoryStub,
   FindConversationsServiceStub,
+  ConversationRepositoryStub,
   fakeConversation,
   FindMeetingsOfDayServiceStub,
   MeetingRepositoryStub,
   fakeMeeting,
+  StepResponseByOptionMenuFlowStub,
 } from '@/__mocks__';
 import {faker} from '@faker-js/faker';
 import * as IsValid from '../../../helpers/validate-appoitment.helper';
-import {IAppointmentsResult} from '../../../interfaces/flow';
 import * as DateHelper from '../../../helpers/transform-appointment-in-date.helper';
 import * as StartEndLunchTime from '../../../helpers/fetch-start-and-end-lunch-time.helper';
+import * as FetchMaxMin from '../../../helpers/fetch-max-and-min-appointment-from-day.helper';
+import {InvalidDataIsProvidedError} from '@/errors';
 
-const fakeAppointmentResult: IAppointmentsResult = {
-  description: '09:00 - 10:00',
-  option: 1,
-};
+const fakeAppointmentResult = (time, option) => ({
+  description: time,
+  option,
+});
 
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
@@ -29,9 +31,14 @@ const makeSut = () => {
     meetingRepositoryStub,
   );
 
+  const stepResponseByOptionMenuFlowStub = new StepResponseByOptionMenuFlowStub(
+    findConversationsServiceStub,
+  );
+
   const sut = new Step.StepFindAvaliableDateFlow(
     findConversationsServiceStub,
     findMeetingsOfDayServiceStub,
+    stepResponseByOptionMenuFlowStub,
   );
 
   return {
@@ -81,43 +88,41 @@ jest
     start: mockedTime as any,
     end: mockedTime as any,
   }));
+jest
+  .spyOn(FetchMaxMin, 'FetchMaxAndMinAppointmentFromDay')
+  .mockImplementation(() => ({
+    startDate: mockedTime as any,
+    endDate: mockedTime as any,
+  }));
 
 describe('StepFindAvaliableAppointment', () => {
   test('should return a list of appointment from day and step 4 on success', async () => {
     const {sut} = makeSut();
     const accountId = 'fake_account_id';
-
     jest
       .spyOn(sut, 'getAppointmentsOfDate')
       .mockImplementationOnce(() =>
-        Promise.resolve([fakeAppointmentResult, fakeAppointmentResult]),
+        Promise.resolve([
+          fakeAppointmentResult('09:00', 1),
+          fakeAppointmentResult('10:00', 2),
+          fakeAppointmentResult('11:00', 3),
+          fakeAppointmentResult('12:00', 4),
+        ]),
       );
-
-    jest
-      .spyOn(Step, 'isSameDate')
-      .mockImplementation(() => false)
-      .mockImplementationOnce(() => false)
-      .mockImplementationOnce(() => false)
-      .mockImplementationOnce(() => true); //mock true after third call
-
     const result = await sut.execute(accountId);
-
-    expect(result).toHaveProperty('response');
-    expect(result).toHaveProperty('step');
+    console.log('test', result);
     expect(result.response).toEqual(
       expect.stringMatching(/temos esses horários disponiveis/i),
     );
     expect(result.step).toBe(sut.stepCompleted); //step 4
   });
-
   test('should return a message that from the day there is no time available', async () => {
     const accountId = 'any_value';
     const {sut} = makeSut();
-
+    //mock empty avaliable appointments
     jest
-      .spyOn(sut, 'verifyIfAppointmentIsAvaliable')
-      .mockImplementation(() => false);
-
+      .spyOn(sut, 'getAppointmentsOfDate')
+      .mockImplementation(() => Promise.resolve([]));
     const result = await sut.execute(accountId);
     expect(result).toHaveProperty('response');
     expect(result).toHaveProperty('step');
@@ -126,17 +131,53 @@ describe('StepFindAvaliableAppointment', () => {
     );
     expect(result.step).toBe(sut.stepCompleted); //step 4
   });
+  test('should return message that day is sunday to retry again', async () => {
+    const {sut} = makeSut();
+    const accountId = 'fake_account_id';
+
+    jest
+      .spyOn(sut, 'getDateAppointment')
+      .mockImplementationOnce(() =>
+        Promise.reject(new InvalidDataIsProvidedError(Step.INVALID_SUNDAY())),
+      );
+    const result = await sut.execute(accountId);
+
+    expect(result.response).toBe(Step.INVALID_SUNDAY());
+    expect(result.step).toBe(3);
+  });
+  test('should return message that day is monday to retry again', async () => {
+    const {sut} = makeSut();
+    const accountId = 'fake_account_id';
+
+    jest
+      .spyOn(sut, 'getDateAppointment')
+      .mockImplementationOnce(() =>
+        Promise.reject(new InvalidDataIsProvidedError(Step.INVALID_MONDAY())),
+      );
+    const result = await sut.execute(accountId);
+
+    expect(result.response).toBe(Step.INVALID_MONDAY());
+    expect(result.step).toBe(3);
+  });
+  test('should return message that day is invalid date and to retry again', async () => {
+    const {sut} = makeSut();
+    const accountId = 'fake_account_id';
+
+    jest
+      .spyOn(sut, 'getDateAppointment')
+      .mockImplementationOnce(() =>
+        Promise.reject(new InvalidDataIsProvidedError(Step.INVALID_DATE())),
+      );
+    const result = await sut.execute(accountId);
+
+    expect(result.response).toBe(Step.INVALID_DATE());
+    expect(result.step).toBe(3);
+  });
 });
 
 describe('GetAppointmentsOfDate', () => {
   test('should return a list of appointment from getAppointmentsOfDate', async () => {
     const {sut} = makeSut();
-    jest
-      .spyOn(sut, 'getMaxAndMinAppointmentFromDay')
-      .mockImplementation(() => ({
-        startDate: mockedTime as any,
-        endDate: mockedTime as any,
-      }));
 
     jest
       .spyOn(sut, 'validateIfAppointmentIsLunchTime')
@@ -155,61 +196,12 @@ describe('GetAppointmentsOfDate', () => {
 
     const result = await sut.getAppointmentsOfDate(dayMonth);
 
-    expect(result).toStrictEqual(expect.any(Array));
-  });
-});
+    expect(result.length).toBeGreaterThan(0);
 
-describe('GetMaxAndMinAppointmentFromDay', () => {
-  test('should return a min and max date from appointment day', () => {
-    const {sut} = makeSut();
-    jest.clearAllMocks();
-    //weekday
-    jest.replaceProperty(sut, 'startAppointmentDay', '09:00');
-    jest.replaceProperty(sut, 'endAppointmentDay', '21:00');
-
-    const result = sut.getMaxAndMinAppointmentFromDay(mockedTime as any);
-
-    expect(result).toHaveProperty('startDate');
-    expect(result).toHaveProperty('endDate');
-
-    // expect(Step.setHours).toHaveBeenCalledTimes(2);
-    expect(Step.setHours).toHaveBeenNthCalledWith(1, mockedTime, 9);
-    expect(Step.setHours).toHaveBeenNthCalledWith(2, mockedTime, 21);
-
-    expect(Step.setMinutes).toHaveBeenNthCalledWith(1, mockedTime, 0);
-    expect(Step.setMinutes).toHaveBeenNthCalledWith(2, mockedTime, 0);
-
-    expect(Step.setSeconds).toHaveBeenNthCalledWith(1, mockedTime, 0);
-    expect(Step.setSeconds).toHaveBeenNthCalledWith(2, mockedTime, 0);
-  });
-  test('should return short list if is sunday', () => {
-    const {sut} = makeSut();
-    jest.clearAllMocks();
-
-    //weekday
-    jest.replaceProperty(sut, 'startAppointmentDay', '09:00');
-    jest.replaceProperty(sut, 'endAppointmentDay', '21:00');
-
-    //mock saturday true for this case
-    jest.spyOn(Step, 'isSaturday').mockImplementation(() => true);
-
-    //sunday hours
-    jest.replaceProperty(sut, 'startSaturdayAppointmentDay', '09:00');
-    jest.replaceProperty(sut, 'endSaturdayAppointmentDay', '12:00');
-
-    const result = sut.getMaxAndMinAppointmentFromDay(mockedTime as any);
-
-    expect(result).toHaveProperty('startDate');
-    expect(result).toHaveProperty('endDate');
-
-    expect(Step.setHours).toHaveBeenNthCalledWith(1, mockedTime, 9);
-    expect(Step.setHours).toHaveBeenNthCalledWith(2, mockedTime, 12);
-
-    expect(Step.setMinutes).toHaveBeenNthCalledWith(1, mockedTime, 0);
-    expect(Step.setMinutes).toHaveBeenNthCalledWith(2, mockedTime, 0);
-
-    expect(Step.setSeconds).toHaveBeenNthCalledWith(1, mockedTime, 0);
-    expect(Step.setSeconds).toHaveBeenNthCalledWith(2, mockedTime, 0);
+    result.forEach((item) => {
+      expect(item).toHaveProperty('option');
+      expect(item).toHaveProperty('description');
+    });
   });
 });
 
@@ -220,7 +212,7 @@ describe('validateIfAppointmentIsLunchTime', () => {
     jest.replaceProperty(sut, 'startLunchTimeOff', '12:00');
     jest.replaceProperty(sut, 'endLunchTimeOff', '13:00');
 
-    jest.spyOn(sut, 'isOnLunchBreak').mockImplementation(() => true);
+    jest.spyOn(sut, 'dateIsLunchTime').mockImplementation(() => true);
 
     const result = sut.validateIfAppointmentIsLunchTime(mockedTime as any);
 
@@ -242,7 +234,7 @@ describe('validateIfAppointmentIsLunchTime', () => {
     jest.replaceProperty(sut, 'startLunchTimeOff', '12:00');
     jest.replaceProperty(sut, 'endLunchTimeOff', '13:00');
 
-    jest.spyOn(sut, 'isOnLunchBreak').mockImplementation(() => false);
+    jest.spyOn(sut, 'dateIsLunchTime').mockImplementation(() => false);
 
     const result = sut.validateIfAppointmentIsLunchTime(mockedTime as any);
 
@@ -254,21 +246,25 @@ describe('verifyIfAppointmentIsAvaliable', () => {
   test('should return true if appointment is avaliable', () => {
     const {sut} = makeSut();
 
-    jest.spyOn(sut, 'appointmentAlreadyUsed').mockImplementation(() => false);
+    jest.replaceProperty(sut, 'disableAppointments', [fakeMeeting()]);
+
+    jest
+      .spyOn(sut, 'appointmentAlreadyUsed')
+      .mockImplementation(() => undefined);
 
     const result = sut.verifyIfAppointmentIsAvaliable(
-      [fakeMeeting(), fakeMeeting(), fakeMeeting()],
       mockedTime as any,
       mockedTime as any,
     );
 
     expect(result).toBe(true);
   });
-  test('should return true if there no appointments on the day', () => {
+  test('should return true if there no disable appointments on the day', () => {
     const {sut} = makeSut();
 
+    jest.replaceProperty(sut, 'disableAppointments', []);
+
     const result = sut.verifyIfAppointmentIsAvaliable(
-      [], //empty list meet on the day
       mockedTime as any,
       mockedTime as any,
     );
@@ -278,10 +274,13 @@ describe('verifyIfAppointmentIsAvaliable', () => {
   test('should return false if already filled appointment ', () => {
     const {sut} = makeSut();
 
-    jest.spyOn(sut, 'appointmentAlreadyUsed').mockImplementation(() => true);
+    jest.replaceProperty(sut, 'disableAppointments', [fakeMeeting()]);
+
+    jest
+      .spyOn(sut, 'appointmentAlreadyUsed')
+      .mockImplementation(() => fakeMeeting());
 
     const result = sut.verifyIfAppointmentIsAvaliable(
-      [fakeMeeting(), fakeMeeting(), fakeMeeting()],
       mockedTime as any,
       mockedTime as any,
     );

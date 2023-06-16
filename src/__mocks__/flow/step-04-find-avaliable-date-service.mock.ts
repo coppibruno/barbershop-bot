@@ -6,6 +6,7 @@ import {Meetings} from '@prisma/client';
 import {
   FindConversationsServiceStub,
   FindMeetingsOfDayServiceStub,
+  StepResponseByOptionMenuFlowStub,
 } from '@/__mocks__';
 
 import {StepFindAvaliableDateFlow} from '@/services/flow/step-04-find-avaliable-date.service';
@@ -24,38 +25,45 @@ export class StepFindAvaliableDateFlowStub extends StepFindAvaliableDateFlow {
   constructor(
     findConversationServiceStub: FindConversationsServiceStub,
     findMeetingsOfDayServiceStubStub: FindMeetingsOfDayServiceStub,
+    stepResponseByOptionMenuFlowStub: StepResponseByOptionMenuFlowStub,
   ) {
-    super(findConversationServiceStub, findMeetingsOfDayServiceStubStub);
+    super(
+      findConversationServiceStub,
+      findMeetingsOfDayServiceStubStub,
+      stepResponseByOptionMenuFlowStub,
+    );
   }
 
-  appointmentAlreadyUsed(meetsOfDay, startAppointment, endAppointment) {
-    return [];
+  public appointmentAlreadyUsed(
+    startAppointment: Moment,
+    endAppointment: Moment,
+  ): Meetings {
+    return undefined;
   }
 
-  isOnLunchBreak({appointment, lunchStart, lunchEnd}) {
+  public isOnLunchBreak({appointment, lunchStart, lunchEnd}) {
     return false;
   }
 
-  getMaxAndMinAppointmentFromDay(date: Moment): {
+  public getMaxAndMinAppointmentFromDay(date: Moment): {
     startDate: Moment;
     endDate: Moment;
   } {
     return {startDate: mockedTime as any, endDate: mockedTime as any};
   }
 
-  verifyIfAppointmentIsAvaliable(
-    meetsOfDay: Meetings[],
+  public verifyIfAppointmentIsAvaliable(
     startAppointment: Moment,
     endAppointment: Moment,
   ) {
     return true;
   }
 
-  validateIfAppointmentIsLunchTime(appointment: Moment): boolean {
+  public validateIfAppointmentIsLunchTime(appointment: Moment): boolean {
     return false;
   }
 
-  async getAppointmentsOfDate(
+  public async getAppointmentsOfDate(
     dayMonth: string,
   ): Promise<IAppointmentsResult[]> {
     return [
@@ -74,11 +82,13 @@ export class StepFindAvaliableDateFlowStub extends StepFindAvaliableDateFlow {
     ];
   }
 
-  async findAvaliableTime(dayMonth: string): Promise<IOptionsAppointment> {
+  public async findAvaliableTime(
+    dayMonth: string,
+  ): Promise<IOptionsAppointment> {
     return {options: [], response: 'any_response'};
   }
 
-  async getDateAppointment(accountId: string): Promise<string> {
+  public async getDateAppointment(accountId: string): Promise<string> {
     return '10/10';
   }
 
