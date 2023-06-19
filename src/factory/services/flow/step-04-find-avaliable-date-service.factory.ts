@@ -1,5 +1,8 @@
 //service
-import {StepFindAvaliableDateFlow} from '../../../services/flow';
+import {
+  StepFindAvaliableDateFlow,
+  StepResponseByOptionMenuFlow,
+} from '../../../services/flow';
 
 //factories
 import {FindConversationsServiceFactory} from '../find-conversations-service.factory';
@@ -9,8 +12,13 @@ export const FindAvaliableDateFlowServiceFactory =
   (): StepFindAvaliableDateFlow => {
     const findConversationsService = FindConversationsServiceFactory();
     const findMeetingsOfDayService = FindMeetingsOfDayServiceFactory();
+    const stepResponseByOptionMenuFlow = new StepResponseByOptionMenuFlow(
+      findConversationsService,
+    );
+
     return new StepFindAvaliableDateFlow(
       findConversationsService,
       findMeetingsOfDayService,
+      stepResponseByOptionMenuFlow,
     );
   };

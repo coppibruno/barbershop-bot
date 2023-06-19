@@ -1,4 +1,8 @@
 //repository
+import {
+  GetPhoneByAccountIdConversation,
+  GetUserNameConversation,
+} from '@/services';
 import {MeetingRepository} from '../../../repositories/meeting.repository';
 
 //service
@@ -14,9 +18,18 @@ export const GetDateAppointmentAndReplyFlowServiceFactory =
     const stepFindAvaliableDateFlow = FindAvaliableDateFlowServiceFactory();
     const meetingRepository = new MeetingRepository();
 
+    const getUserNameConversation = new GetUserNameConversation(
+      findConversationsService,
+    );
+    const getPhoneByAccountIdConversation = new GetPhoneByAccountIdConversation(
+      findConversationsService,
+    );
+
     return new StepGetDateAndReplyAppointmentFlow(
       findConversationsService,
       stepFindAvaliableDateFlow,
       meetingRepository,
+      getUserNameConversation,
+      getPhoneByAccountIdConversation,
     );
   };

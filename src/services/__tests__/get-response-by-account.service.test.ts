@@ -31,9 +31,14 @@ const getDependencies = () => {
     meetingRepositoryStub,
   );
 
+  const stepResponseByOptionMenuFlowStub = new StepResponseByOptionMenuFlowStub(
+    findConversationsServiceStub,
+  );
+
   const stepFindAvaliableDateFlowStub = new StepFindAvaliableDateFlowStub(
     findConversationsServiceStub,
     findMeetingsOfDayServiceStub,
+    stepResponseByOptionMenuFlowStub,
   );
   const getPhoneByAccountIdConversationStub = new GetPhoneByAccountStub(
     findConversationsServiceStub,
@@ -71,6 +76,7 @@ const makeSut = () => {
   const stepFindAvaliableDateFlowStub = new StepFindAvaliableDateFlowStub(
     findConversationsServiceStub,
     findMeetingsOfDayServiceStub,
+    stepResponseByOptionMenuFlowStub,
   );
   const stepGetDateAndReplyAppointmentFlowStub =
     new StepGetDateAndReplyAppointmentFlowStub(

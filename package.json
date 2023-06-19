@@ -7,9 +7,10 @@
     "test:all": "jest --silent --runInBand",
     "test": "jest --runInBand",
     "test:coverage": "npm test -- --coverage",
-    "start:dev": "npx tsc -p tsconfig.build.json && nodemon ./src/server.ts",
+    "build": "npx tsc --project tsconfig.build.json && tscpaths -p tsconfig.build.json -s ./src -o ./dist",
+    "start:prod": "npm run build && node ./dist/server.js",
+    "start:dev": "ts-node-dev -r tsconfig-paths/register src/server.ts",
     "start:debug": "npx tsc -p tsconfig.build.json && nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/server.ts'",
-    "build": "tsc",
     "prisma:generate": "npx prisma generate",
     "jest": "jest"
   },
@@ -24,6 +25,7 @@
     "moment-timezone": "^0.5.43",
     "node-cron": "^3.0.2",
     "prettier": "^2.8.8",
+    "tscpaths": "^0.0.9",
     "twilio": "^4.10.0"
   },
   "devDependencies": {
@@ -39,6 +41,7 @@
     "prisma": "^4.13.0",
     "ts-jest": "^29.1.0",
     "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.0.4"
   },
   "engines": {
