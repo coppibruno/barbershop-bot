@@ -1,12 +1,12 @@
 {
   "name": "barbershop-bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "barber shop appointment robot",
   "main": "index.js",
   "scripts": {
     "test:all": "jest --silent --runInBand",
     "test": "jest --runInBand",
-    "test:coverage": "npm test -- --coverage",
+    "test:ci": "npm test -- --coverage",
     "build": "npx tsc --project tsconfig.build.json && tscpaths -p tsconfig.build.json -s ./src -o ./dist",
     "start:prod": "npm run build && node ./dist/server.js",
     "start:dev": "ts-node-dev -r tsconfig-paths/register src/server.ts",
