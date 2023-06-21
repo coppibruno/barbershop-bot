@@ -9,11 +9,13 @@ import {
   GetStepConversationStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
+  SendMessageWhatsappServiceStub,
   StepFindAvaliableDateFlowStub,
   StepGetDateAndReplyAppointmentFlowStub,
   StepResponseByOptionMenuFlowStub,
   StepShowMenuFlowStub,
   StepWelcomeFlowStub,
+  TwilioSendWhatsappMessageStub,
 } from '@/__mocks__';
 
 const getDependencies = () => {
@@ -78,6 +80,12 @@ const makeSut = () => {
     findMeetingsOfDayServiceStub,
     stepResponseByOptionMenuFlowStub,
   );
+
+  const twilioSendWhatsappMessageStub = new TwilioSendWhatsappMessageStub();
+  const sendMessageWhatsappServiceStub = new SendMessageWhatsappServiceStub(
+    twilioSendWhatsappMessageStub,
+  );
+
   const stepGetDateAndReplyAppointmentFlowStub =
     new StepGetDateAndReplyAppointmentFlowStub(
       findConversationsServiceStub,
@@ -85,6 +93,7 @@ const makeSut = () => {
       meetingRepositoryStub,
       getUserNameConversationStub,
       getPhoneByAccountIdConversationStub,
+      sendMessageWhatsappServiceStub,
     );
 
   const sut = new Service.GetResponseByAccountService(

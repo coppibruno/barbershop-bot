@@ -27,6 +27,8 @@ import {
   AdminRunOptionPersistsStub,
   AdminResponseByOptionMenuStub,
   GetAdminResponseByAccountServiceStub,
+  TwilioSendWhatsappMessageStub,
+  SendMessageWhatsappServiceStub,
 } from '@/__mocks__';
 
 class GetConversationTwilioStub extends GetConversationTwilio {
@@ -136,6 +138,11 @@ const makeGetReponseByAccountStub = () => {
     stepResponseByOptionMenuFlowStub,
   );
 
+  const twilioSendWhatsappMessageStub = new TwilioSendWhatsappMessageStub();
+  const sendMessageWhatsappServiceStub = new SendMessageWhatsappServiceStub(
+    twilioSendWhatsappMessageStub,
+  );
+
   const stepGetDateAndReplyAppointmentFlowStub =
     new StepGetDateAndReplyAppointmentFlowStub(
       findConversationsServiceStub,
@@ -143,6 +150,7 @@ const makeGetReponseByAccountStub = () => {
       meetingRepositoryStub,
       getUserNameConversationStub,
       getPhoneByAccountIdConversationStub,
+      sendMessageWhatsappServiceStub,
     );
   return new GetResponseByAccountServiceStub(
     getStepConversationStub,
