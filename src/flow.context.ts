@@ -1,6 +1,7 @@
 import 'dotenv/config';
 const barbershopName = process.env.BARBERSHOP_NAME;
 const botNumber = process.env.BOT_NUMBER;
+const adminNumber = process.env.ADMIN_PHONE;
 const startAppointmentDay = process.env.START_TIME || '9:00';
 const endAppointmentDay = process.env.END_TIME || '19:00';
 const startSaturdayAppointmentDay = process.env.SATURDAY_START_TIME || '9:00';
@@ -68,6 +69,7 @@ export class FlowContext {
     },
   ];
 
+  public static readonly BAERBER_SHOP_NAME: string = barbershopName;
   public static readonly MAKE_APPOINTMENT: string =
     'Para agendar, digite o dia e mês. Exemplo: 01/02';
   public static readonly MAKE_APPOINTMENT_DEZEMBER: string =
@@ -85,6 +87,7 @@ export class FlowContext {
   public static readonly END_LUNCH_TIME = endLunchTimeOff;
   public static readonly APPOINTMENT_TIME_IN_MINUTES = appointmentTimeInMinutes;
   public static readonly BOT_NUMBER = botNumber;
+  public static readonly ADMIN_NUMBER: number = Number(adminNumber);
   public static readonly LAST_ITERATION: number = 5;
   public static readonly OPTION_RETRY_DATE_APPOINTMENT = 0;
   public static IS_OPEN_MONDAY: boolean = isOpenMonday;
@@ -107,13 +110,13 @@ export class FlowContext {
         option: 1,
         type: typeMenuAdmin.MARK_OFF_MEETING,
         label: msgCancel,
-        step: 8,
+        step: 3,
       },
       {
         option: 0,
         label: 'Retornar ao menu de admin',
         type: typeMenuAdmin.SHOW_MENU_AGAIN,
-        step: 6,
+        step: 1,
       },
     ];
   }

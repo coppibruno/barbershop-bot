@@ -9,7 +9,17 @@ import {
   GetLastMessageInProgressConversationServiceStub,
   GetResponseByAccountServiceStub,
   DisableMeetingsOfIntervalServiceStub,
+  ExceededLimitOfMeetingsServiceStub,
 } from './services';
+
+import {
+  AdminResponseByOptionMenuStub,
+  AdminRunOptionPersistsStub,
+  AdminRunOptionStub,
+  FlowAdminConversationServiceStub,
+  GetAdminResponseByAccountServiceStub,
+  WelcomeAdminAndShowMenuStub,
+} from './services/admin';
 
 import {
   ConversationRepositoryStub,
@@ -47,6 +57,15 @@ export {
   StepGetDateAndReplyAppointmentFlowStub,
   TwilioSendWhatsappMessageStub,
   DisableMeetingsOfIntervalServiceStub,
+  ExceededLimitOfMeetingsServiceStub,
   fakeConversation,
   fakeMeeting,
+
+  //admin menu services
+  AdminResponseByOptionMenuStub,
+  AdminRunOptionPersistsStub,
+  AdminRunOptionStub,
+  FlowAdminConversationServiceStub,
+  GetAdminResponseByAccountServiceStub,
+  WelcomeAdminAndShowMenuStub,
 };

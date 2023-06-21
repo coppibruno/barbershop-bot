@@ -71,7 +71,7 @@ describe('Admin run option service (SHOW MEETINGS FROM DAY)', () => {
 
     const result = await sut.execute(accountId);
     expect(result.response).toEqual(expect.any(String));
-    expect(result.step).toBe(8);
+    expect(result.step).toBe(3);
   });
   test('should return a message that does not exist appointments at selected day', async () => {
     const {sut, findConversationsServiceStub, findMeetingsOfDayServiceStub} =
@@ -99,9 +99,9 @@ describe('Admin run option service (SHOW MEETINGS FROM DAY)', () => {
     expect(result.response).toEqual(
       'Para o dia 10/06 não há horários marcados',
     );
-    expect(result.step).toBe(8);
+    expect(result.step).toBe(3);
   });
-  test('should call previous step service (7) if error is occurred', async () => {
+  test('should call previous step service (2) if error is occurred', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
 
     jest
@@ -122,7 +122,7 @@ describe('Admin run option service (SHOW MEETINGS FROM DAY)', () => {
     const findMenu = FlowContext.MENU_ADMIN.find((i) => i.option === 1);
 
     expect(result.response).toBe(findMenu.callback);
-    expect(result.step).toBe(7);
+    expect(result.step).toBe(2);
   });
 });
 
@@ -152,12 +152,12 @@ describe('Admin run option service (CANCEL APPOINTMENTS FROM DAY)', () => {
       {
         option: 1,
         label: cancelExpectedMessage,
-        step: 8,
+        step: 3,
       },
       {
         option: 0,
         label: 'Retornar ao menu de admin',
-        step: 6,
+        step: 1,
       },
     ];
     let menuExpected = 'Selecione uma das opções numéricas abaixo: \n';
@@ -167,7 +167,7 @@ describe('Admin run option service (CANCEL APPOINTMENTS FROM DAY)', () => {
     menuExpected = menuExpected.replaceAll(',', '');
 
     expect(result.response).toEqual(menuExpected);
-    expect(result.step).toBe(8);
+    expect(result.step).toBe(3);
   });
   test('(getAppointmentsToDisable) should return a start date and end date if daymonth is provided', async () => {
     const {sut} = makeSut();

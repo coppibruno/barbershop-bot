@@ -18,6 +18,7 @@ import {
   FindConversationsService,
   GetUserNameConversation,
   GetPhoneByAccountIdConversation,
+  SendMessageWhatsappService,
 } from '@/services';
 import {StepFindAvaliableDateFlow} from './step-04-find-avaliable-date.service';
 
@@ -33,6 +34,7 @@ import {IFlowResult} from '@/interfaces/flow';
 
 import {MeetingRepository} from '@/repositories/meeting.repository';
 import {MeetingEntity} from '@/entity/meeting.entity';
+import {ConversationEntity} from '@/entity';
 
 interface AppointmentDate {
   startedDate: Date;
@@ -50,6 +52,8 @@ interface IOptions {
   appointment: string;
 }
 
+export const getDay = (date) => date.date();
+export const getMonth = (date) => date.month() + 1;
 export const getClone = (date) => date.clone();
 export const getHours = (date) => date.hours();
 export const getMins = (date) => date.minutes();
@@ -57,6 +61,14 @@ export const setHours = (date, hour) => date.hours(hour);
 export const setMinutes = (date, min) => date.minutes(min);
 export const setSeconds = (date, sec) => date.seconds(sec);
 export const addDate = (date, input, type) => date.add(input, type);
+
+export const getHoursMin = (date): string => {
+  const hours = PadStartDateHelper(moment(date).hours(), 2);
+
+  const mins = PadStartDateHelper(moment(date).minutes(), 2);
+
+  return `${hours}:${mins}`;
+};
 
 export const RETRY_NEW_APPOINTMENT = () =>
   ValidateIfIsDezemberHelper()
@@ -77,6 +89,7 @@ export class StepGetDateAndReplyAppointmentFlow {
   private readonly meetingRepository: MeetingRepository;
   private readonly getUserNameConversation: GetUserNameConversation;
   private readonly getPhoneByAccountIdConversation: GetPhoneByAccountIdConversation;
+  private readonly sendMessageWhatsappService: SendMessageWhatsappService;
   private readonly stepCompleted: number = 5;
   private readonly incompleteStep: number = 4;
   private readonly stepDateAppointment: number = 3;
@@ -88,12 +101,38 @@ export class StepGetDateAndReplyAppointmentFlow {
     meetingRepository: MeetingRepository,
     getUserNameConversation: GetUserNameConversation,
     getPhoneByAccountIdConversation: GetPhoneByAccountIdConversation,
+    sendMessageWhatsappService: SendMessageWhatsappService,
   ) {
     this.findConversationService = findConversationService;
     this.stepFindAvaliableDateFlow = stepFindAvaliableDateFlow;
     this.meetingRepository = meetingRepository;
     this.getUserNameConversation = getUserNameConversation;
     this.getPhoneByAccountIdConversation = getPhoneByAccountIdConversation;
+    this.sendMessageWhatsappService = sendMessageWhatsappService;
+  }
+  /**
+   * Envia uma mensagem para o admin com detalhes do novo agendamento
+   * @param meeting Meeting (agendamento)
+   */
+  sendMessageToAdminWithNewAppointment(meeting: Meetings): void {
+    const {name, phone, startDate} = meeting;
+
+    const conversation: ConversationEntity = {
+      name,
+      fromPhone: Number(FlowContext.BOT_NUMBER),
+      toPhone: Number(FlowContext.ADMIN_NUMBER),
+      body: `Novo cliente ${name}(${phone}). Dia ${getDay(
+        startDate,
+      )}/${getMonth(startDate)} às ${getHoursMin(startDate)}`,
+      accountId: null,
+      messageId: null,
+      options: null,
+      protocol: null,
+      state: null,
+      step: null,
+    };
+
+    this.sendMessageWhatsappService.execute(conversation);
   }
 
   /**
@@ -165,7 +204,10 @@ export class StepGetDateAndReplyAppointmentFlow {
       throw MEETING_ALREDY_IN_USE;
     }
 
-    return this.meetingRepository.create(meetingEntity);
+    const meetingResult = await this.meetingRepository.create(meetingEntity);
+    this.sendMessageToAdminWithNewAppointment(meetingResult);
+
+    return meetingResult;
   }
   /**
    * Busca a opção de agendamento selecionada pelo usuario e traz a lista total junto

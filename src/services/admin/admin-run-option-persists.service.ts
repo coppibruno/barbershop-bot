@@ -46,9 +46,9 @@ export const getHoursMin = (date): string => {
  * '0- Retornar ao menu anterior'
  */
 export class AdminRunOptionPersists {
-  private readonly findConversationService: FindConversationsService;
-  private readonly findMeetingsOfDayService: FindMeetingsOfDayService;
-  private readonly disableMeetingsOfIntervalService: DisableMeetingsOfIntervalService;
+  public readonly findConversationService: FindConversationsService;
+  public readonly findMeetingsOfDayService: FindMeetingsOfDayService;
+  public readonly disableMeetingsOfIntervalService: DisableMeetingsOfIntervalService;
 
   constructor(
     findConversationService: FindConversationsService,
@@ -60,12 +60,12 @@ export class AdminRunOptionPersists {
     this.disableMeetingsOfIntervalService = disableMeetingsOfIntervalService;
   }
 
-  private async getMenuRequest(accountId: string): Promise<typeMenuAdmin> {
+  public async getMenuRequest(accountId: string): Promise<typeMenuAdmin> {
     const result = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
         toPhone: Number(FlowContext.BOT_NUMBER),
-        step: 8,
+        step: 3,
       },
       orderBy: {
         createdAt: 'desc',
@@ -102,7 +102,7 @@ export class AdminRunOptionPersists {
           endDate,
         });
 
-        return {response: FlowContext.SUCCESSFUL_OPERATION, step: 9};
+        return {response: FlowContext.SUCCESSFUL_OPERATION, step: 4};
       }
 
       if (typeMenu === typeMenuAdmin.SHOW_MENU_AGAIN) {

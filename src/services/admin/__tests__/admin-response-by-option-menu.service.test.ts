@@ -33,7 +33,7 @@ describe('Admin response by option menu service', () => {
     const findMenu = FlowContext.MENU_ADMIN.find((i) => i.option === 1);
 
     expect(result.response).toBe(findMenu.callback);
-    expect(result.step).toBe(7);
+    expect(result.step).toBe(2);
   });
   test('should call previous service if error is occurred', async () => {
     const {sut} = makeSut();
@@ -49,6 +49,6 @@ describe('Admin response by option menu service', () => {
     expect(result.response).toEqual(
       expect.stringMatching(FlowContext.ADMIN_WELCOME),
     );
-    expect(result.step).toBe(6);
+    expect(result.step).toBe(1);
   });
 });

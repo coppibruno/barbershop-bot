@@ -1,10 +1,25 @@
 import {MeetingRepositoryStub} from '../repositories/meeting-repository.mock';
-import {DisableMeetingsOfIntervalService} from '@/services/disable-meetings-of-interval.service';
+import {
+  DisableMeetingsOfIntervalService,
+  IStartAndEndDate,
+} from '@/services/disable-meetings-of-interval.service';
 
 export class DisableMeetingsOfIntervalServiceStub extends DisableMeetingsOfIntervalService {
-  constructor(meetingRepository: MeetingRepositoryStub) {
-    super(meetingRepository);
+  constructor(private readonly meetingRepositoryStub: MeetingRepositoryStub) {
+    super(meetingRepositoryStub);
   }
 
-  async execute(): Promise<void> {}
+  async execute({startDate, endDate}: IStartAndEndDate): Promise<void> {
+    return this.meetingRepositoryStub.upsert(
+      {
+        where: {
+          startDate,
+          endDate,
+        },
+      },
+      {
+        disabledByAdmin: true,
+      },
+    );
+  }
 }

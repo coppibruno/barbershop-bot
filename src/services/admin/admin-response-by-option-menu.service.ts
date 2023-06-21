@@ -7,22 +7,22 @@ import {InvalidMenuOptionError, NotFoundError} from '@/errors';
  * Etapa responsável responder conforme o menu solicitado no WelcomeAdminAndShowMenuService
  */
 export class AdminResponseByOptionMenu {
-  private readonly menu = FlowContext.MENU_ADMIN;
+  public readonly menu = FlowContext.MENU_ADMIN;
 
-  private readonly findConversationService: FindConversationsService;
-  private msgIncorrectMenuIsProvided = 'menu not found';
-  private readonly previousMenuNumber = 6;
+  public readonly findConversationService: FindConversationsService;
+  public msgIncorrectMenuIsProvided = 'menu not found';
+  public readonly previousMenuNumber = 1;
 
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
   }
 
-  private async getMenuRequest(accountId: string): Promise<number> {
+  public async getMenuRequest(accountId: string): Promise<number> {
     const result = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
         toPhone: Number(FlowContext.BOT_NUMBER),
-        step: 6,
+        step: 1,
       },
       orderBy: {
         createdAt: 'desc',
@@ -35,7 +35,7 @@ export class AdminResponseByOptionMenu {
     return Number(result.body);
   }
 
-  private replyMenuRequest(menu: number): string {
+  public replyMenuRequest(menu: number): string {
     const menuSelected = this.menu.find(({option}) => option === menu);
 
     if (!menuSelected) {
@@ -51,7 +51,7 @@ export class AdminResponseByOptionMenu {
 
       const response = this.replyMenuRequest(menu);
 
-      return {response, step: 7};
+      return {response, step: 2};
     } catch (error) {
       const {message} = error;
 

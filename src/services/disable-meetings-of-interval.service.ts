@@ -1,6 +1,6 @@
 import {MeetingRepository} from '@/repositories/meeting.repository';
 
-interface IStartAndEndDate {
+export interface IStartAndEndDate {
   startDate: Date;
   endDate: Date;
 }

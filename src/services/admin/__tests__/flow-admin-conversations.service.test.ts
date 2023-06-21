@@ -1,10 +1,9 @@
-import {FlowContext} from '@/flow.context';
-import {ConversationEntity} from '../../entity';
-import {GetConversationTwilio} from '../../external/twilio/get-conversation';
-import {TwilioSendWhatsappMessage} from '../../external/twilio/send-new-message';
-import {IConversationTwilio} from '../../interfaces/external';
-import * as Service from '../flow-conversations.service';
-import {SendMessageWhatsappService} from '../send-message.service';
+import {ConversationEntity} from '@/entity';
+import {GetConversationTwilio} from '@/external/twilio/get-conversation';
+import {TwilioSendWhatsappMessage} from '@/external/twilio/send-new-message';
+import {IConversationTwilio} from '@/interfaces/external';
+import * as Service from '../flow-admin-conversations.service';
+import {SendMessageWhatsappService} from '@/services/send-message.service';
 import {
   ConversationRepositoryStub,
   CreateConversationServiceStub,
@@ -22,16 +21,12 @@ import {
   StepShowMenuFlowStub,
   StepWelcomeFlowStub,
   GetResponseByAccountServiceStub,
-  FlowAdminConversationServiceStub,
-  GetAdminResponseByAccountServiceStub,
   WelcomeAdminAndShowMenuStub,
   AdminRunOptionStub,
-  AdminRunOptionPersistsStub,
   DisableMeetingsOfIntervalServiceStub,
-  SendMessageWhatsappServiceStub,
-  TwilioSendWhatsappMessageStub,
+  AdminRunOptionPersistsStub,
   AdminResponseByOptionMenuStub,
-  ExceededLimitOfMeetingsServiceStub,
+  GetAdminResponseByAccountServiceStub,
 } from '@/__mocks__';
 
 class GetConversationTwilioStub extends GetConversationTwilio {
@@ -40,6 +35,28 @@ class GetConversationTwilioStub extends GetConversationTwilio {
   }
 }
 
+const makeSendMessageWhatsappService = () => {
+  class TwilioSendWhatsappMessageStub extends TwilioSendWhatsappMessage {
+    async sendMessage(conversationEntity: ConversationEntity): Promise<void> {
+      return Promise.resolve();
+    }
+  }
+  class SendMessageWhatsappServiceStub extends SendMessageWhatsappService {
+    private readonly serviceSenderMessageStub;
+
+    constructor(serviceSenderMessageStub: TwilioSendWhatsappMessage) {
+      super(serviceSenderMessageStub);
+    }
+
+    async execute(conversationEntity: ConversationEntity): Promise<void> {
+      return Promise.resolve();
+    }
+  }
+
+  return new SendMessageWhatsappServiceStub(
+    new TwilioSendWhatsappMessageStub(),
+  );
+};
 const makeGetAdminReponseByAccountStub = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
   const findConversationsServiceStub = new FindConversationsServiceStub(
@@ -119,10 +136,6 @@ const makeGetReponseByAccountStub = () => {
     stepResponseByOptionMenuFlowStub,
   );
 
-  const sendMessageWhatsappServiceStub = new SendMessageWhatsappServiceStub(
-    new TwilioSendWhatsappMessageStub(),
-  );
-
   const stepGetDateAndReplyAppointmentFlowStub =
     new StepGetDateAndReplyAppointmentFlowStub(
       findConversationsServiceStub,
@@ -130,7 +143,6 @@ const makeGetReponseByAccountStub = () => {
       meetingRepositoryStub,
       getUserNameConversationStub,
       getPhoneByAccountIdConversationStub,
-      sendMessageWhatsappServiceStub,
     );
   return new GetResponseByAccountServiceStub(
     getStepConversationStub,
@@ -150,7 +162,6 @@ const makeSut = () => {
   );
 
   const conversationRepositoryStub = new ConversationRepositoryStub();
-  const meetingRepositoryStub = new MeetingRepositoryStub();
   const findConversationsServiceStub = new FindConversationsServiceStub(
     conversationRepositoryStub,
   );
@@ -159,46 +170,23 @@ const makeSut = () => {
     findConversationsServiceStub,
   );
 
-  const sendMessageWhatsappServiceStub = new SendMessageWhatsappServiceStub(
-    new TwilioSendWhatsappMessageStub(),
-  );
+  const sendMessageWhatsappServiceStub = makeSendMessageWhatsappService();
 
   const getLastMessageInProgressConversationServiceStub =
     new GetLastMessageInProgressConversationServiceStub(
       findConversationsServiceStub,
     );
 
+  const getResponseByAccountServiceStub = makeGetReponseByAccountStub();
   const getAdminResponseByAccountServiceStub =
     makeGetAdminReponseByAccountStub();
 
-  const flowAdminConversationServiceStub = new FlowAdminConversationServiceStub(
+  const sut = new Service.FlowAdminConversationService(
     getConversationTwilioStub,
     createConversationServiceStub,
     getAdminResponseByAccountServiceStub,
     sendMessageWhatsappServiceStub,
     getLastMessageInProgressConversationServiceStub,
-  );
-
-  const getPhoneByAccountIdConversationStub = new GetPhoneByAccountStub(
-    findConversationsServiceStub,
-  );
-
-  const exceededLimitOfMeetingsServiceStub =
-    new ExceededLimitOfMeetingsServiceStub(
-      meetingRepositoryStub,
-      getPhoneByAccountIdConversationStub,
-    );
-
-  const getResponseByAccountServiceStub = makeGetReponseByAccountStub();
-  const sut = new Service.FlowConversationService(
-    getConversationTwilioStub,
-    createConversationServiceStub,
-    getResponseByAccountServiceStub,
-    sendMessageWhatsappServiceStub,
-    getUserNameConversationStub,
-    getLastMessageInProgressConversationServiceStub,
-    flowAdminConversationServiceStub,
-    exceededLimitOfMeetingsServiceStub,
   );
 
   return {
@@ -209,73 +197,25 @@ const makeSut = () => {
     sendMessageWhatsappServiceStub,
     getUserNameConversationStub,
     getLastMessageInProgressConversationServiceStub,
-    flowAdminConversationServiceStub,
-    exceededLimitOfMeetingsServiceStub,
   };
 };
-const fakeMessageTwilio: IConversationTwilio = {
-  AccountSid: 'fake_account_id',
-  Body: 'any message from user',
-  From: '+55999999999',
-  MessageSid: 'fake_message_id',
-  To: '+5511111111',
-};
 
-describe('Flow Conversations Service', () => {
+/**TODO TEST */
+
+describe('Flow Admin Conversations Service', () => {
   test('should return message from robot on success', async () => {
     const {sut} = makeSut();
 
-    const result = await sut.execute(fakeMessageTwilio);
+    const fakeMessageTwilio: IConversationTwilio = {
+      AccountSid: 'fake_account_id',
+      Body: 'any message from user',
+      From: '+55999999999',
+      MessageSid: 'fake_message_id',
+      To: '+5511111111',
+    };
 
+    const result = await sut.execute(fakeMessageTwilio);
+    console.log(result);
     expect(result).toEqual(expect.any(String));
-  });
-  test('should call admin service flow if phone is admin phone', async () => {
-    const {
-      sut,
-      flowAdminConversationServiceStub,
-      getConversationTwilioStub,
-      exceededLimitOfMeetingsServiceStub,
-    } = makeSut();
-    const spyOn = jest.spyOn(flowAdminConversationServiceStub, 'execute');
-    const spyOnLimit = jest.spyOn(
-      exceededLimitOfMeetingsServiceStub,
-      'execute',
-    );
-    const adminPhone = 55111111111;
-    jest.replaceProperty(sut, 'adminNumber', adminPhone);
-    const account_id = 'fake_account_id';
-    jest.spyOn(getConversationTwilioStub, 'execute').mockReturnValueOnce({
-      name: '',
-      fromPhone: adminPhone,
-      toPhone: 55999999999,
-      body: 'any',
-      messageId: 'any',
-      step: null,
-      state: 'IN_PROGRESS',
-      options: {},
-      accountId: account_id,
-      protocol: Date.now(),
-    });
-
-    await sut.execute(fakeMessageTwilio);
-    expect(spyOn).toBeCalledWith(fakeMessageTwilio);
-    expect(spyOnLimit).toBeCalledWith(account_id);
-  });
-  test('should return if exceeded limit service return true', async () => {
-    const {
-      sut,
-      flowAdminConversationServiceStub,
-      exceededLimitOfMeetingsServiceStub,
-    } = makeSut();
-    const spyOn = jest.spyOn(flowAdminConversationServiceStub, 'execute');
-
-    jest
-      .spyOn(exceededLimitOfMeetingsServiceStub, 'execute')
-      .mockImplementationOnce(() => Promise.resolve(true));
-
-    const result = await sut.execute(fakeMessageTwilio);
-
-    expect(result).toBeUndefined();
-    expect(spyOn).not.toHaveBeenCalled();
   });
 });

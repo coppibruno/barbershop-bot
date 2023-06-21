@@ -11,6 +11,8 @@ import {FindMeetingsOfDayServiceFactory} from './find-meetings-of-day-service.fa
 import {GetLastMessageInProgressServiceFactory} from './get-last-message-in-progress-service.factory';
 import {GetStepConversationServiceFactory} from './get-step-conversation-service.factory';
 import {GetUserNameConversationServiceFactory} from './get-user-name-conversations-service.factory';
+import {DisableMeetingsOfIntervalServiceFactory} from './disable-meetings-of-interval-service.factory';
+import {ExceededLimitOfMeetingsServiceFactory} from './exceeded-limit-of-meetings-service.factory';
 
 //flow
 import {
@@ -34,6 +36,8 @@ export {
   GetLastMessageInProgressServiceFactory,
   GetStepConversationServiceFactory,
   GetUserNameConversationServiceFactory,
+  DisableMeetingsOfIntervalServiceFactory,
+  ExceededLimitOfMeetingsServiceFactory,
 
   //flow
   WelcomeFlowServiceFactory,

@@ -6,8 +6,10 @@ import {
   GetPhoneByAccountStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
+  SendMessageWhatsappServiceStub,
   StepFindAvaliableDateFlowStub,
   StepResponseByOptionMenuFlowStub,
+  TwilioSendWhatsappMessageStub,
   fakeConversation,
   fakeMeeting,
 } from '@/__mocks__';
@@ -21,6 +23,7 @@ import {
 import {faker} from '@faker-js/faker';
 import * as StartAndEndAppontiment from '../../../helpers/fetch-start-and-end-appointment-time.helper';
 import * as TransformSampleObject from '../../../helpers/transform-sample-object-in-formatted-array.helper';
+import {PadStartDateHelper} from '@/helpers';
 
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
@@ -51,12 +54,17 @@ const makeSut = () => {
     findConversationsServiceStub,
   );
 
+  const sendMessageWhatsappServiceStub = new SendMessageWhatsappServiceStub(
+    new TwilioSendWhatsappMessageStub(),
+  );
+
   const sut = new Step.StepGetDateAndReplyAppointmentFlow(
     findConversationsServiceStub,
     stepFindAvaliableDateFlowStub,
     meetingRepositoryStub,
     getUserNameConversationStub,
     getPhoneByAccountStub,
+    sendMessageWhatsappServiceStub,
   );
 
   return {
@@ -64,12 +72,24 @@ const makeSut = () => {
     findConversationsServiceStub,
     stepFindAvaliableDateFlowStub,
     meetingRepositoryStub,
+    sendMessageWhatsappServiceStub,
   };
 };
 
 const mockedTime = faker.date.future();
 
 jest.spyOn(Step, 'getClone').mockImplementation(() => mockedTime);
+jest.spyOn(Step, 'getDay').mockImplementation(() => mockedTime.getDate());
+jest
+  .spyOn(Step, 'getMonth')
+  .mockImplementation(() => mockedTime.getMonth() + 1);
+jest.spyOn(Step, 'getHoursMin').mockImplementation(() => {
+  const hours = PadStartDateHelper(mockedTime.getHours(), 2);
+
+  const mins = PadStartDateHelper(mockedTime.getMinutes(), 2);
+
+  return `${hours}:${mins}`;
+});
 jest.spyOn(Step, 'getHours').mockImplementation(() => mockedTime.getHours());
 jest.spyOn(Step, 'getMins').mockImplementation(() => mockedTime.getMinutes());
 jest.spyOn(Step, 'addDate').mockImplementation(() => mockedTime);
@@ -184,7 +204,7 @@ describe('getDataToNewMeet', () => {
 
 describe('saveAppointment', () => {
   test('should return meeting on success', async () => {
-    const {sut} = makeSut();
+    const {sut, meetingRepositoryStub} = makeSut();
 
     const fakeAcoountId = 'fake_account_id';
     const appointment = '09:00';
@@ -197,8 +217,17 @@ describe('saveAppointment', () => {
       .spyOn(sut, 'findMeetingIsAvaliable')
       .mockImplementationOnce(() => Promise.resolve(null));
 
+    const fakeMeetingData = fakeMeeting();
+
+    jest
+      .spyOn(meetingRepositoryStub, 'create')
+      .mockImplementationOnce(() => Promise.resolve(fakeMeetingData));
+
+    const spyOn = jest.spyOn(sut, 'sendMessageToAdminWithNewAppointment');
+
     const result = await sut.saveAppointment(fakeAcoountId, appointment);
 
+    expect(spyOn).toBeCalledWith(fakeMeetingData);
     expect(result).toHaveProperty('id');
     expect(result).toHaveProperty('name');
     expect(result).toHaveProperty('startDate');
@@ -328,5 +357,16 @@ describe('findMeetingIsAvaliable', () => {
         endDate,
       },
     });
+  });
+});
+describe('sendMessageToAdminWithNewAppointment', () => {
+  test('should calls admin send whatsapp service with correct values', async () => {
+    const {sut, sendMessageWhatsappServiceStub} = makeSut();
+
+    const spyOn = jest.spyOn(sendMessageWhatsappServiceStub, 'execute');
+
+    await sut.sendMessageToAdminWithNewAppointment(fakeMeeting());
+
+    expect(spyOn).toBeCalled();
   });
 });

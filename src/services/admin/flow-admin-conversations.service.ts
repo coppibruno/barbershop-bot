@@ -2,7 +2,7 @@ import {ConversationEntity} from '@/entity/conversation.entity';
 
 import {GetConversationTwilio} from '@/external/twilio/get-conversation';
 
-import {FlowContext} from '../flow.context';
+import {FlowContext} from '@/flow.context';
 
 import {IConversationTwilio} from '@/interfaces/external';
 
@@ -10,59 +10,40 @@ import {IConversationTwilio} from '@/interfaces/external';
 import {
   CreateConversationService,
   GetLastMessageInProgressConversationService,
-  GetResponseByAccountService,
-  GetUserNameConversation,
   SendMessageWhatsappService,
 } from '@/services';
-import {FlowAdminConversationService} from './admin';
-import {ExceededLimitOfMeetingsService} from './exceeded-limit-of-meetings.service';
+
+//admin services
+import {GetAdminResponseByAccountService} from './get-admin-response-by-account.service';
 
 /**
- * Responsável pelo fluxo de receber mensagem do usuário, persistir, processar e buscar dados, retornar a mensagem do assistênte virtual
+ * Responsável pelo fluxo de receber mensagem do usuário, persistir, processar e buscar dados, retornar a mensagem do assistênte virtual (MENU ADMINISTRADOR)
  */
-export class FlowConversationService {
-  public adminNumber = FlowContext.ADMIN_NUMBER;
+export class FlowAdminConversationService {
+  private readonly getConversationTwilio: GetConversationTwilio;
+  private readonly createConversationService: CreateConversationService;
+  private readonly getAdminResponseByAccountService: GetAdminResponseByAccountService;
+  private readonly sendMessageWhatsappService: SendMessageWhatsappService;
+  private readonly getLastMessageInProgressConversationService: GetLastMessageInProgressConversationService;
 
   constructor(
-    private readonly getConversationTwilio: GetConversationTwilio,
-    private readonly createConversationService: CreateConversationService,
-    private readonly getResponseByAccountService: GetResponseByAccountService,
-    private readonly sendMessageWhatsappService: SendMessageWhatsappService,
-    private readonly getUserNameConversation: GetUserNameConversation,
-    private readonly getLastMessageInProgressConversationService: GetLastMessageInProgressConversationService,
-    private readonly flowAdminConversationService: FlowAdminConversationService,
-    private readonly exceededLimitOfMeetingsService: ExceededLimitOfMeetingsService,
+    getConversationTwilio: GetConversationTwilio,
+    createConversationService: CreateConversationService,
+    getAdminResponseByAccountService: GetAdminResponseByAccountService,
+    sendMessageWhatsappService: SendMessageWhatsappService,
+    getLastMessageInProgressConversationService: GetLastMessageInProgressConversationService,
   ) {
     this.getConversationTwilio = getConversationTwilio;
     this.createConversationService = createConversationService;
-    this.getResponseByAccountService = getResponseByAccountService;
+    this.getAdminResponseByAccountService = getAdminResponseByAccountService;
     this.sendMessageWhatsappService = sendMessageWhatsappService;
-    this.getUserNameConversation = getUserNameConversation;
     this.getLastMessageInProgressConversationService =
       getLastMessageInProgressConversationService;
-    this.flowAdminConversationService = flowAdminConversationService;
-    this.exceededLimitOfMeetingsService = exceededLimitOfMeetingsService;
-  }
-
-  private isAdminUser(phone: number): boolean {
-    return phone === this.adminNumber;
   }
 
   async execute(message: IConversationTwilio): Promise<string> {
     const senderConversationEntity: ConversationEntity =
       this.getConversationTwilio.execute(message);
-
-    const notAllowed = await this.exceededLimitOfMeetingsService.execute(
-      senderConversationEntity.accountId,
-    );
-    if (notAllowed) {
-      console.error(`phone ${senderConversationEntity.fromPhone} not allowed`);
-      return;
-    }
-
-    if (this.isAdminUser(senderConversationEntity.fromPhone)) {
-      return await this.flowAdminConversationService.execute(message);
-    }
 
     const lastMessage =
       await this.getLastMessageInProgressConversationService.execute(
@@ -78,14 +59,12 @@ export class FlowConversationService {
 
     await this.createConversationService.execute(senderConversationEntity);
 
-    const reply = await this.getResponseByAccountService.execute(
+    const reply = await this.getAdminResponseByAccountService.execute(
       senderConversationEntity.accountId,
     );
     const {options = [], response, step} = reply;
 
-    const name = await this.getUserNameConversation.execute(
-      senderConversationEntity.accountId,
-    );
+    const name = FlowContext.BAERBER_SHOP_NAME;
 
     const botAnswer: ConversationEntity = {
       fromPhone: Number(FlowContext.BOT_NUMBER),

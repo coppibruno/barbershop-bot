@@ -7,6 +7,8 @@ import {
   GetPhoneByAccountStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
+  SendMessageWhatsappServiceStub,
+  fakeConversation,
   fakeMeeting,
 } from '@/__mocks__';
 
@@ -17,6 +19,7 @@ import {StepGetDateAndReplyAppointmentFlow} from '@/services/flow/step-05-get-da
 import {MeetingEntity} from '@/entity';
 
 import {IFlowResult} from '@/interfaces';
+import {FlowContext} from '@/flow.context';
 
 interface AppointmentDate {
   startedDate: Date;
@@ -40,18 +43,13 @@ const mockedTime = faker.date.future();
  * Etapa responsável por buscar horário selecionado, validar e retornar mensagem de sucesso caso seja.
  */
 export class StepGetDateAndReplyAppointmentFlowStub extends StepGetDateAndReplyAppointmentFlow {
-  private readonly findConversationServiceStub: FindConversationsServiceStub;
-  private readonly stepFindAvaliableDateFlowStub: StepFindAvaliableDateFlowStub;
-  private readonly meetingRepositoryStub: MeetingRepositoryStub;
-  private readonly getUserNameConversationStub: GetUserNameConversationStub;
-  private readonly getPhoneByAccountIdConversationStub: GetPhoneByAccountStub;
-
   constructor(
-    findConversationServiceStub: FindConversationsServiceStub,
-    stepFindAvaliableDateFlowStub: StepFindAvaliableDateFlowStub,
-    meetingRepositoryStub: MeetingRepositoryStub,
-    getUserNameConversationStub: GetUserNameConversationStub,
-    getPhoneByAccountIdConversationStub: GetPhoneByAccountStub,
+    private readonly findConversationServiceStub: FindConversationsServiceStub,
+    private readonly stepFindAvaliableDateFlowStub: StepFindAvaliableDateFlowStub,
+    private readonly meetingRepositoryStub: MeetingRepositoryStub,
+    private readonly getUserNameConversationStub: GetUserNameConversationStub,
+    private readonly getPhoneByAccountIdConversationStub: GetPhoneByAccountStub,
+    private readonly sendMessageWhatsappServiceStub: SendMessageWhatsappServiceStub,
   ) {
     super(
       findConversationServiceStub,
@@ -59,7 +57,25 @@ export class StepGetDateAndReplyAppointmentFlowStub extends StepGetDateAndReplyA
       meetingRepositoryStub,
       getUserNameConversationStub,
       getPhoneByAccountIdConversationStub,
+      sendMessageWhatsappServiceStub,
     );
+  }
+
+  /**
+   * Envia uma mensagem para o admin com detalhes do novo agendamento
+   * @param meeting Meeting (agendamento)
+   */
+  sendMessageToAdminWithNewAppointment(meeting: Meetings): void {
+    const {name, phone, startDate} = meeting;
+
+    const conversation = fakeConversation({
+      name,
+      toPhone: FlowContext.ADMIN_NUMBER,
+      fromPhone: Number(FlowContext.BOT_NUMBER),
+      body: 'any body notification',
+    });
+
+    this.sendMessageWhatsappServiceStub.execute(conversation);
   }
 
   async findMeetingIsAvaliable({startDate, endDate, phone}): Promise<Meetings> {

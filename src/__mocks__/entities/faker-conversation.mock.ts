@@ -16,7 +16,7 @@ export const fakeConversation = (
   createdAt: faker.date.recent(),
   ...(params?.fromPhone
     ? {fromPhone: params.fromPhone}
-    : {fromPhone: 999999999}),
+    : {fromPhone: 55999999999}),
   messageId: 'any_messageid',
   toPhone: 888888888,
 });

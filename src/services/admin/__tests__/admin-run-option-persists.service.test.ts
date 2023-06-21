@@ -77,7 +77,7 @@ describe('Admin run option persists service', () => {
     const result = await sut.execute(accountId);
     expect(spyServiceExpectedCalled).toBeCalled();
     expect(result.response).toEqual(FlowContext.SUCCESSFUL_OPERATION);
-    expect(result.step).toBe(9);
+    expect(result.step).toBe(4);
   });
   test('should back to menu admin if this option is selected (SHOW_MENU_AGAIN)', async () => {
     const {sut} = makeSut();
@@ -93,6 +93,6 @@ describe('Admin run option persists service', () => {
 
     const result = await sut.execute(accountId);
     expect(result.response).toEqual(expect.any(String));
-    expect(result.step).toBe(6);
+    expect(result.step).toBe(1);
   });
 });

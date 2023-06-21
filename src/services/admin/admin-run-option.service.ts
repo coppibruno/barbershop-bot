@@ -15,11 +15,11 @@ import {Meetings} from '@prisma/client';
 import moment from 'moment';
 import {InvalidDataIsProvidedError} from '@/errors';
 
-type IExtractDayMonthAndTime = {
+export type IExtractDayMonthAndTime = {
   dayMonth: string;
   intervalTime?: string;
 };
-interface IStartAndEndDate {
+export interface IStartAndEndDate {
   startDate: Date;
   endDate: Date;
 }
@@ -38,14 +38,14 @@ export const getHoursMin = (date): string => {
 };
 
 /**
- * Etapa responsável executar a funcionalidade solicitada pelo admin
+ * Etapa responsável executar a funcionalidade solicitada pelo admin (ETAPA 02)
  * '1- Visualizar agendamentos de algum dia',
  * '2- Desmarcar horários'
  */
 export class AdminRunOption {
-  private readonly adminMenu = FlowContext.MENU_ADMIN;
-  private readonly findConversationService: FindConversationsService;
-  private readonly findMeetingsOfDayService: FindMeetingsOfDayService;
+  public readonly adminMenu = FlowContext.MENU_ADMIN;
+  public readonly findConversationService: FindConversationsService;
+  public readonly findMeetingsOfDayService: FindMeetingsOfDayService;
 
   constructor(
     findConversationService: FindConversationsService,
@@ -70,7 +70,7 @@ export class AdminRunOption {
     return response.replaceAll(',', '');
   }
 
-  private timeResponseDisable({startDate, endDate}: IStartAndEndDate): string {
+  public timeResponseDisable({startDate, endDate}: IStartAndEndDate): string {
     const [day, month] = [getDay(startDate), getMonth(startDate)];
     const [startHour, startMin] = [getHours(startDate), getMins(startDate)];
     const [endHour, endMins] = [getHours(endDate), getMins(endDate)];
@@ -81,7 +81,7 @@ export class AdminRunOption {
     return response;
   }
 
-  private extractDayMonthAndTime(data: string): IExtractDayMonthAndTime {
+  public extractDayMonthAndTime(data: string): IExtractDayMonthAndTime {
     const dayMonth = data.substring(0, 5);
 
     const result: IExtractDayMonthAndTime = {
@@ -125,12 +125,12 @@ export class AdminRunOption {
     return {startDate, endDate};
   }
 
-  private async getMenuRequest(accountId: string): Promise<typeMenuAdmin> {
+  public async getMenuRequest(accountId: string): Promise<typeMenuAdmin> {
     const result = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
         toPhone: Number(FlowContext.BOT_NUMBER),
-        step: 6,
+        step: 1,
       },
       orderBy: {
         createdAt: 'desc',
@@ -147,12 +147,12 @@ export class AdminRunOption {
     return menuSelected.type;
   }
 
-  private async userAnswer(accountId: string): Promise<string> {
+  public async userAnswer(accountId: string): Promise<string> {
     const result = await this.findConversationService.findOne({
       where: {
         accountId: accountId,
         toPhone: Number(FlowContext.BOT_NUMBER),
-        step: 7,
+        step: 2,
       },
       orderBy: {
         createdAt: 'desc',
@@ -165,7 +165,7 @@ export class AdminRunOption {
     return result.body;
   }
 
-  private async listAppointmentsFromDay(accountId): Promise<Meetings[]> {
+  public async listAppointmentsFromDay(accountId): Promise<Meetings[]> {
     const dayMonth = await this.userAnswer(accountId);
 
     const isValidate = AppointmentIsValidHelper(dayMonth);
@@ -179,7 +179,7 @@ export class AdminRunOption {
     return this.findMeetingsOfDayService.execute(date);
   }
 
-  private async responseListAppointmentsFromDay(
+  public async responseListAppointmentsFromDay(
     accountId: string,
     appointments: Meetings[],
   ): Promise<string> {
@@ -209,7 +209,7 @@ export class AdminRunOption {
 
         //Todo: encerrar chat aqui
 
-        return {response, step: 8};
+        return {response, step: 3};
       }
 
       if (typeMenu === typeMenuAdmin.MARK_OFF_MEETING) {
@@ -226,7 +226,7 @@ export class AdminRunOption {
           messageCancelAppointment,
         );
 
-        return {response, step: 8};
+        return {response, step: 3};
       }
     } catch (error) {
       console.error(error);

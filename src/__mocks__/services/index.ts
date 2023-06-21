@@ -8,6 +8,7 @@ import {CreateConversationServiceStub} from './create-conversation-service.mock'
 import {GetLastMessageInProgressConversationServiceStub} from './get-last-message-in-progress-service.mock';
 import {GetResponseByAccountServiceStub} from './get-response-by-account-service.mock';
 import {DisableMeetingsOfIntervalServiceStub} from './disable-meetings-of-interval.service.mock';
+import {ExceededLimitOfMeetingsServiceStub} from './exceeded-limit-of-meetings-service.mock';
 
 export {
   FindConversationsServiceStub,
@@ -20,4 +21,5 @@ export {
   GetLastMessageInProgressConversationServiceStub,
   GetResponseByAccountServiceStub,
   DisableMeetingsOfIntervalServiceStub,
+  ExceededLimitOfMeetingsServiceStub,
 };

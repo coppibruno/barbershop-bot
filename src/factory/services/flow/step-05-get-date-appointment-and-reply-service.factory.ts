@@ -11,6 +11,7 @@ import {StepGetDateAndReplyAppointmentFlow} from '../../../services/flow/step-05
 //factories
 import {FindConversationsServiceFactory} from '../find-conversations-service.factory';
 import {FindAvaliableDateFlowServiceFactory} from './step-04-find-avaliable-date-service.factory';
+import {SendMessageWhatsappServiceFactory} from '..';
 
 export const GetDateAppointmentAndReplyFlowServiceFactory =
   (): StepGetDateAndReplyAppointmentFlow => {
@@ -25,11 +26,14 @@ export const GetDateAppointmentAndReplyFlowServiceFactory =
       findConversationsService,
     );
 
+    const sendMessageWhatsappService = SendMessageWhatsappServiceFactory();
+
     return new StepGetDateAndReplyAppointmentFlow(
       findConversationsService,
       stepFindAvaliableDateFlow,
       meetingRepository,
       getUserNameConversation,
       getPhoneByAccountIdConversation,
+      sendMessageWhatsappService,
     );
   };

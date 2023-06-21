@@ -11,6 +11,10 @@ import {FlowConversationService} from '../../services/flow-conversations.service
 import {GetUserNameConversationServiceFactory} from './get-user-name-conversations-service.factory';
 import {GetLastMessageInProgressServiceFactory} from './get-last-message-in-progress-service.factory';
 
+//admin service
+import {FlowAdminConversationServiceFactory} from './admin/flow-admin-conversation-service.factory';
+import {ExceededLimitOfMeetingsServiceFactory} from './exceeded-limit-of-meetings-service.factory';
+
 export const FlowConversationServiceFactory = (): FlowConversationService => {
   const getResponseByAccountService = GetResponseByAccountServiceFactory();
   const createConversationService = CreateConversationServiceFactory();
@@ -20,6 +24,9 @@ export const FlowConversationServiceFactory = (): FlowConversationService => {
     GetUserNameConversationServiceFactory();
   const getLastMessageInProgressConversationService =
     GetLastMessageInProgressServiceFactory();
+  const flowAdminConversationService = FlowAdminConversationServiceFactory();
+  const exceededLimitOfMeetingsServiceFactory =
+    ExceededLimitOfMeetingsServiceFactory();
 
   return new FlowConversationService(
     getConversationTwilio,
@@ -28,5 +35,7 @@ export const FlowConversationServiceFactory = (): FlowConversationService => {
     sendMessageWhatsappService,
     getUserNameConversationService,
     getLastMessageInProgressConversationService,
+    flowAdminConversationService,
+    exceededLimitOfMeetingsServiceFactory,
   );
 };

@@ -1,7 +1,7 @@
 import {FlowContext} from '../../flow.context';
 import {IFlowResult} from '@/interfaces/flow';
 /**
- * Etapa responsável por dar boas vindas ao admin e mostrar o menu de ações
+ * Etapa responsável por dar boas vindas ao admin e mostrar o menu de ações (ETAPA 01 )
  */
 export class WelcomeAdminAndShowMenu {
   private readonly menu = FlowContext.MENU_ADMIN;
@@ -13,6 +13,6 @@ export class WelcomeAdminAndShowMenu {
 
     response = response.replaceAll(',', '');
 
-    return {response, step: 6};
+    return {response, step: 1};
   }
 }
