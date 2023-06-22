@@ -37,28 +37,6 @@ class GetConversationTwilioStub extends GetConversationTwilio {
   }
 }
 
-const makeSendMessageWhatsappService = () => {
-  class TwilioSendWhatsappMessageStub extends TwilioSendWhatsappMessage {
-    async sendMessage(conversationEntity: ConversationEntity): Promise<void> {
-      return Promise.resolve();
-    }
-  }
-  class SendMessageWhatsappServiceStub extends SendMessageWhatsappService {
-    private readonly serviceSenderMessageStub;
-
-    constructor(serviceSenderMessageStub: TwilioSendWhatsappMessage) {
-      super(serviceSenderMessageStub);
-    }
-
-    async execute(conversationEntity: ConversationEntity): Promise<void> {
-      return Promise.resolve();
-    }
-  }
-
-  return new SendMessageWhatsappServiceStub(
-    new TwilioSendWhatsappMessageStub(),
-  );
-};
 const makeGetAdminReponseByAccountStub = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
   const findConversationsServiceStub = new FindConversationsServiceStub(
@@ -178,7 +156,9 @@ const makeSut = () => {
     findConversationsServiceStub,
   );
 
-  const sendMessageWhatsappServiceStub = makeSendMessageWhatsappService();
+  const sendMessageWhatsappServiceStub = new SendMessageWhatsappServiceStub(
+    new TwilioSendWhatsappMessageStub(),
+  );
 
   const getLastMessageInProgressConversationServiceStub =
     new GetLastMessageInProgressConversationServiceStub(

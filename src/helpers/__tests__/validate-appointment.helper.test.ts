@@ -2,7 +2,6 @@ import {InvalidDateError} from '../../errors';
 import * as ValidateAppointmentHelper from '../validate-appoitment.helper';
 import {faker} from '@faker-js/faker';
 import * as ValidateIfIsDezember from '../validate-if-is-dezember.helper';
-import * as FlowContext from '@/flow.context';
 
 const mockedTime = faker.date.future();
 const day = mockedTime.getDate();
@@ -87,10 +86,10 @@ describe('Appointment Is Valid Helper', () => {
     jest
       .spyOn(ValidateAppointmentHelper, 'isSunday')
       .mockReturnValueOnce(false);
-    jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValueOnce(true);
+    jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValue(true);
     jest
       .spyOn(ValidateAppointmentHelper, 'isOpenMonday')
-      .mockReturnValueOnce(false);
+      .mockReturnValue(false);
 
     const validFormat = `${day}/${month}`;
     const expectedError =
@@ -137,6 +136,8 @@ describe('Appointment Is Valid Helper Dezember', () => {
     jest
       .spyOn(ValidateAppointmentHelper, 'isSunday')
       .mockReturnValueOnce(false);
+
+    jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValue(false);
 
     const startTime = new Date(new Date().getFullYear(), 11, 1);
     const endTime = new Date(new Date().getFullYear(), 11, 31);
