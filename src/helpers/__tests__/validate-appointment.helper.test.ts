@@ -23,22 +23,20 @@ jest.doMock('moment', () => {
   return moment;
 });
 
+jest
+  .spyOn(ValidateIfIsDezember, 'ValidateIfIsDezemberHelper')
+  .mockReturnValue(false);
+
+jest.spyOn(ValidateAppointmentHelper, 'isBefore').mockReturnValue(false);
+
+jest.spyOn(ValidateAppointmentHelper, 'isSunday').mockReturnValue(false);
+
+jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValue(false);
+
+jest.spyOn(ValidateAppointmentHelper, 'isOpenMonday').mockReturnValue(false);
+
 describe('Appointment Is Valid Helper', () => {
   test('should return true with a valid format', () => {
-    jest
-      .spyOn(ValidateIfIsDezember, 'ValidateIfIsDezemberHelper')
-      .mockReturnValueOnce(false);
-
-    jest
-      .spyOn(ValidateAppointmentHelper, 'isBefore')
-      .mockReturnValueOnce(false);
-    jest
-      .spyOn(ValidateAppointmentHelper, 'isSunday')
-      .mockReturnValueOnce(false);
-    jest
-      .spyOn(ValidateAppointmentHelper, 'isMonday')
-      .mockReturnValueOnce(false);
-
     const validFormat = `${day}/${month}`;
     const expectedValid =
       ValidateAppointmentHelper.AppointmentIsValidHelper(validFormat);
@@ -47,10 +45,6 @@ describe('Appointment Is Valid Helper', () => {
   });
 
   test('should return error if date is past date', () => {
-    jest
-      .spyOn(ValidateIfIsDezember, 'ValidateIfIsDezemberHelper')
-      .mockReturnValueOnce(false);
-
     jest.spyOn(ValidateAppointmentHelper, 'isBefore').mockReturnValueOnce(true);
 
     const validFormat = `${day}/${month}`;
@@ -60,13 +54,6 @@ describe('Appointment Is Valid Helper', () => {
   });
 
   test('should return error if day is sunday', () => {
-    jest
-      .spyOn(ValidateIfIsDezember, 'ValidateIfIsDezemberHelper')
-      .mockReturnValueOnce(false);
-
-    jest
-      .spyOn(ValidateAppointmentHelper, 'isBefore')
-      .mockReturnValueOnce(false);
     jest.spyOn(ValidateAppointmentHelper, 'isSunday').mockReturnValueOnce(true);
 
     const validFormat = `${day}/${month}`;
@@ -76,20 +63,10 @@ describe('Appointment Is Valid Helper', () => {
     expect(expectedError).toBe(InvalidDateError.SUNDAY_DATE);
   });
   test('should return error if it is configured for monday does not open and the day for monday', () => {
-    jest
-      .spyOn(ValidateIfIsDezember, 'ValidateIfIsDezemberHelper')
-      .mockReturnValueOnce(false);
-
-    jest
-      .spyOn(ValidateAppointmentHelper, 'isBefore')
-      .mockReturnValueOnce(false);
-    jest
-      .spyOn(ValidateAppointmentHelper, 'isSunday')
-      .mockReturnValueOnce(false);
-    jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValue(true);
+    jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValueOnce(true);
     jest
       .spyOn(ValidateAppointmentHelper, 'isOpenMonday')
-      .mockReturnValue(false);
+      .mockReturnValueOnce(true);
 
     const validFormat = `${day}/${month}`;
     const expectedError =
@@ -126,19 +103,8 @@ describe('Appointment Is Valid Helper Dezember', () => {
   });
   test('should return true with a valid format in dezember date', () => {
     jest
-      .spyOn(ValidateAppointmentHelper, 'isDezember')
+      .spyOn(ValidateIfIsDezember, 'ValidateIfIsDezemberHelper')
       .mockReturnValueOnce(true);
-
-    jest
-      .spyOn(ValidateAppointmentHelper, 'isBefore')
-      .mockReturnValueOnce(false);
-
-    jest
-      .spyOn(ValidateAppointmentHelper, 'isSunday')
-      .mockReturnValueOnce(false);
-
-    jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValue(false);
-
     const startTime = new Date(new Date().getFullYear(), 11, 1);
     const endTime = new Date(new Date().getFullYear(), 11, 31);
 

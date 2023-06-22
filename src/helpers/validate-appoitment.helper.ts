@@ -87,7 +87,7 @@ export const AppointmentIsValidHelper = (dayMonth: string): IResponse => {
     return INVALID_SUNDAY();
   }
 
-  if (!isOpenMonday() && isMonday(date)) {
+  if (isOpenMonday() && isMonday(date)) {
     return INVALID_MONDAY();
   }
 
