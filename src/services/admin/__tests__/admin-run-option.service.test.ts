@@ -36,10 +36,10 @@ jest
   .spyOn(ValidateAppointment, 'AppointmentIsValidHelper')
   .mockReturnValue(true);
 
-jest.spyOn(Step, 'getDay').mockReturnValue('10');
-jest.spyOn(Step, 'getMonth').mockReturnValue('06');
-jest.spyOn(Step, 'getHours').mockReturnValue('10');
-jest.spyOn(Step, 'getMins').mockReturnValue('40');
+jest.spyOn(Step, 'getDay').mockReturnValue(10);
+jest.spyOn(Step, 'getMonth').mockReturnValue(6);
+jest.spyOn(Step, 'getHours').mockReturnValue(10);
+jest.spyOn(Step, 'getMins').mockReturnValue(40);
 
 describe('Admin run option service (SHOW MEETINGS FROM DAY)', () => {
   test('should return a message with list of appointments', async () => {

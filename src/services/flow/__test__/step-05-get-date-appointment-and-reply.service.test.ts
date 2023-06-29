@@ -21,9 +21,8 @@ import {
   STEP_NOT_IMPLEMETED,
 } from '../../../errors';
 import {faker} from '@faker-js/faker';
-import * as StartAndEndAppontiment from '../../../helpers/fetch-start-and-end-appointment-time.helper';
-import * as TransformSampleObject from '../../../helpers/transform-sample-object-in-formatted-array.helper';
 import {PadStartDateHelper} from '@/helpers';
+import * as TransformAppointment from '@/helpers/transform-appointment-in-date.helper';
 
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
@@ -78,7 +77,12 @@ const makeSut = () => {
 
 const mockedTime = faker.date.future();
 
-jest.spyOn(Step, 'getClone').mockImplementation(() => mockedTime);
+jest
+  .spyOn(Step, 'getClone')
+  .mockImplementation(() => ({toDate: () => {}} as any));
+jest
+  .spyOn(Step, 'addDate')
+  .mockImplementation(() => ({toDate: () => {}} as any));
 jest.spyOn(Step, 'getDay').mockImplementation(() => mockedTime.getDate());
 jest
   .spyOn(Step, 'getMonth')
@@ -92,27 +96,28 @@ jest.spyOn(Step, 'getHoursMin').mockImplementation(() => {
 });
 jest.spyOn(Step, 'getHours').mockImplementation(() => mockedTime.getHours());
 jest.spyOn(Step, 'getMins').mockImplementation(() => mockedTime.getMinutes());
-jest.spyOn(Step, 'addDate').mockImplementation(() => mockedTime);
-jest.spyOn(Step, 'setHours').mockImplementation(() => mockedTime);
-jest.spyOn(Step, 'setMinutes').mockImplementation(() => mockedTime);
-jest.spyOn(Step, 'setSeconds').mockImplementation(() => mockedTime);
+jest
+  .spyOn(Step, 'addDate')
+  .mockImplementation(() => ({toDate: () => {}} as any));
+jest
+  .spyOn(Step, 'setHours')
+  .mockImplementation(() => ({toDate: () => {}} as any));
+jest
+  .spyOn(Step, 'setMinutes')
+  .mockImplementation(() => ({toDate: () => {}} as any));
+jest
+  .spyOn(Step, 'setSeconds')
+  .mockImplementation(() => ({toDate: () => {}} as any));
 
 jest
-  .spyOn(StartAndEndAppontiment, 'FetchStartAndEndAppointmentTimeHelper')
-  .mockImplementationOnce(() => ({
-    startDate: mockedTime as any,
-    endDate: mockedTime as any,
-  }));
+  .spyOn(TransformAppointment, 'TransformAppointmentInDateHelper')
+  .mockImplementation(() => ({toDate: () => {}} as any));
 
 const optionsMenu = [
   {option: 1, appointment: '09:00'},
   {option: 2, appointment: '10:00'},
   {option: 3, appointment: '11:00'},
 ];
-
-jest
-  .spyOn(TransformSampleObject, 'TransformSampleObjectInFormattedArrayHelper')
-  .mockReturnValueOnce(optionsMenu);
 
 describe('Step Get Date Appointment And Reply execute', () => {
   test('should return success message that appointment is marked', async () => {

@@ -66,7 +66,7 @@ describe('Appointment Is Valid Helper', () => {
     jest.spyOn(ValidateAppointmentHelper, 'isMonday').mockReturnValueOnce(true);
     jest
       .spyOn(ValidateAppointmentHelper, 'isOpenMonday')
-      .mockReturnValueOnce(true);
+      .mockReturnValueOnce(false);
 
     const validFormat = `${day}/${month}`;
     const expectedError =

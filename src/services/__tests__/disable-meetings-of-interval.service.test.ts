@@ -1,6 +1,6 @@
-import {faker} from '@faker-js/faker';
 import * as Service from '../disable-meetings-of-interval.service';
 import {MeetingRepositoryStub} from '@/__mocks__';
+import {MeetingEntity} from '@/entity';
 
 const makeSut = () => {
   const meetingRepositoryStub = new MeetingRepositoryStub();
@@ -16,23 +16,19 @@ describe('Disable Meetings of interval', () => {
   test('should call meeting repository method with correct values', async () => {
     const {sut, meetingRepositoryStub} = makeSut();
 
-    const startDate = faker.date.future();
-    const endDate = faker.date.future();
+    const startDate = {toDate: () => {}} as any;
+    const endDate = {toDate: () => {}} as any;
 
-    const spyOn = jest.spyOn(meetingRepositoryStub, 'upsert');
+    const spyOn = jest.spyOn(meetingRepositoryStub, 'create');
 
-    await sut.execute({startDate, endDate});
-
-    expect(spyOn).toBeCalledWith(
-      {
-        where: {
-          startDate,
-          endDate,
-        },
-      },
-      {
-        disabledByAdmin: true,
-      },
-    );
+    await sut.execute({startDate, endDate} as any);
+    const meetingEntity: MeetingEntity = {
+      disabledByAdmin: true,
+      startDate: startDate.toDate(),
+      endDate: endDate.toDate(),
+      name: 'bypass-admin',
+      phone: 0,
+    };
+    expect(spyOn).toBeCalledWith(meetingEntity);
   });
 });

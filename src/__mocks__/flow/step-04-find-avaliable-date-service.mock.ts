@@ -59,8 +59,11 @@ export class StepFindAvaliableDateFlowStub extends StepFindAvaliableDateFlow {
     return true;
   }
 
-  public validateIfAppointmentIsLunchTime(appointment: Moment): boolean {
-    return false;
+  validateIfAppointmentIsLunchTime(date: Moment): {
+    result: boolean;
+    lunchInMinutes?: number;
+  } {
+    return {result: false, lunchInMinutes: 60};
   }
 
   public async getAppointmentsOfDate(

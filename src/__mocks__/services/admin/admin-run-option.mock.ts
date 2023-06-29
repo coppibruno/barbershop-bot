@@ -57,8 +57,8 @@ export class AdminRunOptionStub extends AdminRunOption {
     accountId: string,
   ): Promise<IStartAndEndDate> {
     return Promise.resolve({
-      startDate: mockedTime,
-      endDate: mockedTime,
+      startDate: mockedTime as any,
+      endDate: mockedTime as any,
     });
   }
 
@@ -81,10 +81,10 @@ export class AdminRunOptionStub extends AdminRunOption {
     let message = `Para o dia ${dayMonth}, temos os seguintes horários: \n`;
 
     message += [
-      {startDate: mockedTime, endDate: mockedTime},
-      {startDate: mockedTime, endDate: mockedTime},
-      {startDate: mockedTime, endDate: mockedTime},
-    ].map((i) => getHoursMin(i.startDate) + '\n');
+      {name: 'any_name', startDate: mockedTime, endDate: mockedTime},
+      {name: 'any_name2', startDate: mockedTime, endDate: mockedTime},
+      {name: 'any_name3', startDate: mockedTime, endDate: mockedTime},
+    ].map((i) => `${getHoursMin(i.startDate as any)} - ${i.name} \n`);
 
     return message.replaceAll(',', '');
   }

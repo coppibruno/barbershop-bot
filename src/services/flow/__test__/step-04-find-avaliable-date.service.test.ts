@@ -181,7 +181,7 @@ describe('GetAppointmentsOfDate', () => {
 
     jest
       .spyOn(sut, 'validateIfAppointmentIsLunchTime')
-      .mockImplementation(() => false);
+      .mockImplementation(() => ({result: false, lunchInMinutes: 60}));
 
     jest
       .spyOn(sut, 'verifyIfAppointmentIsAvaliable')
@@ -214,9 +214,9 @@ describe('validateIfAppointmentIsLunchTime', () => {
 
     jest.spyOn(sut, 'dateIsLunchTime').mockImplementation(() => true);
 
-    const result = sut.validateIfAppointmentIsLunchTime(mockedTime as any);
+    const data = sut.validateIfAppointmentIsLunchTime(mockedTime as any);
 
-    expect(result).toBe(true);
+    expect(data.result).toBe(true);
   });
   test('should return false if not set lunch time', () => {
     const {sut} = makeSut();
@@ -224,9 +224,9 @@ describe('validateIfAppointmentIsLunchTime', () => {
     jest.replaceProperty(sut, 'startLunchTimeOff', undefined);
     jest.replaceProperty(sut, 'endLunchTimeOff', undefined);
 
-    const result = sut.validateIfAppointmentIsLunchTime(mockedTime as any);
+    const data = sut.validateIfAppointmentIsLunchTime(mockedTime as any);
 
-    expect(result).toBe(false);
+    expect(data.result).toBe(false);
   });
   test('should return false if time not is lunch time', () => {
     const {sut} = makeSut();
@@ -236,9 +236,9 @@ describe('validateIfAppointmentIsLunchTime', () => {
 
     jest.spyOn(sut, 'dateIsLunchTime').mockImplementation(() => false);
 
-    const result = sut.validateIfAppointmentIsLunchTime(mockedTime as any);
+    const data = sut.validateIfAppointmentIsLunchTime(mockedTime as any);
 
-    expect(result).toBe(false);
+    expect(data.result).toBe(false);
   });
 });
 
@@ -252,24 +252,24 @@ describe('verifyIfAppointmentIsAvaliable', () => {
       .spyOn(sut, 'appointmentAlreadyUsed')
       .mockImplementation(() => undefined);
 
-    const result = sut.verifyIfAppointmentIsAvaliable(
+    const data = sut.verifyIfAppointmentIsAvaliable(
       mockedTime as any,
       mockedTime as any,
     );
 
-    expect(result).toBe(true);
+    expect(data).toBe(true);
   });
   test('should return true if there no disable appointments on the day', () => {
     const {sut} = makeSut();
 
     jest.replaceProperty(sut, 'disableAppointments', []);
 
-    const result = sut.verifyIfAppointmentIsAvaliable(
+    const data = sut.verifyIfAppointmentIsAvaliable(
       mockedTime as any,
       mockedTime as any,
     );
 
-    expect(result).toBe(true);
+    expect(data).toBe(true);
   });
   test('should return false if already filled appointment ', () => {
     const {sut} = makeSut();
@@ -280,11 +280,11 @@ describe('verifyIfAppointmentIsAvaliable', () => {
       .spyOn(sut, 'appointmentAlreadyUsed')
       .mockImplementation(() => fakeMeeting());
 
-    const result = sut.verifyIfAppointmentIsAvaliable(
+    const data = sut.verifyIfAppointmentIsAvaliable(
       mockedTime as any,
       mockedTime as any,
     );
 
-    expect(result).toBe(false);
+    expect(data).toBe(false);
   });
 });
