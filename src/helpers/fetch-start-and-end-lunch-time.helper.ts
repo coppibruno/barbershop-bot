@@ -4,6 +4,7 @@ import {STEP_NOT_IMPLEMETED} from '@/errors';
 interface IResultLunchTime {
   start?: Moment;
   end?: Moment;
+  inMinutes?: number;
 }
 
 /**
@@ -28,8 +29,13 @@ export const FetchStartAndEndLunchTimeHelper = (
   const endHour = Number(end[0]);
   const endMin = Number(end[1]);
 
+  const resultStart = moment().hour(startHour).minute(startMin).second(0);
+
+  const resultEnd = moment().hour(endHour).minute(endMin).second(0);
+
   return {
-    start: moment().hour(startHour).minute(startMin).subtract(1, 'minute'),
-    end: moment().hour(endHour).minute(endMin).subtract(1, 'minute'),
+    start: resultStart.subtract(1, 'minute'),
+    end: resultEnd.subtract(1, 'minute'),
+    inMinutes: moment.duration(resultEnd.diff(resultStart)).asMinutes(),
   };
 };

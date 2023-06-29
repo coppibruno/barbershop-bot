@@ -11,6 +11,7 @@ export class MeetingRepository implements IRepository {
         phone: meetingEntity.phone,
         startDate: meetingEntity.startDate,
         endDate: meetingEntity.endDate,
+        ...(meetingEntity.disabledByAdmin ? {disabledByAdmin: true} : {}),
       },
     });
   }
@@ -19,7 +20,7 @@ export class MeetingRepository implements IRepository {
     return await prisma.meetings.findMany({
       ...where,
       orderBy: {
-        createdAt: 'desc',
+        startDate: 'asc',
       },
     });
   }

@@ -10,7 +10,7 @@
     "build": "npx tsc --project tsconfig.build.json && tscpaths -p tsconfig.build.json -s ./src -o ./dist",
     "start:prod": "npm run build && node ./dist/server.js",
     "start:dev": "ts-node-dev -r tsconfig-paths/register src/server.ts",
-    "start:debug": "npx tsc -p tsconfig.build.json && nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/server.ts'",
+    "start:debug": "npm run build && nodemon --exec 'ts-node-dev -r tsconfig-paths/register --inspect=0.0.0.0:9229 src/server.ts'",
     "prisma:generate": "npx prisma generate",
     "jest": "jest"
   },

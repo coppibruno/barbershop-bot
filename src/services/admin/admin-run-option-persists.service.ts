@@ -102,7 +102,11 @@ export class AdminRunOptionPersists {
           endDate,
         });
 
-        return {response: FlowContext.SUCCESSFUL_OPERATION, step: 4};
+        return {
+          response: FlowContext.SUCCESSFUL_OPERATION,
+          step: 4,
+          state: 'FINISHED',
+        };
       }
 
       if (typeMenu === typeMenuAdmin.SHOW_MENU_AGAIN) {

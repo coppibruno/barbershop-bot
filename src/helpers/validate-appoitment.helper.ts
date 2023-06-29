@@ -13,7 +13,7 @@ type IResponse =
   | InvalidDateError.INVALID_MONDAY_DATE
   | true;
 
-export const isDezember = () => !!ValidateIfIsDezemberHelper();
+export const isDezember = () => ValidateIfIsDezemberHelper();
 
 export const getMoment = (dayMonthYear: string) => {
   const date = moment(dayMonthYear, 'DD/MM/YYYY')
@@ -87,7 +87,7 @@ export const AppointmentIsValidHelper = (dayMonth: string): IResponse => {
     return INVALID_SUNDAY();
   }
 
-  if (isOpenMonday() && isMonday(date)) {
+  if (!isOpenMonday() && isMonday(date)) {
     return INVALID_MONDAY();
   }
 

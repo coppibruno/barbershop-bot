@@ -1,8 +1,10 @@
+import {MeetingEntity} from '@/entity';
 import {MeetingRepository} from '@/repositories/meeting.repository';
+import {Moment} from 'moment';
 
 export interface IStartAndEndDate {
-  startDate: Date;
-  endDate: Date;
+  startDate: Moment;
+  endDate: Moment;
 }
 
 /**
@@ -16,16 +18,13 @@ export class DisableMeetingsOfIntervalService {
   }
 
   async execute({startDate, endDate}: IStartAndEndDate): Promise<void> {
-    return this.meetingRepository.upsert(
-      {
-        where: {
-          startDate,
-          endDate,
-        },
-      },
-      {
-        disabledByAdmin: true,
-      },
-    );
+    const meetingEntity: MeetingEntity = {
+      disabledByAdmin: true,
+      startDate: startDate.toDate(),
+      endDate: endDate.toDate(),
+      name: 'bypass-admin',
+      phone: 0,
+    };
+    return this.meetingRepository.create(meetingEntity);
   }
 }

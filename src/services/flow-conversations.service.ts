@@ -81,7 +81,7 @@ export class FlowConversationService {
     const reply = await this.getResponseByAccountService.execute(
       senderConversationEntity.accountId,
     );
-    const {options = [], response, step} = reply;
+    const {options = [], response, step, state} = reply;
 
     const name = await this.getUserNameConversation.execute(
       senderConversationEntity.accountId,
@@ -94,7 +94,7 @@ export class FlowConversationService {
       accountId: senderConversationEntity.accountId,
       messageId: senderConversationEntity.messageId,
       name: name || '',
-      state: step === FlowContext.LAST_ITERATION ? 'FINISHED' : 'IN_PROGRESS',
+      state: state || 'IN_PROGRESS',
       options,
       step,
       protocol: senderConversationEntity.protocol,

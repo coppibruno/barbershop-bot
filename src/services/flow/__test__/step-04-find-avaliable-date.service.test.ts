@@ -110,7 +110,7 @@ describe('StepFindAvaliableAppointment', () => {
         ]),
       );
     const result = await sut.execute(accountId);
-    console.log('test', result);
+
     expect(result.response).toEqual(
       expect.stringMatching(/temos esses horários disponiveis/i),
     );

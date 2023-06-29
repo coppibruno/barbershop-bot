@@ -45,6 +45,7 @@ export class ConversationRepository implements IRepository {
         fromPhone: {
           not: Number(FlowContext.BOT_NUMBER),
         },
+        state: 'IN_PROGRESS',
       },
       _max: {
         createdAt: true,

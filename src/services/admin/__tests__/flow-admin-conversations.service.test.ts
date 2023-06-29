@@ -203,7 +203,6 @@ describe('Flow Admin Conversations Service', () => {
     };
 
     const result = await sut.execute(fakeMessageTwilio);
-    console.log(result);
     expect(result).toEqual(expect.any(String));
   });
 });

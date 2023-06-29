@@ -20,13 +20,14 @@ import {IAppointmentsResult, IFlowResult} from '@/interfaces/flow';
 import {FlowContext} from '../../flow.context';
 import {StepResponseByOptionMenuFlow} from './step-03-response-by-option-menu.service';
 
-export const isSameDate = (date1, date2) => date1.isSame(date2);
+export const isSameDate = (date1: Moment, date2: Moment) =>
+  date1.isSame(date2) || date1.isAfter(date2);
 
 export const isAfter = (date) => moment(date).isAfter();
 
 export const getDate = (date) => moment(date);
 export const getDay = (date) => date.date();
-export const getMonth = (date) => date.getMonth() + 1;
+export const getMonth = (date: Moment) => date.month();
 
 export const getHours = (date) => date.hours();
 export const getMins = (date) => date.minutes();
@@ -112,7 +113,7 @@ export class StepFindAvaliableDateFlow {
   }
 
   public dateIsLunchTime({date, lunchStart, lunchEnd}) {
-    return moment(date).isAfter(lunchStart) && moment(date).isBefore(lunchEnd);
+    return date.isSameOrAfter(lunchStart) && date.isSameOrBefore(lunchEnd);
   }
   /**
    * Verifica se o agendamento está disponivel
@@ -144,11 +145,19 @@ export class StepFindAvaliableDateFlow {
    * @param date Data Moment
    * @returns True caso esteja em horário de almoço, False caso não esteja
    */
-  validateIfAppointmentIsLunchTime(date: Moment): boolean {
+  validateIfAppointmentIsLunchTime(date: Moment): {
+    result: boolean;
+    lunchInMinutes?: number;
+  } {
     if (!this.startLunchTimeOff && !this.endLunchTimeOff) {
-      return false;
+      return {result: false, lunchInMinutes: 0};
     }
-    const {start: lunchStart, end: lunchEnd} = FetchStartAndEndLunchTimeHelper(
+
+    let {
+      start: lunchStart,
+      end: lunchEnd,
+      inMinutes,
+    } = FetchStartAndEndLunchTimeHelper(
       String(this.startLunchTimeOff),
       String(this.endLunchTimeOff),
     );
@@ -156,17 +165,17 @@ export class StepFindAvaliableDateFlow {
     const day = getDay(date);
     const month = getMonth(date);
 
-    setDay(lunchStart, day);
-    setMonth(lunchStart, month);
+    lunchStart = setDay(lunchStart, day);
+    lunchStart = setMonth(lunchStart, month);
 
-    setDay(lunchEnd, day);
-    setMonth(lunchEnd, month);
+    lunchEnd = getClone(setDay(lunchEnd, day));
+    lunchEnd = getClone(setMonth(lunchEnd, month));
 
     if (this.dateIsLunchTime({date, lunchStart, lunchEnd})) {
-      return true;
+      return {result: true, lunchInMinutes: inMinutes};
     }
 
-    return false;
+    return {result: false, lunchInMinutes: inMinutes};
   }
   /**
    * Retorna a lista de agendamentos disponiveis do dia passado por parâmetro
@@ -185,7 +194,7 @@ export class StepFindAvaliableDateFlow {
 
     const startDateMoment = getDate(startDate);
 
-    let currentAppointment = getClone(startDate);
+    let currentAppointment = getClone(startDateMoment);
     let count: number = 0;
 
     //10/06 - pega todos os agendamentos do dia 10/06
@@ -206,6 +215,16 @@ export class StepFindAvaliableDateFlow {
         2,
       );
 
+      const {result: isLunchTime, lunchInMinutes} =
+        this.validateIfAppointmentIsLunchTime(currentStartAppointment);
+
+      if (isLunchTime) {
+        currentAppointment = getClone(
+          addDate(currentAppointment, lunchInMinutes, 'minutes'),
+        );
+        continue;
+      }
+
       const currentEndAppointment = getClone(
         addDate(currentAppointment, this.appointmentTimeInMinutes, 'minutes'),
       );
@@ -213,14 +232,6 @@ export class StepFindAvaliableDateFlow {
       const isAfterNow = isAfter(currentStartAppointment);
 
       if (!isAfterNow) {
-        continue;
-      }
-
-      const isLunchTime = this.validateIfAppointmentIsLunchTime(
-        currentStartAppointment,
-      );
-
-      if (isLunchTime) {
         continue;
       }
 
@@ -241,7 +252,7 @@ export class StepFindAvaliableDateFlow {
         option: count,
         description: avaliableAppointment,
       });
-    } while (!isSameDate(currentAppointment, endDate));
+    } while (!isSameDate(currentAppointment, moment(endDate)));
 
     return avaliabledMeetings;
   }
@@ -312,7 +323,6 @@ export class StepFindAvaliableDateFlow {
       const dayMonthAppointment = await this.getDateAppointment(accountId);
 
       const listOptions = await this.getAppointmentsOfDate(dayMonthAppointment);
-
       const {response, options} = this.getMessageListOptions(
         listOptions,
         dayMonthAppointment,

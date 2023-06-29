@@ -3,6 +3,7 @@ import {IFlowResult} from '@/interfaces/flow';
 import {FindConversationsService} from '@/services/find-conversation.service';
 import {InvalidMenuOptionError, DefaultError} from '@/errors';
 import {ValidateIfIsDezemberHelper} from '@/helpers/validate-if-is-dezember.helper';
+import {State} from '@prisma/client';
 
 const isDezember = () => ValidateIfIsDezemberHelper();
 
@@ -12,11 +13,12 @@ enum OptionsMenuEnum {
   RENAME_USER = 2,
 }
 
-enum ResponseOptionEnum {
-  MAKE_APPOINTMENT = 'MAKE_APPOINTMENT',
-  RENAME_USER = 'RENAME_USER',
-  CLOSE_SERVICE = 'CLOSE_SERVICE',
-}
+type Types = {
+  type: typeMenuUser;
+  response: string;
+  step: number;
+  state: State;
+}[];
 
 /**
  * Etapa responsável por processar a opção digitada no menu e responder conforme opção escolhida
@@ -83,29 +85,35 @@ export class StepResponseByOptionMenuFlow {
 
       const menuSelectType = this.replyByMenu(selected);
 
-      const types = [
+      const types: Types = [
         {
           type: typeMenuUser.APPOINTMENT,
           response: this.messageToMakeAppointment,
           step: this.stepCompleted,
+          state: 'IN_PROGRESS',
         },
         {
           type: typeMenuUser.CHANGE_NAME,
           response: this.messageToRenameUser,
           step: this.stepRenameUser,
+          state: 'IN_PROGRESS',
         },
         {
           type: typeMenuUser.CLOSE_SERVICE,
           response: this.messageToGoodBye,
           step: this.incompleteStep,
+          state: 'FINISHED',
         },
       ];
 
-      const {response, step} = types.find(({type}) => type === menuSelectType);
+      const {response, step, state} = types.find(
+        ({type}) => type === menuSelectType,
+      );
 
       return {
         response,
         step,
+        state,
       };
     } catch (error) {
       console.error(error);

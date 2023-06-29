@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment, {Moment} from 'moment';
 import {Meetings} from '@prisma/client';
 
 import {FlowContext} from '../../flow.context';
@@ -28,6 +28,7 @@ import {
   PadStartDateHelper,
   TransformSampleObjectInFormattedArrayHelper,
   ConvertIntervalTimeInObject,
+  TransformAppointmentInDateHelper,
 } from '@/helpers';
 
 import {IFlowResult} from '@/interfaces/flow';
@@ -52,9 +53,9 @@ interface IOptions {
   appointment: string;
 }
 
-export const getDay = (date) => date.date();
-export const getMonth = (date) => date.month() + 1;
-export const getClone = (date) => date.clone();
+export const getDay = (date: Moment) => date.date();
+export const getMonth = (date: Moment) => date.month() + 1;
+export const getClone = (date: Moment): Moment => date.clone();
 export const getHours = (date) => date.hours();
 export const getMins = (date) => date.minutes();
 export const setHours = (date, hour) => date.hours(hour);
@@ -62,10 +63,10 @@ export const setMinutes = (date, min) => date.minutes(min);
 export const setSeconds = (date, sec) => date.seconds(sec);
 export const addDate = (date, input, type) => date.add(input, type);
 
-export const getHoursMin = (date): string => {
-  const hours = PadStartDateHelper(moment(date).hours(), 2);
+export const getHoursMin = (date: Moment): string => {
+  const hours = PadStartDateHelper(date.hours(), 2);
 
-  const mins = PadStartDateHelper(moment(date).minutes(), 2);
+  const mins = PadStartDateHelper(date.minutes(), 2);
 
   return `${hours}:${mins}`;
 };
@@ -94,6 +95,8 @@ export class StepGetDateAndReplyAppointmentFlow {
   private readonly incompleteStep: number = 4;
   private readonly stepDateAppointment: number = 3;
   private readonly msgIncorrectMenuIsProvided = 'invalid menu is provided';
+  public readonly appointmentTimeInMinutes =
+    FlowContext.APPOINTMENT_TIME_IN_MINUTES;
 
   constructor(
     findConversationService: FindConversationsService,
@@ -122,8 +125,10 @@ export class StepGetDateAndReplyAppointmentFlow {
       fromPhone: Number(FlowContext.BOT_NUMBER),
       toPhone: Number(FlowContext.ADMIN_NUMBER),
       body: `Novo cliente ${name}(${phone}). Dia ${getDay(
-        startDate,
-      )}/${getMonth(startDate)} às ${getHoursMin(startDate)}`,
+        moment(startDate),
+      )}/${PadStartDateHelper(getMonth(moment(startDate)), 2)} às ${getHoursMin(
+        moment(startDate),
+      )}`,
       accountId: null,
       messageId: null,
       options: null,
@@ -167,16 +172,24 @@ export class StepGetDateAndReplyAppointmentFlow {
       this.stepFindAvaliableDateFlow.getDateAppointment(accountId),
     ]);
 
-    const {startDate, endDate} = ConvertIntervalTimeInObject(
-      dayMonth,
-      appointmentTime,
+    let startDate = TransformAppointmentInDateHelper(dayMonth);
+
+    const [hours, mins] = appointmentTime.split(':');
+
+    startDate = setHours(startDate, hours);
+    startDate = setMinutes(startDate, mins);
+
+    let endDate = getClone(startDate);
+
+    endDate = getClone(
+      addDate(endDate, this.appointmentTimeInMinutes, 'minutes'),
     );
 
     const meetingEntity: MeetingEntity = {
       name,
       phone,
-      startDate,
-      endDate,
+      startDate: startDate.toDate(),
+      endDate: endDate.toDate(),
     };
 
     return meetingEntity;
@@ -310,11 +323,16 @@ export class StepGetDateAndReplyAppointmentFlow {
       return {
         step: this.stepCompleted,
         response: FlowContext.successfulAppointmentMessage(date, time),
+        state: 'FINISHED',
       };
     } catch (error) {
       console.error(error);
 
       const {message} = error;
+
+      if (error === MEETING_ALREDY_IN_USE) {
+        //todo tratar esse erro
+      }
 
       if (message === this.msgIncorrectMenuIsProvided) {
         return {

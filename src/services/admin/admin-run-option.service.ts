@@ -12,7 +12,7 @@ import {
 } from '@/helpers';
 import {FindMeetingsOfDayService} from '../find-meetings-of-day.service';
 import {Meetings} from '@prisma/client';
-import moment from 'moment';
+import moment, {Moment} from 'moment';
 import {InvalidDataIsProvidedError} from '@/errors';
 
 export type IExtractDayMonthAndTime = {
@@ -20,19 +20,19 @@ export type IExtractDayMonthAndTime = {
   intervalTime?: string;
 };
 export interface IStartAndEndDate {
-  startDate: Date;
-  endDate: Date;
+  startDate: Moment;
+  endDate: Moment;
 }
 
-export const getDay = (date) => date.date();
-export const getMonth = (date) => date.month() + 1;
-export const getHours = (date) => date.hours();
-export const getMins = (date) => date.minutes();
+export const getDay = (date: Moment) => date.date();
+export const getMonth = (date: Moment) => date.month() + 1;
+export const getHours = (date: Moment) => date.hours();
+export const getMins = (date: Moment) => date.minutes();
 
-export const getHoursMin = (date): string => {
-  const hours = PadStartDateHelper(moment(date).hours(), 2);
+export const getHoursMin = (date: Moment): string => {
+  const hours = PadStartDateHelper(date.hours(), 2);
 
-  const mins = PadStartDateHelper(moment(date).minutes(), 2);
+  const mins = PadStartDateHelper(date.minutes(), 2);
 
   return `${hours}:${mins}`;
 };
@@ -71,9 +71,18 @@ export class AdminRunOption {
   }
 
   public timeResponseDisable({startDate, endDate}: IStartAndEndDate): string {
-    const [day, month] = [getDay(startDate), getMonth(startDate)];
-    const [startHour, startMin] = [getHours(startDate), getMins(startDate)];
-    const [endHour, endMins] = [getHours(endDate), getMins(endDate)];
+    const [day, month] = [
+      PadStartDateHelper(getDay(startDate), 2),
+      PadStartDateHelper(getMonth(startDate), 2),
+    ];
+    const [startHour, startMin] = [
+      PadStartDateHelper(getHours(startDate), 2),
+      PadStartDateHelper(getMins(startDate), 2),
+    ];
+    const [endHour, endMins] = [
+      PadStartDateHelper(getHours(endDate), 2),
+      PadStartDateHelper(getMins(endDate), 2),
+    ];
 
     let response = `Você confirma desabilitar o dia ${day}/${month},`;
     response += ` das ${startHour}:${startMin} até ${endHour}:${endMins}`;
@@ -122,7 +131,7 @@ export class AdminRunOption {
       ({startDate, endDate} = FetchMaxAndMinAppointmentFromDay(date));
     }
 
-    return {startDate, endDate};
+    return {startDate: moment(startDate), endDate: moment(endDate)};
   }
 
   public async getMenuRequest(accountId: string): Promise<typeMenuAdmin> {
@@ -191,7 +200,9 @@ export class AdminRunOption {
 
     let message = `Para o dia ${dayMonth}, temos os seguintes horários: \n`;
 
-    message += appointments.map((i) => getHoursMin(i.startDate) + '\n');
+    message += appointments.map(
+      (i) => `${getHoursMin(moment(i.startDate))} - ${i.name} \n`,
+    );
 
     return message.replaceAll(',', '');
   }

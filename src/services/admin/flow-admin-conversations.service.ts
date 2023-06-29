@@ -62,7 +62,7 @@ export class FlowAdminConversationService {
     const reply = await this.getAdminResponseByAccountService.execute(
       senderConversationEntity.accountId,
     );
-    const {options = [], response, step} = reply;
+    const {options = [], response, step, state} = reply;
 
     const name = FlowContext.BAERBER_SHOP_NAME;
 
@@ -73,7 +73,7 @@ export class FlowAdminConversationService {
       accountId: senderConversationEntity.accountId,
       messageId: senderConversationEntity.messageId,
       name: name || '',
-      state: step === FlowContext.LAST_ITERATION ? 'FINISHED' : 'IN_PROGRESS',
+      state: state || 'IN_PROGRESS',
       options,
       step,
       protocol: senderConversationEntity.protocol,
