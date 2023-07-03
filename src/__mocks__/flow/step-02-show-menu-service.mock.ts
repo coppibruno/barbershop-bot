@@ -1,14 +1,18 @@
 import {IFlowResult} from '@/interfaces/flow';
-import {GetUserNameConversationStub} from '@/__mocks__';
+import {
+  GetProtocolByPhoneConversationStub,
+  GetUserNameConversationStub,
+} from '@/__mocks__';
 import {StepShowMenuFlow} from '@/services/flow/step-02-show-menu.service';
 /**
  * Etapa responsável por mostrar o menu de opções ao usuário
  */
 export class StepShowMenuFlowStub extends StepShowMenuFlow {
-  private readonly getUserNameConversationStub: GetUserNameConversationStub;
-
-  constructor(getUserNameConversationStub: GetUserNameConversationStub) {
-    super(getUserNameConversationStub);
+  constructor(
+    private readonly getUserNameConversationStub: GetUserNameConversationStub,
+    private readonly getProtocolByPhoneStub: GetProtocolByPhoneConversationStub,
+  ) {
+    super(getUserNameConversationStub, getProtocolByPhoneStub);
   }
 
   showMenu(user: string) {

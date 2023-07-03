@@ -1,6 +1,5 @@
 import {FindConversationsServiceStub} from './find-conversation-service.mock';
 import {GetUserNameConversationStub} from './get-user-name-conversation-service.mock';
-import {GetPhoneByAccountStub} from './get-phone-by-account-service.mock';
 import {FindMeetingsOfDayServiceStub} from './find-meetings-of-day-service.mock';
 import {GetStepConversationStub} from './get-step-conversation-service.mock';
 import {SendMessageWhatsappServiceStub} from './send-message-service.mock';
@@ -9,12 +8,12 @@ import {GetLastMessageInProgressConversationServiceStub} from './get-last-messag
 import {GetResponseByAccountServiceStub} from './get-response-by-account-service.mock';
 import {DisableMeetingsOfIntervalServiceStub} from './disable-meetings-of-interval.service.mock';
 import {ExceededLimitOfMeetingsServiceStub} from './exceeded-limit-of-meetings-service.mock';
+import {GetProtocolByPhoneConversationStub} from './get-protocol-by-phone-service.mock';
 
 export {
   FindConversationsServiceStub,
   GetUserNameConversationStub,
   FindMeetingsOfDayServiceStub,
-  GetPhoneByAccountStub,
   GetStepConversationStub,
   SendMessageWhatsappServiceStub,
   CreateConversationServiceStub,
@@ -22,4 +21,5 @@ export {
   GetResponseByAccountServiceStub,
   DisableMeetingsOfIntervalServiceStub,
   ExceededLimitOfMeetingsServiceStub,
+  GetProtocolByPhoneConversationStub,
 };

@@ -5,6 +5,7 @@ import {
   SendMessageWhatsappServiceStub,
   GetAdminResponseByAccountServiceStub,
   fakeConversation,
+  ConversationRepositoryStub,
 } from '@/__mocks__';
 import {GetConversationTwilio} from '@/external/twilio/get-conversation';
 import {FlowAdminConversationService} from '@/services/admin';
@@ -16,6 +17,7 @@ export class FlowAdminConversationServiceStub extends FlowAdminConversationServi
     private readonly getAdminResponseByAccountServiceStub: GetAdminResponseByAccountServiceStub,
     private readonly sendMessageWhatsappServiceStub: SendMessageWhatsappServiceStub,
     private readonly getLastMessageInProgressConversationServiceStub: GetLastMessageInProgressConversationServiceStub,
+    private readonly conversationRepositoryStub: ConversationRepositoryStub,
   ) {
     super(
       getConversationTwilioStub,
@@ -23,6 +25,7 @@ export class FlowAdminConversationServiceStub extends FlowAdminConversationServi
       getAdminResponseByAccountServiceStub,
       sendMessageWhatsappServiceStub,
       getLastMessageInProgressConversationServiceStub,
+      conversationRepositoryStub,
     );
   }
 

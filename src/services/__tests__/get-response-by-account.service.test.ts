@@ -5,7 +5,7 @@ import {
   ConversationRepositoryStub,
   FindConversationsServiceStub,
   FindMeetingsOfDayServiceStub,
-  GetPhoneByAccountStub,
+  GetProtocolByPhoneConversationStub,
   GetStepConversationStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
@@ -42,16 +42,12 @@ const getDependencies = () => {
     findMeetingsOfDayServiceStub,
     stepResponseByOptionMenuFlowStub,
   );
-  const getPhoneByAccountIdConversationStub = new GetPhoneByAccountStub(
-    findConversationsServiceStub,
-  );
 
   return {
     findConversationsServiceStub,
     getUserNameConversationStub,
     findMeetingsOfDayServiceStub,
     stepFindAvaliableDateFlowStub,
-    getPhoneByAccountIdConversationStub,
     meetingRepositoryStub,
   };
 };
@@ -61,7 +57,6 @@ const makeSut = () => {
     findConversationsServiceStub,
     getUserNameConversationStub,
     findMeetingsOfDayServiceStub,
-    getPhoneByAccountIdConversationStub,
     meetingRepositoryStub,
   } = getDependencies();
 
@@ -69,8 +64,12 @@ const makeSut = () => {
     findConversationsServiceStub,
   );
   const stepWelcomeFlowStub = new StepWelcomeFlowStub();
+  const getProtocolByPhoneConversationStub =
+    new GetProtocolByPhoneConversationStub(findConversationsServiceStub);
+
   const stepShowMenuFlowStub = new StepShowMenuFlowStub(
     getUserNameConversationStub,
+    getProtocolByPhoneConversationStub,
   );
   const stepResponseByOptionMenuFlowStub = new StepResponseByOptionMenuFlowStub(
     findConversationsServiceStub,
@@ -92,8 +91,8 @@ const makeSut = () => {
       stepFindAvaliableDateFlowStub,
       meetingRepositoryStub,
       getUserNameConversationStub,
-      getPhoneByAccountIdConversationStub,
       sendMessageWhatsappServiceStub,
+      getProtocolByPhoneConversationStub,
     );
 
   const sut = new Service.GetResponseByAccountService(

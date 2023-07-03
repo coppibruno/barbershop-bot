@@ -4,7 +4,7 @@ import {faker} from '@faker-js/faker';
 
 import {
   FindConversationsServiceStub,
-  GetPhoneByAccountStub,
+  GetProtocolByPhoneConversationStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
   SendMessageWhatsappServiceStub,
@@ -48,16 +48,16 @@ export class StepGetDateAndReplyAppointmentFlowStub extends StepGetDateAndReplyA
     private readonly stepFindAvaliableDateFlowStub: StepFindAvaliableDateFlowStub,
     private readonly meetingRepositoryStub: MeetingRepositoryStub,
     private readonly getUserNameConversationStub: GetUserNameConversationStub,
-    private readonly getPhoneByAccountIdConversationStub: GetPhoneByAccountStub,
     private readonly sendMessageWhatsappServiceStub: SendMessageWhatsappServiceStub,
+    private readonly getProtocolByPhoneConversationStub: GetProtocolByPhoneConversationStub,
   ) {
     super(
       findConversationServiceStub,
       stepFindAvaliableDateFlowStub,
       meetingRepositoryStub,
       getUserNameConversationStub,
-      getPhoneByAccountIdConversationStub,
       sendMessageWhatsappServiceStub,
+      getProtocolByPhoneConversationStub,
     );
   }
 

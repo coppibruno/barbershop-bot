@@ -1,11 +1,5 @@
 import * as Service from '../exceeded-limit-of-meetings.service';
-import {
-  MeetingRepositoryStub,
-  GetPhoneByAccountStub,
-  FindConversationsServiceStub,
-  ConversationRepositoryStub,
-  fakeMeeting,
-} from '@/__mocks__';
+import {MeetingRepositoryStub, fakeMeeting} from '@/__mocks__';
 
 jest
   .spyOn(Service, 'getDateFirstDayOfMonth')
@@ -15,18 +9,10 @@ jest
   .mockImplementationOnce(() => '2023-06-30T23:59:59.000Z' as any);
 
 const makeSut = () => {
-  const conversationRepositoryStub = new ConversationRepositoryStub();
   const meetingRepositoryStub = new MeetingRepositoryStub();
 
-  const findConversationsServiceStub = new FindConversationsServiceStub(
-    conversationRepositoryStub,
-  );
-  const getPhoneByAccountStub = new GetPhoneByAccountStub(
-    findConversationsServiceStub,
-  );
-
   const sut = new Service.ExceededLimitOfMeetingsService(meetingRepositoryStub);
-  return {sut, getPhoneByAccountStub, meetingRepositoryStub};
+  return {sut, meetingRepositoryStub};
 };
 
 describe('Exceeded limit of meetings service', () => {

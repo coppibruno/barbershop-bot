@@ -111,7 +111,7 @@ export class StepGetDateAndReplyAppointmentFlow {
    * Envia uma mensagem para o admin com detalhes do novo agendamento
    * @param meeting Meeting (agendamento)
    */
-  private sendMessageToAdminWithNewAppointment(meeting: Meetings): void {
+  public sendMessageToAdminWithNewAppointment(meeting: Meetings): void {
     const {name, phone, startDate} = meeting;
 
     const conversation: ConversationEntity = {

@@ -3,7 +3,7 @@ import {
   ConversationRepositoryStub,
   FindConversationsServiceStub,
   FindMeetingsOfDayServiceStub,
-  GetPhoneByAccountStub,
+  GetProtocolByPhoneConversationStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
   SendMessageWhatsappServiceStub,
@@ -49,9 +49,8 @@ const makeSut = () => {
   const getUserNameConversationStub = new GetUserNameConversationStub(
     findConversationsServiceStub,
   );
-  const getPhoneByAccountStub = new GetPhoneByAccountStub(
-    findConversationsServiceStub,
-  );
+  const getProtocolByPhoneConversationStub =
+    new GetProtocolByPhoneConversationStub(findConversationsServiceStub);
 
   const sendMessageWhatsappServiceStub = new SendMessageWhatsappServiceStub(
     new TwilioSendWhatsappMessageStub(),
@@ -62,8 +61,8 @@ const makeSut = () => {
     stepFindAvaliableDateFlowStub,
     meetingRepositoryStub,
     getUserNameConversationStub,
-    getPhoneByAccountStub,
     sendMessageWhatsappServiceStub,
+    getProtocolByPhoneConversationStub,
   );
 
   return {

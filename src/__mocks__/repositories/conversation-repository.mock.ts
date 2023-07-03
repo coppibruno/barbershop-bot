@@ -20,4 +20,10 @@ export class ConversationRepositoryStub implements ConversationRepository {
   async getGroupedByPhone() {
     return Promise.resolve(null);
   }
+  async updateState({
+    fromPhone,
+    state = 'FINISHED',
+  }: Partial<Conversations>): Promise<any> {
+    return null;
+  }
 }

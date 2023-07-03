@@ -7,6 +7,7 @@ import {FlowContext} from '@/flow.context';
  */
 export class GetLastMessageInProgressConversationService {
   private readonly findConversationService: FindConversationsService;
+  public adminNumber = FlowContext.ADMIN_NUMBER;
 
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
@@ -14,7 +15,7 @@ export class GetLastMessageInProgressConversationService {
   async execute(phone: number): Promise<Conversations | null> {
     const result = await this.findConversationService.findOne({
       where: {
-        fromPhone: Number(FlowContext.BOT_NUMBER),
+        fromPhone: Number(this.adminNumber),
         toPhone: phone,
         state: 'IN_PROGRESS',
       },
@@ -23,10 +24,6 @@ export class GetLastMessageInProgressConversationService {
       },
     });
     if (!result) {
-      return null;
-    }
-
-    if (result.state === 'FINISHED') {
       return null;
     }
 

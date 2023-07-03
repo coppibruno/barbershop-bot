@@ -1,16 +1,13 @@
 import {ConversationEntity} from '@/entity';
 import {GetConversationTwilio} from '@/external/twilio/get-conversation';
-import {TwilioSendWhatsappMessage} from '@/external/twilio/send-new-message';
 import {IConversationTwilio} from '@/interfaces/external';
 import * as Service from '../flow-admin-conversations.service';
-import {SendMessageWhatsappService} from '@/services/send-message.service';
 import {
   ConversationRepositoryStub,
   CreateConversationServiceStub,
   FindConversationsServiceStub,
   FindMeetingsOfDayServiceStub,
   GetLastMessageInProgressConversationServiceStub,
-  GetPhoneByAccountStub,
   GetStepConversationStub,
   GetUserNameConversationStub,
   MeetingRepositoryStub,
@@ -29,6 +26,7 @@ import {
   GetAdminResponseByAccountServiceStub,
   TwilioSendWhatsappMessageStub,
   SendMessageWhatsappServiceStub,
+  GetProtocolByPhoneConversationStub,
 } from '@/__mocks__';
 
 class GetConversationTwilioStub extends GetConversationTwilio {
@@ -95,16 +93,17 @@ const makeGetReponseByAccountStub = () => {
     meetingRepositoryStub,
   );
 
-  const getPhoneByAccountIdConversationStub = new GetPhoneByAccountStub(
-    findConversationsServiceStub,
-  );
-
   const getStepConversationStub = new GetStepConversationStub(
     findConversationsServiceStub,
   );
   const stepWelcomeFlowStub = new StepWelcomeFlowStub();
+
+  const getProtocolByPhoneConversationStub =
+    new GetProtocolByPhoneConversationStub(findConversationsServiceStub);
+
   const stepShowMenuFlowStub = new StepShowMenuFlowStub(
     getUserNameConversationStub,
+    getProtocolByPhoneConversationStub,
   );
   const stepResponseByOptionMenuFlowStub = new StepResponseByOptionMenuFlowStub(
     findConversationsServiceStub,
@@ -127,8 +126,8 @@ const makeGetReponseByAccountStub = () => {
       stepFindAvaliableDateFlowStub,
       meetingRepositoryStub,
       getUserNameConversationStub,
-      getPhoneByAccountIdConversationStub,
       sendMessageWhatsappServiceStub,
+      getProtocolByPhoneConversationStub,
     );
   return new GetResponseByAccountServiceStub(
     getStepConversationStub,
@@ -175,6 +174,7 @@ const makeSut = () => {
     getAdminResponseByAccountServiceStub,
     sendMessageWhatsappServiceStub,
     getLastMessageInProgressConversationServiceStub,
+    conversationRepository,
   );
 
   return {

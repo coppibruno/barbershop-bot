@@ -2,7 +2,6 @@ import {
   FindConversationsServiceStub,
   GetUserNameConversationStub,
   FindMeetingsOfDayServiceStub,
-  GetPhoneByAccountStub,
   GetStepConversationStub,
   SendMessageWhatsappServiceStub,
   CreateConversationServiceStub,
@@ -10,6 +9,7 @@ import {
   GetResponseByAccountServiceStub,
   DisableMeetingsOfIntervalServiceStub,
   ExceededLimitOfMeetingsServiceStub,
+  GetProtocolByPhoneConversationStub,
 } from './services';
 
 import {
@@ -42,7 +42,6 @@ export {
   FindConversationsServiceStub,
   GetUserNameConversationStub,
   FindMeetingsOfDayServiceStub,
-  GetPhoneByAccountStub,
   GetStepConversationStub,
   SendMessageWhatsappServiceStub,
   CreateConversationServiceStub,
@@ -58,6 +57,7 @@ export {
   TwilioSendWhatsappMessageStub,
   DisableMeetingsOfIntervalServiceStub,
   ExceededLimitOfMeetingsServiceStub,
+  GetProtocolByPhoneConversationStub,
   fakeConversation,
   fakeMeeting,
 

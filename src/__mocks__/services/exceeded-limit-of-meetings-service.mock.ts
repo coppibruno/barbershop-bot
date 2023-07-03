@@ -1,7 +1,6 @@
 import {Meetings} from '@prisma/client';
 import {MeetingRepositoryStub} from '../repositories/meeting-repository.mock';
 import {ExceededLimitOfMeetingsService} from '@/services/exceeded-limit-of-meetings.service';
-import {GetPhoneByAccountStub} from './get-phone-by-account-service.mock';
 import {fakeMeeting} from '../entities';
 
 export const getDateFirstDayOfMonth = () => '2023-06-01T00:00:00.000Z';

@@ -4,6 +4,7 @@ import {
   FindConversationsServiceStub,
   GetUserNameConversationStub,
   fakeConversation,
+  GetProtocolByPhoneConversationStub,
 } from '@/__mocks__';
 
 const makeSut = () => {
@@ -15,15 +16,30 @@ const makeSut = () => {
     findConversationsServiceStub,
   );
 
-  const sut = new Step.StepShowMenuFlow(getUserNameStub);
-  return {sut, conversationRepositoryStub, findConversationsServiceStub};
+  const getProtocolByPhoneConversationStub =
+    new GetProtocolByPhoneConversationStub(findConversationsServiceStub);
+
+  const sut = new Step.StepShowMenuFlow(
+    getUserNameStub,
+    getProtocolByPhoneConversationStub,
+  );
+  return {
+    sut,
+    getProtocolByPhoneConversationStub,
+    conversationRepositoryStub,
+    findConversationsServiceStub,
+  };
 };
 const phone = 5599999999;
 describe('Step Show Menu', () => {
   test('should return menu from user and step 2', async () => {
-    const {sut, findConversationsServiceStub} = makeSut();
+    const {
+      sut,
+      getProtocolByPhoneConversationStub,
+      findConversationsServiceStub,
+    } = makeSut();
 
-    const getUser = jest.spyOn(sut, 'getUser');
+    const spyOn = jest.spyOn(getProtocolByPhoneConversationStub, 'execute');
 
     const result = await sut.execute(phone);
 
@@ -33,7 +49,7 @@ describe('Step Show Menu', () => {
 
     expect(result).toHaveProperty('response');
     expect(result).toHaveProperty('step');
-    expect(getUser).toBeCalledWith(phone);
+    expect(spyOn).toBeCalledWith(phone);
     expect(result.step).toBe(2);
   });
 });
