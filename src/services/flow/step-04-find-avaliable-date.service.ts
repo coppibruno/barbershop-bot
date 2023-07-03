@@ -290,15 +290,16 @@ export class StepFindAvaliableDateFlow {
   }
   /**
    * Busca o dia/mês digitado pelo usuário
-   * @param accountId usuario
+   * @param phone telefone do usuario
    * @returns Retorna o dia/mês. Ex 10/06
    */
-  async getDateAppointment(accountId: string): Promise<string> {
+  async getDateAppointment(phone: number): Promise<string> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
+        fromPhone: phone,
         toPhone: Number(FlowContext.BOT_NUMBER),
-        step: 3,
+        step: 4,
+        state: 'IN_PROGRESS',
       },
       orderBy: {
         createdAt: 'desc',
@@ -318,9 +319,9 @@ export class StepFindAvaliableDateFlow {
     throw new InvalidDataIsProvidedError(isValid);
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     try {
-      const dayMonthAppointment = await this.getDateAppointment(accountId);
+      const dayMonthAppointment = await this.getDateAppointment(phone);
 
       const listOptions = await this.getAppointmentsOfDate(dayMonthAppointment);
       const {response, options} = this.getMessageListOptions(
@@ -348,7 +349,7 @@ export class StepFindAvaliableDateFlow {
       }
 
       const {response, step} = await this.stepResponseByOptionMenuFlow.execute(
-        accountId,
+        phone,
       );
       return {response, step};
     }

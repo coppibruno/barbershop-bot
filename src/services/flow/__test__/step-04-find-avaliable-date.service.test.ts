@@ -94,11 +94,10 @@ jest
     startDate: mockedTime as any,
     endDate: mockedTime as any,
   }));
-
+const phone = 5599999999;
 describe('StepFindAvaliableAppointment', () => {
   test('should return a list of appointment from day and step 4 on success', async () => {
     const {sut} = makeSut();
-    const accountId = 'fake_account_id';
     jest
       .spyOn(sut, 'getAppointmentsOfDate')
       .mockImplementationOnce(() =>
@@ -109,7 +108,7 @@ describe('StepFindAvaliableAppointment', () => {
           fakeAppointmentResult('12:00', 4),
         ]),
       );
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     expect(result.response).toEqual(
       expect.stringMatching(/temos esses horários disponiveis/i),
@@ -117,13 +116,12 @@ describe('StepFindAvaliableAppointment', () => {
     expect(result.step).toBe(sut.stepCompleted); //step 4
   });
   test('should return a message that from the day there is no time available', async () => {
-    const accountId = 'any_value';
     const {sut} = makeSut();
     //mock empty avaliable appointments
     jest
       .spyOn(sut, 'getAppointmentsOfDate')
       .mockImplementation(() => Promise.resolve([]));
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     expect(result).toHaveProperty('response');
     expect(result).toHaveProperty('step');
     expect(result.response).toEqual(
@@ -133,42 +131,39 @@ describe('StepFindAvaliableAppointment', () => {
   });
   test('should return message that day is sunday to retry again', async () => {
     const {sut} = makeSut();
-    const accountId = 'fake_account_id';
 
     jest
       .spyOn(sut, 'getDateAppointment')
       .mockImplementationOnce(() =>
         Promise.reject(new InvalidDataIsProvidedError(Step.INVALID_SUNDAY())),
       );
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     expect(result.response).toBe(Step.INVALID_SUNDAY());
     expect(result.step).toBe(3);
   });
   test('should return message that day is monday to retry again', async () => {
     const {sut} = makeSut();
-    const accountId = 'fake_account_id';
 
     jest
       .spyOn(sut, 'getDateAppointment')
       .mockImplementationOnce(() =>
         Promise.reject(new InvalidDataIsProvidedError(Step.INVALID_MONDAY())),
       );
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     expect(result.response).toBe(Step.INVALID_MONDAY());
     expect(result.step).toBe(3);
   });
   test('should return message that day is invalid date and to retry again', async () => {
     const {sut} = makeSut();
-    const accountId = 'fake_account_id';
 
     jest
       .spyOn(sut, 'getDateAppointment')
       .mockImplementationOnce(() =>
         Promise.reject(new InvalidDataIsProvidedError(Step.INVALID_DATE())),
       );
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     expect(result.response).toBe(Step.INVALID_DATE());
     expect(result.step).toBe(3);

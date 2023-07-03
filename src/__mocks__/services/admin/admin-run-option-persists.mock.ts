@@ -25,13 +25,13 @@ export class AdminRunOptionPersistsStub extends AdminRunOptionPersists {
     );
   }
 
-  public async getMenuRequest(accountId: string): Promise<typeMenuAdmin> {
+  public async getMenuRequest(phone: number): Promise<typeMenuAdmin> {
     return Promise.resolve(typeMenuAdmin.MARK_OFF_MEETING);
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     try {
-      const typeMenu = await this.getMenuRequest(accountId);
+      const typeMenu = await this.getMenuRequest(phone);
 
       if (typeMenu === typeMenuAdmin.MARK_OFF_MEETING) {
         const adminRunOptionStub = new AdminRunOptionStub(
@@ -39,7 +39,7 @@ export class AdminRunOptionPersistsStub extends AdminRunOptionPersists {
           this.findMeetingsOfDayServiceStub,
         );
         const {startDate, endDate} =
-          await adminRunOptionStub.getAppointmentsToDisable(accountId);
+          await adminRunOptionStub.getAppointmentsToDisable(phone);
 
         await this.disableMeetingsOfIntervalServiceStub.execute({
           startDate,

@@ -16,6 +16,7 @@ import {
 } from '@/services';
 import {FlowAdminConversationService} from './admin';
 import {ExceededLimitOfMeetingsService} from './exceeded-limit-of-meetings.service';
+import {ConversationRepository} from '@/repositories';
 
 /**
  * Responsável pelo fluxo de receber mensagem do usuário, persistir, processar e buscar dados, retornar a mensagem do assistênte virtual
@@ -32,6 +33,7 @@ export class FlowConversationService {
     private readonly getLastMessageInProgressConversationService: GetLastMessageInProgressConversationService,
     private readonly flowAdminConversationService: FlowAdminConversationService,
     private readonly exceededLimitOfMeetingsService: ExceededLimitOfMeetingsService,
+    private readonly conversationRepository: ConversationRepository,
   ) {
     this.getConversationTwilio = getConversationTwilio;
     this.createConversationService = createConversationService;
@@ -52,26 +54,26 @@ export class FlowConversationService {
     const senderConversationEntity: ConversationEntity =
       this.getConversationTwilio.execute(message);
 
+    if (this.isAdminUser(senderConversationEntity.fromPhone)) {
+      return await this.flowAdminConversationService.execute(message);
+    }
+
     const notAllowed = await this.exceededLimitOfMeetingsService.execute(
-      senderConversationEntity.accountId,
+      senderConversationEntity.fromPhone,
     );
     if (notAllowed) {
       console.error(`phone ${senderConversationEntity.fromPhone} not allowed`);
       return;
     }
 
-    if (this.isAdminUser(senderConversationEntity.fromPhone)) {
-      return await this.flowAdminConversationService.execute(message);
-    }
-
     const lastMessage =
       await this.getLastMessageInProgressConversationService.execute(
-        senderConversationEntity.accountId,
+        senderConversationEntity.fromPhone,
       );
 
     if (lastMessage) {
       senderConversationEntity.protocol = lastMessage.protocol;
-      senderConversationEntity.step = lastMessage.step;
+      senderConversationEntity.step = lastMessage.step + 1;
       senderConversationEntity.name = lastMessage.name;
       senderConversationEntity.options = lastMessage.options;
     }
@@ -79,12 +81,12 @@ export class FlowConversationService {
     await this.createConversationService.execute(senderConversationEntity);
 
     const reply = await this.getResponseByAccountService.execute(
-      senderConversationEntity.accountId,
+      senderConversationEntity.fromPhone,
     );
     const {options = [], response, step, state} = reply;
 
     const name = await this.getUserNameConversation.execute(
-      senderConversationEntity.accountId,
+      senderConversationEntity.protocol,
     );
 
     const botAnswer: ConversationEntity = {
@@ -103,6 +105,13 @@ export class FlowConversationService {
     await this.sendMessageWhatsappService.execute(botAnswer);
 
     await this.createConversationService.execute(botAnswer);
+
+    if (state === 'FINISHED') {
+      await this.conversationRepository.updateState({
+        fromPhone: senderConversationEntity.fromPhone,
+        state: 'FINISHED',
+      });
+    }
 
     return response;
   }

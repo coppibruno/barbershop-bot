@@ -102,7 +102,7 @@ export class StepGetDateAndReplyAppointmentFlowStub extends StepGetDateAndReplyA
    * @returns MeetingEntity
    */
   async getDataToNewMeet(
-    accountId: string,
+    phone: number,
     appointmentTime: string,
   ): Promise<MeetingEntity> {
     return Promise.resolve(fakeMeeting());
@@ -114,15 +114,12 @@ export class StepGetDateAndReplyAppointmentFlowStub extends StepGetDateAndReplyA
    * @param appointment Horário/min agendamento. Ex: 09:00
    * @returns Meetings no sucesso ou try again em caso de algum erro
    */
-  async saveAppointment(
-    accountId: string,
-    appointment: string,
-  ): Promise<Meetings> {
+  async saveAppointment(phone: number, appointment: string): Promise<Meetings> {
     return Promise.resolve(fakeMeeting());
   }
 
   async findAppointmentSelected(
-    accountId: string,
+    phone: number,
   ): Promise<{option: number; options: any}> {
     return Promise.resolve({
       option: 1,
@@ -134,13 +131,13 @@ export class StepGetDateAndReplyAppointmentFlowStub extends StepGetDateAndReplyA
    * @param accountId account id string
    * @returns
    */
-  async getAppointmentMarked(accountId: string): Promise<IExtractAppointment> {
+  async getAppointmentMarked(phone: number): Promise<IExtractAppointment> {
     return {
       startedDate: mockedTime,
     };
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     return Promise.resolve({
       response: 'message_step_5',
       step: 5,

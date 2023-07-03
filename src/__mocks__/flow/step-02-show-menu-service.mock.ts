@@ -15,11 +15,11 @@ export class StepShowMenuFlowStub extends StepShowMenuFlow {
     return 'menu list';
   }
 
-  async getUser(accountId: string): Promise<null | string> {
+  async getUser(phone: number): Promise<null | string> {
     return 'fake_user';
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     return Promise.resolve({
       response: 'message_step_2',
       step: 2,

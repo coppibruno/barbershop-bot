@@ -14,11 +14,11 @@ export class StepResponseByOptionMenuFlowStub extends StepResponseByOptionMenuFl
     return typeMenuUser.APPOINTMENT;
   }
 
-  async getOptionMenu(accountId: string): Promise<number> {
+  async getOptionMenu(phone: number): Promise<number> {
     return Promise.resolve(1);
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     return Promise.resolve({
       response: 'message_step_3',
       step: 3,

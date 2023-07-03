@@ -18,16 +18,14 @@ const makeSut = () => {
   const sut = new Step.StepShowMenuFlow(getUserNameStub);
   return {sut, conversationRepositoryStub, findConversationsServiceStub};
 };
-
+const phone = 5599999999;
 describe('Step Show Menu', () => {
   test('should return menu from user and step 2', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
 
-    const accountId = 'any_value';
-
     const getUser = jest.spyOn(sut, 'getUser');
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     jest
       .spyOn(findConversationsServiceStub, 'execute')
@@ -35,7 +33,7 @@ describe('Step Show Menu', () => {
 
     expect(result).toHaveProperty('response');
     expect(result).toHaveProperty('step');
-    expect(getUser).toBeCalledWith(accountId);
+    expect(getUser).toBeCalledWith(phone);
     expect(result.step).toBe(2);
   });
 });

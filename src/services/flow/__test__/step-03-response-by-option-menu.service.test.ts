@@ -16,18 +16,17 @@ const makeSut = () => {
   );
   return {sut, conversationRepositoryStub, findConversationsServiceStub};
 };
-
+const phone = 5599999999;
 describe('Step Response By Option Menu', () => {
   test('should return message to schedule an appointment and step 3', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
-    const accountId = 'any_value';
 
     jest
       .spyOn(findConversationsServiceStub, 'findOne')
       .mockImplementationOnce(() =>
         Promise.resolve(fakeConversation({body: '1'})),
       );
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     expect(result).toHaveProperty('response');
     expect(result).toHaveProperty('step');
@@ -36,14 +35,13 @@ describe('Step Response By Option Menu', () => {
   });
   test('should return message to rename user and step 1', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
-    const accountId = 'any_value';
 
     jest
       .spyOn(findConversationsServiceStub, 'findOne')
       .mockImplementationOnce(() =>
         Promise.resolve(fakeConversation({body: '2'})),
       );
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     expect(result).toHaveProperty('response');
     expect(result).toHaveProperty('step');
@@ -52,13 +50,12 @@ describe('Step Response By Option Menu', () => {
   });
   test('should return previous step (2) if invalid menu is provided', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
-    const accountId = 'any_value';
 
     jest
       .spyOn(sut, 'getOptionMenu')
       .mockImplementationOnce(() => Promise.resolve(8)); //option 8 does not exists
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     jest
       .spyOn(findConversationsServiceStub, 'findOne')
       .mockImplementationOnce(() => Promise.resolve(fakeConversation()));
@@ -70,13 +67,12 @@ describe('Step Response By Option Menu', () => {
   });
   test('should return try again if invalid type option is provided', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
-    const accountId = 'any_value';
     jest
       .spyOn(findConversationsServiceStub, 'findOne')
       .mockImplementationOnce(() =>
         Promise.resolve(fakeConversation({body: 'invalid_option_provided'})),
       );
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     expect(result).toHaveProperty('response');
     expect(result).toHaveProperty('step');

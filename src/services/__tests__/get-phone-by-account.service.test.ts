@@ -1,4 +1,4 @@
-import * as Service from '../get-phone-by-account.service';
+import * as Service from '../get-protocol-by-phone.service';
 import {
   ConversationRepositoryStub,
   FindConversationsServiceStub,
@@ -17,7 +17,7 @@ const makeSut = () => {
   );
   return {sut, conversationRepositoryStub, findConversationsServiceStub};
 };
-
+const phone = 5599999999;
 describe('GetPhoneByAccount', () => {
   test('should return phone on success', async () => {
     const {sut, findConversationsServiceStub} = makeSut();

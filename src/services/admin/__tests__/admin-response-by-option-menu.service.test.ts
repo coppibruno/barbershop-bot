@@ -6,8 +6,6 @@ import {
   fakeConversation,
 } from '@/__mocks__';
 
-const accountId = 'faker_account_id';
-
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
   const findConversationsServiceStub = new FindConversationsServiceStub(
@@ -17,7 +15,7 @@ const makeSut = () => {
   const sut = new Step.AdminResponseByOptionMenu(findConversationsServiceStub);
   return {sut, findConversationsServiceStub};
 };
-
+const phone = 5599999999;
 describe('Admin response by option menu service', () => {
   test('should return a callback message on select a menu', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
@@ -28,7 +26,7 @@ describe('Admin response by option menu service', () => {
         Promise.resolve(fakeConversation({body: '1'})),
       );
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     const findMenu = FlowContext.MENU_ADMIN.find((i) => i.option === 1);
 
@@ -45,7 +43,7 @@ describe('Admin response by option menu service', () => {
       .mockImplementation(() => {
         throw new Error('fake error');
       });
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     expect(result.response).toEqual(
       expect.stringMatching(FlowContext.ADMIN_WELCOME),
     );

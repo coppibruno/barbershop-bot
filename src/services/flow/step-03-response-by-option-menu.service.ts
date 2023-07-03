@@ -1,17 +1,11 @@
 import {FlowContext, typeMenuUser} from '../../flow.context';
 import {IFlowResult} from '@/interfaces/flow';
 import {FindConversationsService} from '@/services/find-conversation.service';
-import {InvalidMenuOptionError, DefaultError} from '@/errors';
+import {InvalidMenuOptionError, DefaultError, NotFoundError} from '@/errors';
 import {ValidateIfIsDezemberHelper} from '@/helpers/validate-if-is-dezember.helper';
 import {State} from '@prisma/client';
 
 const isDezember = () => ValidateIfIsDezemberHelper();
-
-enum OptionsMenuEnum {
-  CLOSE_SERVICE = 0,
-  MAKE_APPOINTMENT = 1,
-  RENAME_USER = 2,
-}
 
 type Types = {
   type: typeMenuUser;
@@ -32,6 +26,8 @@ export class StepResponseByOptionMenuFlow {
   public readonly incompleteStep: number = 2;
   public readonly stepRenameUser: number = 1;
 
+  public readonly invalidMenu = 'Invalid menu option';
+
   public readonly messageToMakeAppointment = isDezember()
     ? FlowContext.MAKE_APPOINTMENT_DEZEMBER
     : FlowContext.MAKE_APPOINTMENT;
@@ -50,18 +46,19 @@ export class StepResponseByOptionMenuFlow {
     const optionSelected = options.find((menu) => menu.option === option);
 
     if (!optionSelected) {
-      throw new Error('invalid option selected');
+      throw new NotFoundError(this.invalidMenu);
     }
 
     return optionSelected.type;
   }
 
-  async getOptionMenu(accountId: string): Promise<number> {
+  async getOptionMenu(phone: number): Promise<number> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
+        fromPhone: phone,
         toPhone: Number(FlowContext.BOT_NUMBER),
-        step: 2,
+        step: 3,
+        state: 'IN_PROGRESS',
       },
       orderBy: {
         createdAt: 'desc',
@@ -74,14 +71,14 @@ export class StepResponseByOptionMenuFlow {
     return Number(result.body);
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     const defaultResult = {
       response: InvalidMenuOptionError.INVALID_MENU_OPTION,
       step: this.incompleteStep,
     };
 
     try {
-      const selected = await this.getOptionMenu(accountId);
+      const selected = await this.getOptionMenu(phone);
 
       const menuSelectType = this.replyByMenu(selected);
 
@@ -116,7 +113,6 @@ export class StepResponseByOptionMenuFlow {
         state,
       };
     } catch (error) {
-      console.error(error);
       return {
         response: defaultResult.response,
         step: defaultResult.step,

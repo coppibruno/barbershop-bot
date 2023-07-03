@@ -12,7 +12,7 @@ export class GetLastMessageInProgressConversationServiceStub extends GetLastMess
   constructor(findConversationServiceStub: FindConversationsServiceStub) {
     super(findConversationServiceStub);
   }
-  async execute(accountId: string): Promise<Conversations | null> {
+  async execute(phone: number): Promise<Conversations | null> {
     return fakeConversation();
   }
 }

@@ -9,11 +9,11 @@ export class GetStepConversation {
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
   }
-  async execute(accountId: string): Promise<number> {
+  async execute(phone: number): Promise<number> {
     const conversation = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
         fromPhone: Number(FlowContext.BOT_NUMBER),
+        toPhone: phone,
       },
       orderBy: {
         createdAt: 'desc',

@@ -15,23 +15,19 @@ import {
 
 //admin services
 import {GetAdminResponseByAccountService} from './get-admin-response-by-account.service';
+import {ConversationRepository} from '@/repositories';
 
 /**
  * Responsável pelo fluxo de receber mensagem do usuário, persistir, processar e buscar dados, retornar a mensagem do assistênte virtual (MENU ADMINISTRADOR)
  */
 export class FlowAdminConversationService {
-  private readonly getConversationTwilio: GetConversationTwilio;
-  private readonly createConversationService: CreateConversationService;
-  private readonly getAdminResponseByAccountService: GetAdminResponseByAccountService;
-  private readonly sendMessageWhatsappService: SendMessageWhatsappService;
-  private readonly getLastMessageInProgressConversationService: GetLastMessageInProgressConversationService;
-
   constructor(
-    getConversationTwilio: GetConversationTwilio,
-    createConversationService: CreateConversationService,
-    getAdminResponseByAccountService: GetAdminResponseByAccountService,
-    sendMessageWhatsappService: SendMessageWhatsappService,
-    getLastMessageInProgressConversationService: GetLastMessageInProgressConversationService,
+    private readonly getConversationTwilio: GetConversationTwilio,
+    private readonly createConversationService: CreateConversationService,
+    private readonly getAdminResponseByAccountService: GetAdminResponseByAccountService,
+    private readonly sendMessageWhatsappService: SendMessageWhatsappService,
+    private readonly getLastMessageInProgressConversationService: GetLastMessageInProgressConversationService,
+    private readonly conversationRepository: ConversationRepository,
   ) {
     this.getConversationTwilio = getConversationTwilio;
     this.createConversationService = createConversationService;
@@ -39,6 +35,7 @@ export class FlowAdminConversationService {
     this.sendMessageWhatsappService = sendMessageWhatsappService;
     this.getLastMessageInProgressConversationService =
       getLastMessageInProgressConversationService;
+    this.conversationRepository = conversationRepository;
   }
 
   async execute(message: IConversationTwilio): Promise<string> {
@@ -47,7 +44,7 @@ export class FlowAdminConversationService {
 
     const lastMessage =
       await this.getLastMessageInProgressConversationService.execute(
-        senderConversationEntity.accountId,
+        senderConversationEntity.fromPhone,
       );
 
     if (lastMessage) {
@@ -60,7 +57,7 @@ export class FlowAdminConversationService {
     await this.createConversationService.execute(senderConversationEntity);
 
     const reply = await this.getAdminResponseByAccountService.execute(
-      senderConversationEntity.accountId,
+      senderConversationEntity.fromPhone,
     );
     const {options = [], response, step, state} = reply;
 
@@ -82,6 +79,13 @@ export class FlowAdminConversationService {
     await this.sendMessageWhatsappService.execute(botAnswer);
 
     await this.createConversationService.execute(botAnswer);
+
+    if (state === 'FINISHED') {
+      await this.conversationRepository.updateState({
+        fromPhone: senderConversationEntity.fromPhone,
+        state: 'FINISHED',
+      });
+    }
 
     return response;
   }

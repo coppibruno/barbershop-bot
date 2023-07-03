@@ -8,11 +8,8 @@ export const getDateFirstDayOfMonth = () => '2023-06-01T00:00:00.000Z';
 export const getDateLastDayOfMonth = () => '2023-06-01T00:00:00.000Z';
 
 export class ExceededLimitOfMeetingsServiceStub extends ExceededLimitOfMeetingsService {
-  constructor(
-    private readonly meetingRepositoryStub: MeetingRepositoryStub,
-    private readonly getPhoneByAccountIdConversationStub: GetPhoneByAccountStub,
-  ) {
-    super(meetingRepositoryStub, getPhoneByAccountIdConversationStub);
+  constructor(private readonly meetingRepositoryStub: MeetingRepositoryStub) {
+    super(meetingRepositoryStub);
   }
 
   async findMeetingsFromDate({startDate, endDate, phone}): Promise<Meetings[]> {
@@ -23,11 +20,9 @@ export class ExceededLimitOfMeetingsServiceStub extends ExceededLimitOfMeetingsS
    * @param accountId conta do usuario
    * @returns true caso esteja acima limite, false caso não
    */
-  async execute(accountId: string): Promise<boolean> {
+  async execute(phone: number): Promise<boolean> {
     const startDate = getDateFirstDayOfMonth();
     const endDate = getDateLastDayOfMonth();
-
-    const phone = this.getPhoneByAccountIdConversationStub.execute(accountId);
 
     const meetingsFromAccount = await this.findMeetingsFromDate({
       startDate,

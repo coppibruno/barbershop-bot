@@ -91,11 +91,11 @@ export class StepFindAvaliableDateFlowStub extends StepFindAvaliableDateFlow {
     return {options: [], response: 'any_response'};
   }
 
-  public async getDateAppointment(accountId: string): Promise<string> {
+  public async getDateAppointment(phone: number): Promise<string> {
     return '10/10';
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     return Promise.resolve({
       response: 'message_step_4',
       step: 4,

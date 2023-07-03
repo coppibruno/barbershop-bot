@@ -10,11 +10,11 @@ export class GetUserNameConversation {
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
   }
-  async execute(accountId: string): Promise<null | string> {
+  async execute(protocol: number): Promise<null | string> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
-        step: 1,
+        protocol,
+        step: 2,
         toPhone: Number(FlowContext.BOT_NUMBER),
       },
       orderBy: {

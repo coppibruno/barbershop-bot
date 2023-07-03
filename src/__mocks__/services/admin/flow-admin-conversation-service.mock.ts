@@ -31,7 +31,7 @@ export class FlowAdminConversationServiceStub extends FlowAdminConversationServi
 
     const lastMessage =
       await this.getLastMessageInProgressConversationServiceStub.execute(
-        senderConversationEntity.accountId,
+        senderConversationEntity.fromPhone,
       );
 
     if (lastMessage) {
@@ -44,7 +44,7 @@ export class FlowAdminConversationServiceStub extends FlowAdminConversationServi
     await this.createConversationServiceStub.execute(senderConversationEntity);
 
     const reply = await this.getAdminResponseByAccountServiceStub.execute(
-      senderConversationEntity.accountId,
+      senderConversationEntity.fromPhone,
     );
     const {response} = reply;
 

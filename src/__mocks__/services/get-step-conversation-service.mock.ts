@@ -7,7 +7,7 @@ export class GetStepConversationStub extends GetStepConversation {
   constructor(findConversationServiceStub: FindConversationsServiceStub) {
     super(findConversationServiceStub);
   }
-  async execute(accountId: string): Promise<number> {
+  async execute(phone: number): Promise<number> {
     return Promise.resolve(1);
   }
 }

@@ -12,7 +12,6 @@ import {PadStartDateHelper} from '@/helpers';
 import * as ValidateAppointment from '@/helpers/validate-appoitment.helper';
 import {FlowContext} from '@/flow.context';
 
-const accountId = 'faker_account_id';
 const mockedTime = faker.date.future();
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
@@ -40,6 +39,8 @@ jest.spyOn(Step, 'getDay').mockReturnValue(10);
 jest.spyOn(Step, 'getMonth').mockReturnValue(6);
 jest.spyOn(Step, 'getHours').mockReturnValue(10);
 jest.spyOn(Step, 'getMins').mockReturnValue(40);
+
+const phone = 5599999999;
 
 describe('Admin run option service (SHOW MEETINGS FROM DAY)', () => {
   test('should return a message with list of appointments', async () => {
@@ -69,7 +70,7 @@ describe('Admin run option service (SHOW MEETINGS FROM DAY)', () => {
           )}`,
       );
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     expect(result.response).toEqual(expect.any(String));
     expect(result.step).toBe(3);
   });
@@ -95,7 +96,7 @@ describe('Admin run option service (SHOW MEETINGS FROM DAY)', () => {
       .spyOn(findMeetingsOfDayServiceStub, 'execute')
       .mockImplementationOnce(() => Promise.resolve([]));
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     expect(result.response).toEqual(
       'Para o dia 10/06 não há horários marcados',
     );
@@ -118,7 +119,7 @@ describe('Admin run option service (SHOW MEETINGS FROM DAY)', () => {
       throw new Error('any error');
     });
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     const findMenu = FlowContext.MENU_ADMIN.find((i) => i.option === 1);
 
     expect(result.response).toBe(findMenu.callback);
@@ -144,7 +145,7 @@ describe('Admin run option service (CANCEL APPOINTMENTS FROM DAY)', () => {
     );
     spyOn.mockImplementation(() => Promise.resolve('10/06'));
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
 
     const cancelExpectedMessage = `Você confirma desabilitar o dia 10/06 das 10:40 até 10:40`;
 
@@ -171,42 +172,39 @@ describe('Admin run option service (CANCEL APPOINTMENTS FROM DAY)', () => {
   });
   test('(getAppointmentsToDisable) should return a start date and end date if daymonth is provided', async () => {
     const {sut} = makeSut();
-    const account_id = 'fake_account_id';
 
     //mock user answer data
     jest
       .spyOn(Step.AdminRunOption.prototype as any, 'userAnswer')
       .mockImplementation(() => Promise.resolve('10/06'));
 
-    const result = await sut.getAppointmentsToDisable(account_id);
+    const result = await sut.getAppointmentsToDisable(phone);
 
     expect(result).toHaveProperty('startDate');
     expect(result).toHaveProperty('endDate');
   });
   test('(getAppointmentsToDisable) should return a start date and end date if daymonth and interval time is provided', async () => {
     const {sut} = makeSut();
-    const account_id = 'fake_account_id';
 
     //mock user answer data
     jest
       .spyOn(Step.AdminRunOption.prototype as any, 'userAnswer')
       .mockImplementation(() => Promise.resolve('10/06 14:00'));
 
-    const result = await sut.getAppointmentsToDisable(account_id);
+    const result = await sut.getAppointmentsToDisable(phone);
 
     expect(result).toHaveProperty('startDate');
     expect(result).toHaveProperty('endDate');
   });
   test('(getAppointmentsToDisable) should return a start date and end date if daymonth and interval time with end time is provided', async () => {
     const {sut} = makeSut();
-    const account_id = 'fake_account_id';
 
     //mock user answer data
     jest
       .spyOn(Step.AdminRunOption.prototype as any, 'userAnswer')
       .mockImplementation(() => Promise.resolve('10/06 14:00 - 17:00'));
 
-    const result = await sut.getAppointmentsToDisable(account_id);
+    const result = await sut.getAppointmentsToDisable(phone);
 
     expect(result).toHaveProperty('startDate');
     expect(result).toHaveProperty('endDate');

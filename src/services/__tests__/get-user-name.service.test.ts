@@ -15,7 +15,7 @@ const makeSut = () => {
   const sut = new Service.GetUserNameConversation(findConversationsServiceStub);
   return {sut, conversationRepositoryStub, findConversationsServiceStub};
 };
-
+const phone = 5599999999;
 describe('Get User Name Service', () => {
   test('should return user name on success', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
@@ -26,7 +26,7 @@ describe('Get User Name Service', () => {
         Promise.resolve(fakeConversation({body: 'any_name'})),
       );
 
-    const result = await sut.execute('fake_account_id');
+    const result = await sut.execute(phone);
 
     expect(result).toBe('any_name');
   });
@@ -37,7 +37,7 @@ describe('Get User Name Service', () => {
       .spyOn(findConversationsServiceStub, 'findOne')
       .mockImplementationOnce(() => Promise.resolve(null));
 
-    const result = await sut.execute('fake_account_id');
+    const result = await sut.execute(phone);
 
     expect(result).toBe(null);
   });

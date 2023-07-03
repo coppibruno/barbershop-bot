@@ -1,5 +1,6 @@
 import {Conversations} from '@prisma/client';
 import {FindConversationsService} from './find-conversation.service';
+import {FlowContext} from '@/flow.context';
 
 /**
  * Busca a ultima mensagem e retorna caso não tenha sido finalizada
@@ -10,10 +11,12 @@ export class GetLastMessageInProgressConversationService {
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
   }
-  async execute(accountId: string): Promise<Conversations | null> {
+  async execute(phone: number): Promise<Conversations | null> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId,
+        fromPhone: Number(FlowContext.BOT_NUMBER),
+        toPhone: phone,
+        state: 'IN_PROGRESS',
       },
       orderBy: {
         createdAt: 'desc',

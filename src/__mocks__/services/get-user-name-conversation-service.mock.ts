@@ -5,7 +5,7 @@ export class GetUserNameConversationStub extends GetUserNameConversation {
   constructor(findConversationServiceStub: FindConversationsServiceStub) {
     super(findConversationServiceStub);
   }
-  async execute(accountId: string): Promise<string> {
+  async execute(phone: number): Promise<string> {
     return Promise.resolve('Any User From Test');
   }
 }

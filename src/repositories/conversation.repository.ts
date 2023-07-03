@@ -15,7 +15,7 @@ export class ConversationRepository implements IRepository {
         fromPhone: conversationEntity.fromPhone,
         toPhone: conversationEntity.toPhone,
         accountId: conversationEntity.accountId,
-        step: conversationEntity.step,
+        step: conversationEntity.step || 1,
         state: conversationEntity.state,
         options: conversationEntity.options,
         protocol: conversationEntity.protocol || Date.now(),
@@ -49,6 +49,20 @@ export class ConversationRepository implements IRepository {
       },
       _max: {
         createdAt: true,
+      },
+    });
+  }
+
+  async updateState({
+    fromPhone,
+    state = 'FINISHED',
+  }: Partial<Conversations>): Promise<any> {
+    return prisma.conversations.updateMany({
+      where: {
+        fromPhone,
+      },
+      data: {
+        state,
       },
     });
   }

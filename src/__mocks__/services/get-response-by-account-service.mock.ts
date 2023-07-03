@@ -28,14 +28,14 @@ export class GetResponseByAccountServiceStub extends GetResponseByAccountService
     );
   }
 
-  async handleStep(accountId: string, step: number): Promise<IFlowResult> {
+  async handleStep(phone: number, step: number): Promise<IFlowResult> {
     return Promise.resolve({
       response: 'any_response',
       step: 1,
     });
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     return Promise.resolve({
       response: 'any_response',
       step: 1,

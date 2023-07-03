@@ -77,17 +77,16 @@ const makeSut = () => {
     stepAdminResponseByOptionMenuStub,
   };
 };
-
+const phone = 5599999999;
 describe('Get Admin Response By Account Service', () => {
   test('should return correct message reponse and step 1', async () => {
     const {sut, getStepConversationStub} = makeSut();
-    const account = 'fake_account_id';
 
     jest
       .spyOn(getStepConversationStub, 'execute')
       .mockImplementationOnce(() => Promise.resolve(1));
 
-    const result = await sut.execute(account);
+    const result = await sut.execute(phone);
 
     expect(result.step).toBe(1);
     expect(result.response).toBe('message_step_1');
@@ -95,7 +94,6 @@ describe('Get Admin Response By Account Service', () => {
   test('should return correct message reponse and step 2', async () => {
     const {sut, getStepConversationStub, stepAdminResponseByOptionMenuStub} =
       makeSut();
-    const account = 'fake_account_id';
 
     jest
       .spyOn(getStepConversationStub, 'execute')
@@ -103,15 +101,14 @@ describe('Get Admin Response By Account Service', () => {
 
     const spyOn = jest.spyOn(stepAdminResponseByOptionMenuStub, 'execute');
 
-    const result = await sut.execute(account);
+    const result = await sut.execute(phone);
 
     expect(result.step).toBe(2);
-    expect(spyOn).toBeCalledWith(account);
+    expect(spyOn).toBeCalledWith(phone);
     expect(result.response).toEqual(expect.any(String));
   });
   test('should return correct message reponse and step 3', async () => {
     const {sut, getStepConversationStub, stepAdminRunOptionStub} = makeSut();
-    const account = 'fake_account_id';
 
     jest
       .spyOn(getStepConversationStub, 'execute')
@@ -119,16 +116,15 @@ describe('Get Admin Response By Account Service', () => {
 
     const spyOn = jest.spyOn(stepAdminRunOptionStub, 'execute');
 
-    const result = await sut.execute(account);
+    const result = await sut.execute(phone);
 
     expect(result.step).toBe(3);
-    expect(spyOn).toBeCalledWith(account);
+    expect(spyOn).toBeCalledWith(phone);
     expect(result.response).toEqual(expect.any(String));
   });
   test('should return correct message reponse and step 4', async () => {
     const {sut, getStepConversationStub, stepAdminRunOptionPersistsStub} =
       makeSut();
-    const account = 'fake_account_id';
 
     jest
       .spyOn(getStepConversationStub, 'execute')
@@ -136,24 +132,21 @@ describe('Get Admin Response By Account Service', () => {
 
     const spyOn = jest.spyOn(stepAdminRunOptionPersistsStub, 'execute');
 
-    const result = await sut.execute(account);
+    const result = await sut.execute(phone);
 
     expect(result.step).toBe(4);
-    expect(spyOn).toBeCalledWith(account);
+    expect(spyOn).toBeCalledWith(phone);
     expect(result.response).toEqual(expect.any(String));
   });
 
   test('should return STEP_NOT_IMPLEMETED if step is not integrated', async () => {
     const {sut, getStepConversationStub} = makeSut();
-    const account = 'fake_account_id';
 
     jest
       .spyOn(getStepConversationStub, 'execute')
       .mockImplementationOnce(() => Promise.resolve(100));
 
-    await expect(() => sut.execute(account)).rejects.toThrow(
-      STEP_NOT_IMPLEMETED,
-    );
+    await expect(() => sut.execute(phone)).rejects.toThrow(STEP_NOT_IMPLEMETED);
   });
   test('should must call the previous step if an error occurs', async () => {
     const {
@@ -162,7 +155,6 @@ describe('Get Admin Response By Account Service', () => {
       stepAdminRunOptionPersistsStub,
       stepAdminRunOptionStub,
     } = makeSut();
-    const account = 'fake_account_id';
 
     jest
       .spyOn(getStepConversationStub, 'execute')
@@ -176,9 +168,9 @@ describe('Get Admin Response By Account Service', () => {
 
     const spyOn = jest.spyOn(stepAdminRunOptionStub, 'execute');
 
-    const result = await sut.execute(account);
+    const result = await sut.execute(phone);
     expect(result.step).toBe(3);
-    expect(spyOn).toBeCalledWith(account);
+    expect(spyOn).toBeCalledWith(phone);
     expect(result.response).toEqual(expect.any(String));
   });
 });

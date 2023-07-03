@@ -4,7 +4,7 @@ import {FindConversationsService} from './find-conversation.service';
 import {FindMeetingsOfDayService} from './find-meetings-of-day.service';
 import {FlowConversationService} from './flow-conversations.service';
 import {GetLastMessageInProgressConversationService} from './get-last-message-in-progress.service';
-import {GetPhoneByAccountIdConversation} from './get-phone-by-account.service';
+import {GetProtocolByPhoneConversation} from './get-protocol-by-phone.service';
 import {GetResponseByAccountService} from './get-response-by-account.service';
 import {GetStepConversation} from './get-step-conversation.service';
 import {GetUserNameConversation} from './get-user-name.service';
@@ -17,7 +17,7 @@ export {
   FindMeetingsOfDayService,
   FlowConversationService,
   GetLastMessageInProgressConversationService,
-  GetPhoneByAccountIdConversation,
+  GetProtocolByPhoneConversation,
   GetResponseByAccountService,
   GetStepConversation,
   GetUserNameConversation,

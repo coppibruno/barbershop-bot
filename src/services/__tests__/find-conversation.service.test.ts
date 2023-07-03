@@ -1,6 +1,8 @@
 import * as Service from '../find-conversation.service';
 import {ConversationRepositoryStub, fakeConversation} from '@/__mocks__';
 
+const phone = 5599999999;
+
 describe('Find Conversation Service', () => {
   test('should return a list of conversationEntity', async () => {
     const conversationRepositoryStub = new ConversationRepositoryStub();
@@ -12,14 +14,14 @@ describe('Find Conversation Service', () => {
 
     const exec = await create.find({
       where: {
-        accountId: 'fake_account_id',
+        fromPhone: phone,
       },
     });
 
     expect(exec).toBeDefined();
     expect(spyOn).toBeCalledWith({
       where: {
-        accountId: 'fake_account_id',
+        fromPhone: phone,
       },
     });
     expect(exec.length).toBe(2);

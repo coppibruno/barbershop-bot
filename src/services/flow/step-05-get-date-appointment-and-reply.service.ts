@@ -16,8 +16,8 @@ import {
 //services
 import {
   FindConversationsService,
+  GetProtocolByPhoneConversation,
   GetUserNameConversation,
-  GetPhoneByAccountIdConversation,
   SendMessageWhatsappService,
 } from '@/services';
 import {StepFindAvaliableDateFlow} from './step-04-find-avaliable-date.service';
@@ -85,12 +85,6 @@ export const INVALID_DATE = () =>
  * Etapa responsável por buscar horário selecionado, validar e retornar mensagem de sucesso caso seja.
  */
 export class StepGetDateAndReplyAppointmentFlow {
-  private readonly findConversationService: FindConversationsService;
-  private readonly stepFindAvaliableDateFlow: StepFindAvaliableDateFlow;
-  private readonly meetingRepository: MeetingRepository;
-  private readonly getUserNameConversation: GetUserNameConversation;
-  private readonly getPhoneByAccountIdConversation: GetPhoneByAccountIdConversation;
-  private readonly sendMessageWhatsappService: SendMessageWhatsappService;
   private readonly stepCompleted: number = 5;
   private readonly incompleteStep: number = 4;
   private readonly stepDateAppointment: number = 3;
@@ -99,25 +93,25 @@ export class StepGetDateAndReplyAppointmentFlow {
     FlowContext.APPOINTMENT_TIME_IN_MINUTES;
 
   constructor(
-    findConversationService: FindConversationsService,
-    stepFindAvaliableDateFlow: StepFindAvaliableDateFlow,
-    meetingRepository: MeetingRepository,
-    getUserNameConversation: GetUserNameConversation,
-    getPhoneByAccountIdConversation: GetPhoneByAccountIdConversation,
-    sendMessageWhatsappService: SendMessageWhatsappService,
+    private readonly findConversationService: FindConversationsService,
+    private readonly stepFindAvaliableDateFlow: StepFindAvaliableDateFlow,
+    private readonly meetingRepository: MeetingRepository,
+    private readonly getUserNameConversation: GetUserNameConversation,
+    private readonly sendMessageWhatsappService: SendMessageWhatsappService,
+    private readonly getProtocolByPhoneConversation: GetProtocolByPhoneConversation,
   ) {
     this.findConversationService = findConversationService;
     this.stepFindAvaliableDateFlow = stepFindAvaliableDateFlow;
     this.meetingRepository = meetingRepository;
     this.getUserNameConversation = getUserNameConversation;
-    this.getPhoneByAccountIdConversation = getPhoneByAccountIdConversation;
     this.sendMessageWhatsappService = sendMessageWhatsappService;
+    this.getProtocolByPhoneConversation = getProtocolByPhoneConversation;
   }
   /**
    * Envia uma mensagem para o admin com detalhes do novo agendamento
    * @param meeting Meeting (agendamento)
    */
-  sendMessageToAdminWithNewAppointment(meeting: Meetings): void {
+  private sendMessageToAdminWithNewAppointment(meeting: Meetings): void {
     const {name, phone, startDate} = meeting;
 
     const conversation: ConversationEntity = {
@@ -158,18 +152,19 @@ export class StepGetDateAndReplyAppointmentFlow {
 
   /**
    * Busca dados e retorna uma entidade de agendamento (meeting)
-   * @param accountId account id string
+   * @param phone telefone do usuario
    * @param appointmentTime Horário/min agendamento. Ex: 09:00
    * @returns MeetingEntity
    */
   async getDataToNewMeet(
-    accountId: string,
+    phone: number,
     appointmentTime: string,
   ): Promise<MeetingEntity> {
-    const [name, phone, dayMonth] = await Promise.all([
-      this.getUserNameConversation.execute(accountId),
-      this.getPhoneByAccountIdConversation.execute(accountId),
-      this.stepFindAvaliableDateFlow.getDateAppointment(accountId),
+    const protocol = await this.getProtocolByPhoneConversation.execute(phone);
+
+    const [name, dayMonth] = await Promise.all([
+      this.getUserNameConversation.execute(protocol),
+      this.stepFindAvaliableDateFlow.getDateAppointment(phone),
     ]);
 
     let startDate = TransformAppointmentInDateHelper(dayMonth);
@@ -197,15 +192,12 @@ export class StepGetDateAndReplyAppointmentFlow {
 
   /**
    * Salva um novo agendamento
-   * @param accountId account id String
+   * @param phone telefone do usuario
    * @param appointment Horário/min agendamento. Ex: 09:00
    * @returns Meetings no sucesso ou MEETING_ALREDY_IN_USE caso esteja já marcado
    */
-  async saveAppointment(
-    accountId: string,
-    appointment: string,
-  ): Promise<Meetings> {
-    const meetingEntity = await this.getDataToNewMeet(accountId, appointment);
+  async saveAppointment(phone: number, appointment: string): Promise<Meetings> {
+    const meetingEntity = await this.getDataToNewMeet(phone, appointment);
 
     const timeAlreadyMarked = await this.findMeetingIsAvaliable({
       startDate: meetingEntity.startDate,
@@ -224,17 +216,18 @@ export class StepGetDateAndReplyAppointmentFlow {
   }
   /**
    * Busca a opção de agendamento selecionada pelo usuario e traz a lista total junto
-   * @param accountId usuario
+   * @param phone telefone do usuario
    * @returns opção selecionada e opções de agendamento total
    */
   async findAppointmentSelected(
-    accountId: string,
+    phone: number,
   ): Promise<{option: number; options: any}> {
     const data = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
-        step: this.incompleteStep,
+        fromPhone: phone,
+        step: this.stepCompleted,
         toPhone: Number(FlowContext.BOT_NUMBER),
+        state: 'IN_PROGRESS',
       },
       orderBy: {
         createdAt: 'desc',
@@ -259,11 +252,11 @@ export class StepGetDateAndReplyAppointmentFlow {
   }
   /**
    * Busca e persiste horário selecioado pelo usuario
-   * @param accountId account id string
+   * @param phone telefone do usuario
    * @returns data do horario marcado
    */
-  async saveAppointmentMarked(accountId: string): Promise<IExtractAppointment> {
-    const {option, options} = await this.findAppointmentSelected(accountId);
+  async saveAppointmentMarked(phone: number): Promise<IExtractAppointment> {
+    const {option, options} = await this.findAppointmentSelected(phone);
 
     if (option === FlowContext.OPTION_RETRY_DATE_APPOINTMENT) {
       return AppointmentResultEnum.NEW_APPOINTMENT;
@@ -279,17 +272,17 @@ export class StepGetDateAndReplyAppointmentFlow {
 
     const appointmentTime = optionExistsInArray.appointment;
 
-    const meetSaved = await this.saveAppointment(accountId, appointmentTime);
+    const meetSaved = await this.saveAppointment(phone, appointmentTime);
 
     return {
       startedDate: meetSaved.startDate,
     };
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     try {
-      const response = await this.saveAppointmentMarked(accountId);
-      const {options} = await this.stepFindAvaliableDateFlow.execute(accountId);
+      const response = await this.saveAppointmentMarked(phone);
+      const {options} = await this.stepFindAvaliableDateFlow.execute(phone);
 
       if (response === AppointmentResultEnum.NEW_APPOINTMENT) {
         return {
@@ -327,6 +320,7 @@ export class StepGetDateAndReplyAppointmentFlow {
       };
     } catch (error) {
       console.error(error);
+      const {options} = await this.stepFindAvaliableDateFlow.execute(phone);
 
       const {message} = error;
 
@@ -338,11 +332,12 @@ export class StepGetDateAndReplyAppointmentFlow {
         return {
           response: InvalidMenuOptionError.INVALID_MENU_OPTION,
           step: this.incompleteStep,
+          options,
         };
       }
 
       const {response, step} = await this.stepFindAvaliableDateFlow.execute(
-        accountId,
+        phone,
       );
 
       return {response, step};

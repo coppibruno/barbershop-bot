@@ -1,4 +1,4 @@
-import {GetPhoneByAccountIdConversation} from '@/services/get-phone-by-account.service';
+import {GetPhoneByAccountIdConversation} from '@/services/get-protocol-by-phone.service';
 import {FindConversationsServiceStub} from './find-conversation-service.mock';
 
 export class GetPhoneByAccountStub extends GetPhoneByAccountIdConversation {

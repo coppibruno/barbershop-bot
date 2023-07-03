@@ -14,6 +14,7 @@ import {GetLastMessageInProgressServiceFactory} from './get-last-message-in-prog
 //admin service
 import {FlowAdminConversationServiceFactory} from './admin/flow-admin-conversation-service.factory';
 import {ExceededLimitOfMeetingsServiceFactory} from './exceeded-limit-of-meetings-service.factory';
+import {ConversationRepository} from '@/repositories';
 
 export const FlowConversationServiceFactory = (): FlowConversationService => {
   const getResponseByAccountService = GetResponseByAccountServiceFactory();
@@ -27,6 +28,7 @@ export const FlowConversationServiceFactory = (): FlowConversationService => {
   const flowAdminConversationService = FlowAdminConversationServiceFactory();
   const exceededLimitOfMeetingsServiceFactory =
     ExceededLimitOfMeetingsServiceFactory();
+  const conversationRepository = new ConversationRepository();
 
   return new FlowConversationService(
     getConversationTwilio,
@@ -37,5 +39,6 @@ export const FlowConversationServiceFactory = (): FlowConversationService => {
     getLastMessageInProgressConversationService,
     flowAdminConversationService,
     exceededLimitOfMeetingsServiceFactory,
+    conversationRepository,
   );
 };

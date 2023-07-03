@@ -179,15 +179,8 @@ const makeSut = () => {
     getLastMessageInProgressConversationServiceStub,
   );
 
-  const getPhoneByAccountIdConversationStub = new GetPhoneByAccountStub(
-    findConversationsServiceStub,
-  );
-
   const exceededLimitOfMeetingsServiceStub =
-    new ExceededLimitOfMeetingsServiceStub(
-      meetingRepositoryStub,
-      getPhoneByAccountIdConversationStub,
-    );
+    new ExceededLimitOfMeetingsServiceStub(meetingRepositoryStub);
 
   const getResponseByAccountServiceStub = makeGetReponseByAccountStub();
   const sut = new Service.FlowConversationService(
@@ -259,7 +252,7 @@ describe('Flow Conversations Service', () => {
 
     await sut.execute(fakeMessageTwilio);
     expect(spyOn).toBeCalledWith(fakeMessageTwilio);
-    expect(spyOnLimit).toBeCalledWith(account_id);
+    expect(spyOnLimit).toBeCalledWith(adminPhone);
   });
   test('should return if exceeded limit service return true', async () => {
     const {

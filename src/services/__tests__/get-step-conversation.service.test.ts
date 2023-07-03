@@ -16,7 +16,7 @@ const makeSut = () => {
   const sut = new Service.GetStepConversation(findConversationsServiceStub);
   return {sut, conversationRepositoryStub, findConversationsServiceStub};
 };
-
+const phone = 5599999999;
 describe('Get Step Conversation Service', () => {
   test('should return next step', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
@@ -27,11 +27,11 @@ describe('Get Step Conversation Service', () => {
         Promise.resolve(fakeConversation({step: 1})),
       );
     const spyOn = jest.spyOn(findConversationsServiceStub, 'findOne');
-    const result = await sut.execute('fake_account_id');
+    const result = await sut.execute(phone);
 
     expect(spyOn).toBeCalledWith({
       where: {
-        accountId: 'fake_account_id',
+        toPhone: phone,
         fromPhone: Number(FlowContext.BOT_NUMBER),
       },
       orderBy: {
@@ -49,10 +49,10 @@ describe('Get Step Conversation Service', () => {
         Promise.resolve(fakeConversation({state: 'FINISHED'})),
       );
     const spyOn = jest.spyOn(findConversationsServiceStub, 'findOne');
-    const result = await sut.execute('fake_account_id');
+    const result = await sut.execute(phone);
     expect(spyOn).toBeCalledWith({
       where: {
-        accountId: 'fake_account_id',
+        toPhone: phone,
         fromPhone: Number(FlowContext.BOT_NUMBER),
       },
       orderBy: {
@@ -70,10 +70,10 @@ describe('Get Step Conversation Service', () => {
 
     const spyOn = jest.spyOn(findConversationsServiceStub, 'findOne');
 
-    const result = await sut.execute('fake_account_id');
+    const result = await sut.execute(phone);
     expect(spyOn).toBeCalledWith({
       where: {
-        accountId: 'fake_account_id',
+        toPhone: phone,
         fromPhone: Number(FlowContext.BOT_NUMBER),
       },
       orderBy: {

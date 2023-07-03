@@ -108,9 +108,9 @@ export class AdminRunOption {
   }
 
   public async getAppointmentsToDisable(
-    accountId: string,
+    phone: number,
   ): Promise<IStartAndEndDate> {
-    const userAnswer = await this.userAnswer(accountId);
+    const userAnswer = await this.userAnswer(phone);
 
     let {dayMonth, intervalTime} = this.extractDayMonthAndTime(userAnswer);
     const isValidate = AppointmentIsValidHelper(dayMonth);
@@ -134,10 +134,10 @@ export class AdminRunOption {
     return {startDate: moment(startDate), endDate: moment(endDate)};
   }
 
-  public async getMenuRequest(accountId: string): Promise<typeMenuAdmin> {
+  public async getMenuRequest(phone: number): Promise<typeMenuAdmin> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
+        fromPhone: phone,
         toPhone: Number(FlowContext.BOT_NUMBER),
         step: 1,
       },
@@ -156,10 +156,10 @@ export class AdminRunOption {
     return menuSelected.type;
   }
 
-  public async userAnswer(accountId: string): Promise<string> {
+  public async userAnswer(phone: number): Promise<string> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
+        fromPhone: phone,
         toPhone: Number(FlowContext.BOT_NUMBER),
         step: 2,
       },
@@ -189,10 +189,10 @@ export class AdminRunOption {
   }
 
   public async responseListAppointmentsFromDay(
-    accountId: string,
+    phone: number,
     appointments: Meetings[],
   ): Promise<string> {
-    const dayMonth = await this.userAnswer(accountId);
+    const dayMonth = await this.userAnswer(phone);
 
     if (appointments.length === 0) {
       return `Para o dia ${dayMonth} não há horários marcados`;
@@ -207,14 +207,14 @@ export class AdminRunOption {
     return message.replaceAll(',', '');
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     try {
-      const typeMenu = await this.getMenuRequest(accountId);
+      const typeMenu = await this.getMenuRequest(phone);
 
       if (typeMenu === typeMenuAdmin.SHOW_MENU_MEETING) {
-        const appointments = await this.listAppointmentsFromDay(accountId);
+        const appointments = await this.listAppointmentsFromDay(phone);
         const response = await this.responseListAppointmentsFromDay(
-          accountId,
+          phone,
           appointments,
         );
 
@@ -224,9 +224,7 @@ export class AdminRunOption {
       }
 
       if (typeMenu === typeMenuAdmin.MARK_OFF_MEETING) {
-        const {startDate, endDate} = await this.getAppointmentsToDisable(
-          accountId,
-        );
+        const {startDate, endDate} = await this.getAppointmentsToDisable(phone);
 
         const messageCancelAppointment = this.timeResponseDisable({
           startDate,
@@ -245,9 +243,7 @@ export class AdminRunOption {
       const adminResponseByOptionMenu = new AdminResponseByOptionMenu(
         this.findConversationService,
       );
-      const {response, step} = await adminResponseByOptionMenu.execute(
-        accountId,
-      );
+      const {response, step} = await adminResponseByOptionMenu.execute(phone);
 
       return {response, step};
     }

@@ -23,29 +23,29 @@ export class GetAdminResponseByAccountService {
     private readonly stepAdminResponseByOptionMenu: AdminResponseByOptionMenu,
   ) {}
 
-  async handleStep(accountId: string, step: number): Promise<IFlowResult> {
+  async handleStep(phone: number, step: number): Promise<IFlowResult> {
     if (step === 1) {
       return this.stepWelcomeAdminAndShowMenu.execute();
     } else if (step === 2) {
-      return this.stepAdminResponseByOptionMenu.execute(accountId);
+      return this.stepAdminResponseByOptionMenu.execute(phone);
     } else if (step === 3) {
-      return this.stepAdminRunOption.execute(accountId);
+      return this.stepAdminRunOption.execute(phone);
     } else if (step === 4) {
-      return this.stepAdminRunOptionPersists.execute(accountId);
+      return this.stepAdminRunOptionPersists.execute(phone);
     } else {
       throw STEP_NOT_IMPLEMETED;
     }
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     type TypeStep = keyof IResponseByAccount;
-    const step: TypeStep = await this.getStepConversation.execute(accountId);
+    const step: TypeStep = await this.getStepConversation.execute(phone);
 
     try {
-      return await this.handleStep(accountId, step);
+      return await this.handleStep(phone, step);
     } catch (error) {
       console.error(error);
-      return await this.handleStep(accountId, step - 1);
+      return await this.handleStep(phone, step - 1);
     }
   }
 }

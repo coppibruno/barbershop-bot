@@ -11,6 +11,7 @@ import {
 } from '../';
 import {FlowAdminConversationService} from '@/services/admin';
 import {GetAdminResponseByAccountServiceFactory} from '.';
+import {ConversationRepository} from '@/repositories';
 
 export const FlowAdminConversationServiceFactory =
   (): FlowAdminConversationService => {
@@ -21,6 +22,7 @@ export const FlowAdminConversationServiceFactory =
     const sendMessageWhatsappService = SendMessageWhatsappServiceFactory();
     const getLastMessageInProgressConversationService =
       GetLastMessageInProgressServiceFactory();
+    const conversationRepository = new ConversationRepository();
 
     return new FlowAdminConversationService(
       getConversationTwilio,
@@ -28,5 +30,6 @@ export const FlowAdminConversationServiceFactory =
       getAdminResponseByAccountService,
       sendMessageWhatsappService,
       getLastMessageInProgressConversationService,
+      conversationRepository,
     );
   };

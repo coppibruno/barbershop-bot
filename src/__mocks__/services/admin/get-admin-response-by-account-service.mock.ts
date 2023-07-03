@@ -26,27 +26,27 @@ export class GetAdminResponseByAccountServiceStub extends GetAdminResponseByAcco
     );
   }
 
-  async handleStep(accountId: string, step: number): Promise<IFlowResult> {
+  async handleStep(phone: number, step: number): Promise<IFlowResult> {
     if (step === 1) {
       return this.stepWelcomeAdminAndShowMenuStub.execute();
     } else if (step === 2) {
-      return this.stepAdminRunOptionStub.execute(accountId);
+      return this.stepAdminRunOptionStub.execute(phone);
     } else if (step === 3) {
-      return this.stepAdminRunOptionPersistsStub.execute(accountId);
+      return this.stepAdminRunOptionPersistsStub.execute(phone);
     } else if (step === 4) {
-      return this.stepAdminResponseByOptionMenuStub.execute(accountId);
+      return this.stepAdminResponseByOptionMenuStub.execute(phone);
     } else {
       throw STEP_NOT_IMPLEMETED;
     }
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
-    const step = await this.getStepConversationStub.execute(accountId);
+  async execute(phone: number): Promise<IFlowResult> {
+    const step = await this.getStepConversationStub.execute(phone);
     try {
-      return await this.handleStep(accountId, step);
+      return await this.handleStep(phone, step);
     } catch (error) {
       console.error(error);
-      return await this.handleStep(accountId, step - 1);
+      return await this.handleStep(phone, step - 1);
     }
   }
 }

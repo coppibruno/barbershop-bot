@@ -20,7 +20,7 @@ export class AdminResponseByOptionMenuStub extends AdminResponseByOptionMenu {
     super(findConversationServiceStub);
   }
 
-  public async getMenuRequest(accountId: string): Promise<number> {
+  public async getMenuRequest(phone: number): Promise<number> {
     return 2;
   }
 
@@ -28,9 +28,9 @@ export class AdminResponseByOptionMenuStub extends AdminResponseByOptionMenu {
     return this.menu.find(({option}) => option === menu).callback;
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     try {
-      const menu = await this.getMenuRequest(accountId);
+      const menu = await this.getMenuRequest(phone);
 
       const response = this.replyMenuRequest(menu);
 

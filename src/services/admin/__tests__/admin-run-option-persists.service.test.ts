@@ -13,8 +13,6 @@ import {PadStartDateHelper} from '@/helpers';
 import * as ValidateAppointment from '@/helpers/validate-appoitment.helper';
 import {FlowContext, typeMenuAdmin} from '@/flow.context';
 
-const accountId = 'faker_account_id';
-const mockedTime = faker.date.future();
 const makeSut = () => {
   const conversationRepositoryStub = new ConversationRepositoryStub();
   const findConversationsServiceStub = new FindConversationsServiceStub(
@@ -51,6 +49,8 @@ jest.spyOn(Step, 'getMonth').mockReturnValue('06');
 jest.spyOn(Step, 'getHours').mockReturnValue('10');
 jest.spyOn(Step, 'getMins').mockReturnValue('40');
 
+const phone = 5599999999;
+
 describe('Admin run option persists service', () => {
   test('should call cancelation service and return a good bye message if operation is cancel appointments(MARK OFF MEETINGS)', async () => {
     const {sut, disableMeetingsOfIntervalServiceStub} = makeSut();
@@ -74,7 +74,7 @@ describe('Admin run option persists service', () => {
       'execute',
     );
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     expect(spyServiceExpectedCalled).toBeCalled();
     expect(result.response).toEqual(FlowContext.SUCCESSFUL_OPERATION);
     expect(result.step).toBe(4);
@@ -91,7 +91,7 @@ describe('Admin run option persists service', () => {
       Promise.resolve(typeMenuAdmin.SHOW_MENU_AGAIN),
     );
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     expect(result.response).toEqual(expect.any(String));
     expect(result.step).toBe(1);
   });

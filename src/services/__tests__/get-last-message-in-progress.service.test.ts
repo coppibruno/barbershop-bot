@@ -17,18 +17,18 @@ const makeSut = () => {
   );
   return {sut, findConversationsServiceStub, conversationRepositoryStub};
 };
-
+const phone = 5599999999;
 describe('Get Last Message In Progress Service', () => {
   test('should return last message ', async () => {
     const {sut, findConversationsServiceStub} = makeSut();
 
     const spyOn = jest.spyOn(findConversationsServiceStub, 'findOne');
 
-    const result = await sut.execute('fake_account_id');
+    const result = await sut.execute(phone);
 
     expect(spyOn).toBeCalledWith({
       where: {
-        accountId: 'fake_account_id',
+        fromPhone: phone,
       },
       orderBy: {
         createdAt: 'desc',
@@ -43,11 +43,11 @@ describe('Get Last Message In Progress Service', () => {
       .spyOn(findConversationsServiceStub, 'findOne')
       .mockReturnValueOnce(null);
 
-    const result = await sut.execute('fake_account_id');
+    const result = await sut.execute(phone);
 
     expect(spyOn).toBeCalledWith({
       where: {
-        accountId: 'fake_account_id',
+        fromPhone: phone,
       },
       orderBy: {
         createdAt: 'desc',
@@ -64,11 +64,11 @@ describe('Get Last Message In Progress Service', () => {
         Promise.resolve(fakeConversation({state: 'FINISHED'})),
       );
 
-    const result = await sut.execute('fake_account_id');
+    const result = await sut.execute(phone);
 
     expect(spyOn).toBeCalledWith({
       where: {
-        accountId: 'fake_account_id',
+        fromPhone: phone,
       },
       orderBy: {
         createdAt: 'desc',

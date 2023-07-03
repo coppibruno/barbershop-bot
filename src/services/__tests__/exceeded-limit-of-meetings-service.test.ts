@@ -25,10 +25,7 @@ const makeSut = () => {
     findConversationsServiceStub,
   );
 
-  const sut = new Service.ExceededLimitOfMeetingsService(
-    meetingRepositoryStub,
-    getPhoneByAccountStub,
-  );
+  const sut = new Service.ExceededLimitOfMeetingsService(meetingRepositoryStub);
   return {sut, getPhoneByAccountStub, meetingRepositoryStub};
 };
 
@@ -36,15 +33,15 @@ describe('Exceeded limit of meetings service', () => {
   test('should return false if meeting list from account is less than or equal to 4', async () => {
     const {sut} = makeSut();
 
-    const accountId = 'fake_account_id';
+    const phone = 5599999999;
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     expect(result).toBe(false);
   });
   test('should return true if meeting list from account is greater than 4', async () => {
     const {sut, meetingRepositoryStub} = makeSut();
 
-    const accountId = 'fake_account_id';
+    const phone = 5599999999;
 
     jest
       .spyOn(meetingRepositoryStub, 'find')
@@ -57,7 +54,7 @@ describe('Exceeded limit of meetings service', () => {
         ]),
       );
 
-    const result = await sut.execute(accountId);
+    const result = await sut.execute(phone);
     expect(result).toBe(true);
   });
 });

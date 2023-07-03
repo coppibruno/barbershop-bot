@@ -1,30 +1,31 @@
+import {NotFoundError} from '@/errors';
 import {FlowContext} from '../flow.context';
 import {FindConversationsService} from './find-conversation.service';
 
 /**
- * Busca o telefone do usuário
+ * Busca o protocolo de atendimento
  */
-export class GetPhoneByAccountIdConversation {
+export class GetProtocolByPhoneConversation {
   private readonly findConversationService: FindConversationsService;
 
   constructor(findConversationService: FindConversationsService) {
     this.findConversationService = findConversationService;
   }
-  async execute(accountId: string): Promise<null | number> {
+  async execute(phone: number): Promise<number> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
+        fromPhone: phone,
         toPhone: Number(FlowContext.BOT_NUMBER),
+        state: 'IN_PROGRESS',
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
     if (!result) {
-      return null;
+      throw new NotFoundError('not found conversation to get protocol');
     }
-    const phone = result.fromPhone;
 
-    return phone;
+    return result.protocol;
   }
 }

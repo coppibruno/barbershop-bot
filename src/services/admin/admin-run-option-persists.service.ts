@@ -60,10 +60,10 @@ export class AdminRunOptionPersists {
     this.disableMeetingsOfIntervalService = disableMeetingsOfIntervalService;
   }
 
-  public async getMenuRequest(accountId: string): Promise<typeMenuAdmin> {
+  public async getMenuRequest(phone: number): Promise<typeMenuAdmin> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
+        fromPhone: phone,
         toPhone: Number(FlowContext.BOT_NUMBER),
         step: 3,
       },
@@ -85,9 +85,9 @@ export class AdminRunOptionPersists {
     return menuSelected.type;
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     try {
-      const typeMenu = await this.getMenuRequest(accountId);
+      const typeMenu = await this.getMenuRequest(phone);
 
       if (typeMenu === typeMenuAdmin.MARK_OFF_MEETING) {
         const adminRunOption = new AdminRunOption(
@@ -95,7 +95,7 @@ export class AdminRunOptionPersists {
           this.findMeetingsOfDayService,
         );
         const {startDate, endDate} =
-          await adminRunOption.getAppointmentsToDisable(accountId);
+          await adminRunOption.getAppointmentsToDisable(phone);
 
         await this.disableMeetingsOfIntervalService.execute({
           startDate,

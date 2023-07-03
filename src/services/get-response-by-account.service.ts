@@ -25,30 +25,30 @@ export class GetResponseByAccountService {
     private readonly stepGetDateAndReplyAppointmentFlow: StepGetDateAndReplyAppointmentFlow,
   ) {}
 
-  async handleStep(accountId: string, step: number): Promise<IFlowResult> {
+  async handleStep(phone: number, step: number): Promise<IFlowResult> {
     if (step === 1) {
       return this.stepWelcomeFlow.execute();
     } else if (step === 2) {
-      return this.stepShowMenuFlow.execute(accountId);
+      return this.stepShowMenuFlow.execute(phone);
     } else if (step === 3) {
-      return this.stepResponseByOptionMenuFlow.execute(accountId);
+      return this.stepResponseByOptionMenuFlow.execute(phone);
     } else if (step === 4) {
-      return this.stepFindAvaliableDateFlow.execute(accountId);
+      return this.stepFindAvaliableDateFlow.execute(phone);
     } else if (step === 5) {
-      return this.stepGetDateAndReplyAppointmentFlow.execute(accountId);
+      return this.stepGetDateAndReplyAppointmentFlow.execute(phone);
     } else {
       throw STEP_NOT_IMPLEMETED;
     }
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     type TypeStep = keyof IResponseByAccount;
-    const step: TypeStep = await this.getStepConversation.execute(accountId);
+    const step: TypeStep = await this.getStepConversation.execute(phone);
     try {
-      return await this.handleStep(accountId, step);
+      return await this.handleStep(phone, step);
     } catch (error) {
       console.error(error);
-      return await this.handleStep(accountId, step - 1);
+      return await this.handleStep(phone, step - 1);
     }
   }
 }

@@ -57,13 +57,17 @@ export const ConvertIntervalTimeInObject = (
   }
 
   const startDate = TransformAppointmentInDateHelper(dayMonth);
-  setHours(startDate, startTime);
-  setMinutes(startDate, startTime);
+
+  const [startTimeHours, startTimeMinutes] = startTime.split(':');
+  const [endTimeHours, endTimeMinutes] = endTime.split(':');
+
+  setHours(startDate, startTimeHours);
+  setMinutes(startDate, startTimeMinutes);
   setSeconds(startDate, 0);
 
   const endDate = getClone(startDate);
-  setHours(endDate, endTime);
-  setMinutes(endDate, endTime);
+  setHours(endDate, endTimeHours);
+  setMinutes(endDate, endTimeMinutes);
   setSeconds(endDate, 0);
 
   return {

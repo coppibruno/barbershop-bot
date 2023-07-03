@@ -17,10 +17,10 @@ export class AdminResponseByOptionMenu {
     this.findConversationService = findConversationService;
   }
 
-  public async getMenuRequest(accountId: string): Promise<number> {
+  public async getMenuRequest(phone: number): Promise<number> {
     const result = await this.findConversationService.findOne({
       where: {
-        accountId: accountId,
+        fromPhone: phone,
         toPhone: Number(FlowContext.BOT_NUMBER),
         step: 1,
       },
@@ -45,9 +45,9 @@ export class AdminResponseByOptionMenu {
     return menuSelected.callback;
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
+  async execute(phone: number): Promise<IFlowResult> {
     try {
-      const menu = await this.getMenuRequest(accountId);
+      const menu = await this.getMenuRequest(phone);
 
       const response = this.replyMenuRequest(menu);
 

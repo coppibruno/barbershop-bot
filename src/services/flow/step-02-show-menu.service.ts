@@ -1,15 +1,18 @@
 import {FlowContext} from '../../flow.context';
 import {IFlowResult} from '@/interfaces/flow';
 import {GetUserNameConversation} from '@/services/get-user-name.service';
+import {GetProtocolByPhoneConversation} from '../get-protocol-by-phone.service';
 /**
  * Etapa responsável por mostrar o menu de opções ao usuário
  */
 export class StepShowMenuFlow {
-  private readonly getUserNameConversation: GetUserNameConversation;
-
   private readonly menu = FlowContext.getMenuUserFormatted();
-  constructor(getUserNameConversation: GetUserNameConversation) {
+  constructor(
+    private readonly getUserNameConversation: GetUserNameConversation,
+    private readonly getProtocolByPhone: GetProtocolByPhoneConversation,
+  ) {
     this.getUserNameConversation = getUserNameConversation;
+    this.getProtocolByPhone = getProtocolByPhone;
   }
 
   showMenu(user: string) {
@@ -20,12 +23,14 @@ export class StepShowMenuFlow {
     return menu.replaceAll(',', '');
   }
 
-  async getUser(accountId: string): Promise<null | string> {
-    return this.getUserNameConversation.execute(accountId);
+  async getUser(protocol: number): Promise<null | string> {
+    return this.getUserNameConversation.execute(protocol);
   }
 
-  async execute(accountId: string): Promise<IFlowResult> {
-    const user = (await this.getUser(accountId)) || '';
+  async execute(phone: number): Promise<IFlowResult> {
+    const protocol = await this.getProtocolByPhone.execute(phone);
+
+    const user = (await this.getUser(protocol)) || '';
     return {response: this.showMenu(user), step: 2};
   }
 }
